@@ -77,8 +77,8 @@ require('lazy').setup({
         end,
         dependencies = {
           {
+
             'zbirenbaum/copilot.lua',
-            lazy = false,
             config = function()
               require('copilot').setup {
                 suggestion = { enabled = false },
@@ -88,6 +88,8 @@ require('lazy').setup({
           },
         },
       },
+      -- Icons in CMP
+      { 'onsails/lspkind.nvim' },
     },
   },
 
@@ -247,7 +249,6 @@ require('lazy').setup({
       ins_left {
         'filename',
         cond = conditions.buffer_not_empty,
-        color = { fg = colors.magenta, gui = 'bold' },
       }
 
       ins_left {
@@ -269,11 +270,11 @@ require('lazy').setup({
         end,
       }
 
-      ins_right { 'progress', color = { fg = colors.fg, gui = 'bold' } }
+      ins_right { 'progress', color = { fg = colors.fg } }
       ins_right {
         'branch',
         icon = '',
-        color = { fg = colors.violet, gui = 'bold' },
+        color = { fg = colors.violet },
       }
 
       ins_right {
@@ -339,7 +340,6 @@ require('lazy').setup({
   { 'tpope/vim-repeat' },
   { 'christoomey/vim-tmux-navigator' },
   { 'nvim-pack/nvim-spectre' },
-  { 'davidmh/cspell.nvim' },
   { 'lambdalisue/nerdfont.vim' },
   {
     'lambdalisue/fern.vim',
@@ -349,7 +349,7 @@ require('lazy').setup({
       vim.g['fern#renderer'] = 'nerdfont'
       -- TODO: port it to lua
       vim.cmd [[
-        nmap - :Fern . -reveal=% -wait <CR>
+        " nmap - :Fern . -reveal=% -wait <CR>
 
         function! s:init_fern() abort
           nmap <buffer> <C-J> <C-W><C-J>
@@ -372,15 +372,6 @@ require('lazy').setup({
   },
   { 'lambdalisue/fern-hijack.vim', dependencies = { 'lambdalisue/fern.vim' } },
   { 'lambdalisue/fern-git-status.vim', dependencies = { 'lambdalisue/fern.vim' } },
-  {
-    'zbirenbaum/copilot.lua',
-    config = function()
-      require('copilot').setup {
-        suggestion = { enabled = false },
-        panel = { enabled = false },
-      }
-    end,
-  },
   { 'kevinhwang91/nvim-bqf' },
   {
     'rmagatti/auto-session',
@@ -388,25 +379,34 @@ require('lazy').setup({
       require('auto-session').setup()
     end,
   },
-
-  { 'jose-elias-alvarez/null-ls.nvim' },
+  { 'jose-elias-alvarez/null-ls.nvim', dependencies = { 'davidmh/cspell.nvim' } },
   {
-    'davidmh/cspell.nvim',
-    dependencies = { 'jose-elias-alvarez/null-ls.nvim' },
+    'NvChad/nvim-colorizer.lua',
+    config = function()
+      require('colorizer').setup()
+    end,
   },
-  -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
-  --       These are some example plugins that I've included in the kickstart repository.
-  --       Uncomment any of the lines below to enable them.
-  -- require 'kickstart.plugins.autoformat',
-  -- require 'kickstart.plugins.debug',
-
-  -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
-  --    You can use this folder to prevent any conflicts with this init.lua if you're interested in keeping
-  --    up-to-date with whatever is in the kickstart repo.
-  --    Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  --
-  --    For additional information see: https://github.com/folke/lazy.nvim#-structuring-your-plugins
-  -- { import = 'custom.plugins' },
+  {
+    'nvim-neo-tree/neo-tree.nvim',
+    branch = 'v3.x',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'nvim-tree/nvim-web-devicons', -- not strictly required, but recommended
+      'MunifTanjim/nui.nvim',
+    },
+    config = function()
+      require('neo-tree').setup {
+        enable_diagnostics = false,
+        close_if_last_window = false,
+        default_component_configs = {
+          last_modified = { enabled = false },
+          file_size = { enabled = false },
+          created = { enabled = false },
+          type = { enabled = false },
+        },
+      }
+    end,
+  },
 }, {})
 
 -- [[ Setting options ]]
@@ -619,6 +619,7 @@ local on_attach = function(client, bufnr)
     vim.keymap.set('n', keys, func, { buffer = bufnr, desc = desc })
   end
 
+  nmap('-', '<cmd>Neotree source=filesystem reveal=true position=current <CR>', 'Open neotree')
   nmap('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
   nmap('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
 
@@ -710,6 +711,16 @@ mason_lspconfig.setup_handlers {
 -- See `:help cmp`
 local cmp = require 'cmp'
 local luasnip = require 'luasnip'
+local lspkind = require 'lspkind'
+
+lspkind.init {
+  symbol_map = {
+    Copilot = '',
+  },
+}
+
+vim.api.nvim_set_hl(0, 'CmpItemKindCopilot', { fg = '#6CC644' })
+
 require('luasnip.loaders.from_vscode').lazy_load()
 luasnip.config.setup {}
 
@@ -754,7 +765,14 @@ cmp.setup {
     { name = 'buffer' },
     { name = 'nvim_lua' },
     { name = 'path' },
-    { name = 'copilot-cmp' },
+    { name = 'copilot' },
+  },
+  formatting = {
+    format = lspkind.cmp_format {
+      mode = 'symbol_text', -- show only symbol annotations
+      maxwidth = 50, -- prevent the popup from showing more than provided characters (e.g 50 will not show more than 50 characters)
+      ellipsis_char = '...', -- when popup menu exceed maxwidth, the truncated part would show ellipsis_char instead (must define maxwidth first)
+    },
   },
 }
 

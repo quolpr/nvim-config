@@ -385,27 +385,27 @@ require('lazy').setup({
       require('colorizer').setup()
     end,
   },
-  {
-    'nvim-neo-tree/neo-tree.nvim',
-    branch = 'v3.x',
-    dependencies = {
-      'nvim-lua/plenary.nvim',
-      'nvim-tree/nvim-web-devicons', -- not strictly required, but recommended
-      'MunifTanjim/nui.nvim',
-    },
-    config = function()
-      require('neo-tree').setup {
-        enable_diagnostics = false,
-        close_if_last_window = false,
-        default_component_configs = {
-          last_modified = { enabled = false },
-          file_size = { enabled = false },
-          created = { enabled = false },
-          type = { enabled = false },
-        },
-      }
-    end,
-  },
+  -- {
+  --   'nvim-neo-tree/neo-tree.nvim',
+  --   branch = 'v3.x',
+  --   dependencies = {
+  --     'nvim-lua/plenary.nvim',
+  --     'nvim-tree/nvim-web-devicons', -- not strictly required, but recommended
+  --     'MunifTanjim/nui.nvim',
+  --   },
+  --   config = function()
+  --     require('neo-tree').setup {
+  --       enable_diagnostics = false,
+  --       close_if_last_window = false,
+  --       default_component_configs = {
+  --         last_modified = { enabled = false },
+  --         file_size = { enabled = false },
+  --         created = { enabled = false },
+  --         type = { enabled = false },
+  --       },
+  --     }
+  --   end,
+  -- },
   { 'SmiteshP/nvim-navic', dependencies = { 'neovim/nvim-lspconfig' } },
   { 'RRethy/vim-illuminate' },
 }, {})
@@ -596,8 +596,8 @@ require('nvim-treesitter.configs').setup {
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic message' })
-vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
-vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })
+vim.keymap.set('n', 'de', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
+vim.keymap.set('n', 'dq', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })
 
 local navic = require 'nvim-navic'
 
@@ -905,5 +905,25 @@ null_ls.setup {
     end
   end,
 }
+
+local function lspSymbol(name, icon)
+  local hl = 'DiagnosticSign' .. name
+  vim.fn.sign_define(hl, { text = icon, numhl = hl, texthl = hl })
+end
+
+lspSymbol('Error', '󰅙')
+lspSymbol('Info', '󰋼')
+lspSymbol('Hint', '󰌵')
+lspSymbol('Warn', '')
+
+vim.diagnostic.config {
+  virtual_text = {
+    prefix = '',
+  },
+  signs = true,
+  underline = true,
+  update_in_insert = false,
+}
+
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

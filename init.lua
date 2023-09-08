@@ -112,9 +112,9 @@ require('lazy').setup({
         untracked = { text = '│' },
       },
       on_attach = function(bufnr)
-        vim.keymap.set('n', '<leader>gp', require('gitsigns').prev_hunk, { buffer = bufnr, desc = '[G]o to [P]revious Hunk' })
-        vim.keymap.set('n', '<leader>gn', require('gitsigns').next_hunk, { buffer = bufnr, desc = '[G]o to [N]ext Hunk' })
-        vim.keymap.set('n', '<leader>ph', require('gitsigns').preview_hunk, { buffer = bufnr, desc = '[P]review [H]unk' })
+        vim.keymap.set('n', '<leader>gn', require('gitsigns').next_hunk, { buffer = bufnr, desc = 'Go to [G]it [N]ext Hunk' })
+        vim.keymap.set('n', '<leader>gp', require('gitsigns').prev_hunk, { buffer = bufnr, desc = 'Go to [G]it [P]revious Hunk' })
+        vim.keymap.set('n', '<leader>gg', require('gitsigns').preview_hunk, { buffer = bufnr, desc = 'Preview Hunk' })
       end,
     },
   },
@@ -293,7 +293,6 @@ require('lazy').setup({
       lualine.setup(config)
     end,
   },
-
   {
     -- Add indentation guides even on blank lines
     'lukas-reineke/indent-blankline.nvim',
@@ -349,7 +348,7 @@ require('lazy').setup({
       vim.g['fern#renderer'] = 'nerdfont'
       -- TODO: port it to lua
       vim.cmd [[
-        " nmap - :Fern . -reveal=% -wait <CR>
+        nmap - :Fern . -reveal=% -wait <CR>
 
         function! s:init_fern() abort
           nmap <buffer> <C-J> <C-W><C-J>
@@ -407,6 +406,8 @@ require('lazy').setup({
       }
     end,
   },
+  { 'SmiteshP/nvim-navic', dependencies = { 'neovim/nvim-lspconfig' } },
+  { 'RRethy/vim-illuminate' },
 }, {})
 
 -- [[ Setting options ]]
@@ -540,8 +541,8 @@ require('nvim-treesitter.configs').setup {
     keymaps = {
       init_selection = '<c-space>',
       node_incremental = '<c-space>',
-      scope_incremental = '<c-s>',
-      node_decremental = '<M-space>',
+      scope_incremental = false,
+      node_decremental = '<bs>',
     },
   },
   textobjects = {
@@ -552,6 +553,8 @@ require('nvim-treesitter.configs').setup {
         -- You can use the capture groups defined in textobjects.scm
         ['aa'] = '@parameter.outer',
         ['ia'] = '@parameter.inner',
+        ['as'] = '@block.outer',
+        ['is'] = '@block.inner',
         ['af'] = '@function.outer',
         ['if'] = '@function.inner',
         ['ac'] = '@class.outer',
@@ -596,6 +599,52 @@ vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnos
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })
 
+local navic = require 'nvim-navic'
+
+navic.setup {
+  icons = {
+    File = '󰈙 ',
+    Module = ' ',
+    Namespace = '󰌗 ',
+    Package = ' ',
+    Class = '󰌗 ',
+    Method = '󰆧 ',
+    Property = ' ',
+    Field = ' ',
+    Constructor = ' ',
+    Enum = '󰕘',
+    Interface = '󰕘',
+    Function = '󰊕 ',
+    Variable = '󰆧 ',
+    Constant = '󰏿 ',
+    String = '󰀬 ',
+    Number = '󰎠 ',
+    Boolean = '◩ ',
+    Array = '󰅪 ',
+    Object = '  ',
+    Key = '󰌋 ',
+    Null = '󰟢 ',
+    EnumMember = ' ',
+    Struct = '󰌗 ',
+    Event = ' ',
+    Operator = '󰆕 ',
+    TypeParameter = '󰊄 ',
+  },
+  lsp = {
+    auto_attach = false,
+    preference = nil,
+  },
+  highlight = false,
+  separator = ' > ',
+  depth_limit = 0,
+  depth_limit_indicator = '..',
+  safe_output = true,
+  lazy_update_context = false,
+  click = true,
+}
+
+vim.o.winbar = "%{%v:lua.require'nvim-navic'.get_location()%}"
+
 -- [[ Configure LSP ]]
 --  This function gets run when an LSP connects to a particular buffer.
 local on_attach = function(client, bufnr)
@@ -603,6 +652,10 @@ local on_attach = function(client, bufnr)
   if client.name ~= 'elixirls' then
     client.server_capabilities.documentFormattingProvider = false
     client.server_capabilities.documentRangeFormattingProvider = false
+  end
+
+  if client.server_capabilities.documentSymbolProvider then
+    navic.attach(client, bufnr)
   end
 
   -- NOTE: Remember that lua is a real programming language, and as such it is possible
@@ -619,7 +672,7 @@ local on_attach = function(client, bufnr)
     vim.keymap.set('n', keys, func, { buffer = bufnr, desc = desc })
   end
 
-  nmap('-', '<cmd>Neotree source=filesystem reveal=true position=current <CR>', 'Open neotree')
+  -- nmap('-', '<cmd>Neotree source=filesystem reveal=true position=current <CR>', 'Open neotree')
   nmap('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
   nmap('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
 

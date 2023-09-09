@@ -474,6 +474,23 @@ require('lazy').setup({
   -- },
   { 'SmiteshP/nvim-navic', dependencies = { 'neovim/nvim-lspconfig' } },
   { 'RRethy/vim-illuminate' },
+  -- {
+  --   'elixir-tools/elixir-tools.nvim',
+  --   config = function()
+  --     local elixir = require 'elixir'
+  --
+  --     elixir.setup {
+  --       nextls = { enable = true },
+  --       credo = { enable = false },
+  --       elixirls = {
+  --         enable = true,
+  --       },
+  --     }
+  --   end,
+  --   dependencies = {
+  --     'nvim-lua/plenary.nvim',
+  --   },
+  -- },
 }, {})
 
 -- [[ Setting options ]]
@@ -585,11 +602,13 @@ pcall(require('telescope').load_extension, 'fzf')
 vim.keymap.set('n', '<leader>fr', function()
   require('telescope.builtin').buffers { sort_mru = true, ignore_current_buffer = true }
 end, { desc = 'Recent files' })
-vim.keymap.set('n', '<leader><space>', require('telescope.builtin').git_files, { desc = 'Find Files' })
+vim.keymap.set('n', '<leader><space>', function()
+  require('telescope.builtin').git_files { show_untracked = true }
+end, { desc = 'Find Files' })
 vim.keymap.set('n', '<leader>fh', require('telescope.builtin').help_tags, { desc = '[F]ind [H]elp' })
 vim.keymap.set('n', '<leader>fg', require('telescope.builtin').live_grep, { desc = '[F]ind by [G]rep' })
 vim.keymap.set('n', '<leader>fs', require('telescope.builtin').git_status, { desc = '[F]ind Git [S]tatus' })
-vim.keymap.set('n', '<leader>fr', require('telescope.builtin').resume, { desc = '[S]earch [R]resume' })
+vim.keymap.set('n', '<leader>fw', require('telescope.builtin').grep_string, { desc = '[F]ind current [W]ord' })
 
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
@@ -714,10 +733,8 @@ vim.o.winbar = "%{%v:lua.require'nvim-navic'.get_location()%}"
 -- [[ Configure LSP ]]
 --  This function gets run when an LSP connects to a particular buffer.
 local on_attach = function(client, bufnr)
-  print(client.name)
   -- For other languages we are using null-ls
   if client.name ~= 'elixirls' then
-    print 'disaling formatting'
     client.server_capabilities.documentFormattingProvider = false
     client.server_capabilities.documentRangeFormattingProvider = false
   end
@@ -777,7 +794,10 @@ local servers = {
   -- gopls = {},
   -- pyright = {},
   -- rust_analyzer = {},
-  elixirls = {},
+  elixirls = {
+    -- cmd = { '/Users/quolpr/.elixir-ls/release/language_server.sh' },
+  },
+  -- nextls = {},
   tsserver = {
     init_options = {
       -- This is the default which would be overwritten otherwise
@@ -822,6 +842,7 @@ mason_lspconfig.setup_handlers {
       filetypes = (servers[server_name] or {}).filetypes,
       init_options = (servers[server_name] or {}).init_options,
       cmd = (servers[server_name] or {}).cmd,
+      root_dir = require('lspconfig').util.root_pattern '.git',
     }
   end,
 }

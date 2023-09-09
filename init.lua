@@ -474,23 +474,6 @@ require('lazy').setup({
   -- },
   { 'SmiteshP/nvim-navic', dependencies = { 'neovim/nvim-lspconfig' } },
   { 'RRethy/vim-illuminate' },
-  -- {
-  --   'elixir-tools/elixir-tools.nvim',
-  --   config = function()
-  --     local elixir = require 'elixir'
-  --
-  --     elixir.setup {
-  --       nextls = { enable = true },
-  --       credo = { enable = false },
-  --       elixirls = {
-  --         enable = true,
-  --       },
-  --     }
-  --   end,
-  --   dependencies = {
-  --     'nvim-lua/plenary.nvim',
-  --   },
-  -- },
 }, {})
 
 -- [[ Setting options ]]
@@ -794,9 +777,7 @@ local servers = {
   -- gopls = {},
   -- pyright = {},
   -- rust_analyzer = {},
-  elixirls = {
-    -- cmd = { '/Users/quolpr/.elixir-ls/release/language_server.sh' },
-  },
+  elixirls = {},
   -- nextls = {},
   tsserver = {
     init_options = {

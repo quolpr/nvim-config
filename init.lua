@@ -178,9 +178,9 @@ require('lazy').setup({
         untracked = { text = '│' },
       },
       on_attach = function(bufnr)
-        vim.keymap.set('n', '<leader>gn', require('gitsigns').next_hunk, { buffer = bufnr, desc = 'Go to [G]it [N]ext Hunk' })
-        vim.keymap.set('n', '<leader>gp', require('gitsigns').prev_hunk, { buffer = bufnr, desc = 'Go to [G]it [P]revious Hunk' })
-        vim.keymap.set('n', '<leader>gg', require('gitsigns').preview_hunk, { buffer = bufnr, desc = 'Preview Hunk' })
+        vim.keymap.set('n', ']g', require('gitsigns').next_hunk, { buffer = bufnr, desc = 'Go to [G]it [N]ext Hunk' })
+        vim.keymap.set('n', '[g', require('gitsigns').prev_hunk, { buffer = bufnr, desc = 'Go to [G]it [P]revious Hunk' })
+        vim.keymap.set('n', 'gp', require('gitsigns').preview_hunk, { buffer = bufnr, desc = 'Preview Hunk' })
       end,
     },
   },
@@ -569,6 +569,7 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 -- See `:help telescope` and `:help telescope.setup()`
 require('telescope').setup {
   defaults = {
+    path_display = { 'smart' },
     mappings = {
       i = {
         ['<C-u>'] = false,
@@ -582,7 +583,7 @@ require('telescope').setup {
 pcall(require('telescope').load_extension, 'fzf')
 
 -- See `:help telescope.builtin`
-vim.keymap.set('n', '<leader>fr', function()
+vim.keymap.set('n', '<leader>fb', function()
   require('telescope.builtin').buffers { sort_mru = true, ignore_current_buffer = true }
 end, { desc = 'Recent files' })
 vim.keymap.set('n', '<leader><space>', function()
@@ -592,6 +593,7 @@ vim.keymap.set('n', '<leader>fh', require('telescope.builtin').help_tags, { desc
 vim.keymap.set('n', '<leader>fg', require('telescope.builtin').live_grep, { desc = '[F]ind by [G]rep' })
 vim.keymap.set('n', '<leader>fs', require('telescope.builtin').git_status, { desc = '[F]ind Git [S]tatus' })
 vim.keymap.set('n', '<leader>fw', require('telescope.builtin').grep_string, { desc = '[F]ind current [W]ord' })
+vim.keymap.set('n', '<leader>fr', require('telescope.builtin').resume, { desc = '[F]ind [R]esume' })
 
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
@@ -633,21 +635,39 @@ require('nvim-treesitter.configs').setup {
       enable = true,
       set_jumps = true, -- whether to set jumps in the jumplist
       goto_next_start = {
-        [']m'] = '@function.outer',
+        [']f'] = '@function.outer',
         [']]'] = '@class.outer',
       },
       goto_next_end = {
-        [']M'] = '@function.outer',
+        [']F'] = '@function.outer',
         [']['] = '@class.outer',
       },
       goto_previous_start = {
-        ['[m'] = '@function.outer',
+        ['[f'] = '@function.outer',
         ['[['] = '@class.outer',
       },
       goto_previous_end = {
-        ['[M'] = '@function.outer',
+        ['[F'] = '@function.outer',
         ['[]'] = '@class.outer',
       },
+      -- goto_next = {
+      --   [']f'] = '@function.outer',
+      --   [']c'] = '@class.outer',
+      --   [']s'] = { query = '@scope', query_group = 'locals', desc = 'Next scope' },
+      -- },
+      -- goto_previous = {
+      --   ['[f'] = '@function.outer',
+      --   ['[c'] = '@class.outer',
+      --   ['[s'] = { query = '@scope', query_group = 'locals', desc = 'Prev scope' },
+      -- },
+      -- goto_previous_start = {
+      --   ['[m'] = '@function.outer',
+      --   ['[['] = '@class.outer',
+      -- },
+      -- goto_previous_end = {
+      --   ['[M'] = '@function.outer',
+      --   ['[]'] = '@class.outer',
+      -- },
     },
     swap = {
       enable = true,
@@ -662,8 +682,12 @@ require('nvim-treesitter.configs').setup {
 }
 
 -- Diagnostic keymaps
-vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
-vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic message' })
+vim.keymap.set('n', '[d', function()
+  vim.diagnostic.goto_prev { severity = { min = vim.diagnostic.severity.WARN } }
+end, { desc = 'Go to previous diagnostic message' })
+vim.keymap.set('n', ']d', function()
+  vim.diagnostic.goto_next { severity = { min = vim.diagnostic.severity.WARN } }
+end, { desc = 'Go to next diagnostic message' })
 vim.keymap.set('n', 'ds', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
 vim.keymap.set('n', 'dq', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })
 

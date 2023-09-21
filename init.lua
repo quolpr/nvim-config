@@ -474,6 +474,15 @@ require('lazy').setup({
   -- },
   { 'SmiteshP/nvim-navic', dependencies = { 'neovim/nvim-lspconfig' } },
   { 'RRethy/vim-illuminate' },
+  {
+    'stevearc/aerial.nvim',
+    opts = {},
+    -- Optional dependencies
+    dependencies = {
+      'nvim-treesitter/nvim-treesitter',
+      'nvim-tree/nvim-web-devicons',
+    },
+  },
 }, {})
 
 -- [[ Setting options ]]
@@ -586,7 +595,7 @@ pcall(require('telescope').load_extension, 'fzf')
 vim.keymap.set('n', '<leader>fb', function()
   require('telescope.builtin').buffers { sort_mru = true, ignore_current_buffer = true }
 end, { desc = 'Recent files' })
-vim.keymap.set('n', '<leader><space>', function()
+vim.keymap.set('n', '<leader>ff', function()
   require('telescope.builtin').git_files { show_untracked = true }
 end, { desc = 'Find Files' })
 vim.keymap.set('n', '<leader>fh', require('telescope.builtin').help_tags, { desc = '[F]ind [H]elp' })
@@ -609,8 +618,8 @@ require('nvim-treesitter.configs').setup {
   incremental_selection = {
     enable = true,
     keymaps = {
-      init_selection = '<c-space>',
-      node_incremental = '<c-space>',
+      init_selection = '<c-v>',
+      node_incremental = '<c-v>',
       scope_incremental = false,
       node_decremental = '<bs>',
     },
@@ -669,15 +678,15 @@ require('nvim-treesitter.configs').setup {
       --   ['[]'] = '@class.outer',
       -- },
     },
-    swap = {
-      enable = true,
-      swap_next = {
-        ['<leader>a'] = '@parameter.inner',
-      },
-      swap_previous = {
-        ['<leader>A'] = '@parameter.inner',
-      },
-    },
+    -- swap = {
+    --   enable = true,
+    --   swap_next = {
+    --     ['<leader>a'] = '@parameter.inner',
+    --   },
+    --   swap_previous = {
+    --     ['<leader>A'] = '@parameter.inner',
+    --   },
+    -- },
   },
 }
 
@@ -973,6 +982,17 @@ vim.diagnostic.config {
   underline = true,
   update_in_insert = false,
 }
+
+require('aerial').setup {
+  -- optionally use on_attach to set keymaps when aerial has attached to a buffer
+  on_attach = function(bufnr)
+    -- Jump forwards/backwards with '{' and '}'
+    vim.keymap.set('n', '{', '<cmd>AerialPrev<CR>', { buffer = bufnr })
+    vim.keymap.set('n', '}', '<cmd>AerialNext<CR>', { buffer = bufnr })
+  end,
+}
+-- You probably also want to set a keymap to toggle aerial
+vim.keymap.set('n', '<leader>a', '<cmd>AerialToggle!<CR>')
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

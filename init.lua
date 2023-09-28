@@ -93,7 +93,7 @@ require('lazy').setup({
 
           -- Tsserver usually works poorly. Sorry you work with bad languages
           -- You can remove this line if you know what you're doing :)
-          if client.name == 'tsserver' then
+          if client.name == 'tsserver' or client.name == 'typescript-tools' then
             return
           end
 
@@ -286,7 +286,7 @@ require('lazy').setup({
         color = function()
           -- auto change color according to neovims mode
           local mode_color = {
-            n = colors.red,
+            n = colors.fg,
             i = colors.green,
             v = colors.blue,
             [''] = colors.blue,
@@ -483,6 +483,12 @@ require('lazy').setup({
       'nvim-tree/nvim-web-devicons',
     },
   },
+  -- It should give better TS perfromance
+  {
+    'pmizio/typescript-tools.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
+    opts = {},
+  },
 }, {})
 
 -- [[ Setting options ]]
@@ -523,6 +529,11 @@ vim.o.completeopt = 'menuone,noselect'
 
 -- NOTE: You should make sure your terminal supports this
 vim.o.termguicolors = true
+
+vim.o.expandtab = true
+vim.o.smartindent = true
+vim.o.tabstop = 2
+vim.o.shiftwidth = 2
 
 -- [[ Basic Keymaps ]]
 
@@ -608,7 +619,7 @@ vim.keymap.set('n', '<leader>fr', require('telescope.builtin').resume, { desc = 
 -- See `:help nvim-treesitter`
 require('nvim-treesitter.configs').setup {
   -- Add languages to be installed here that you want installed for treesitter
-  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim', 'elixir' },
+  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim', 'elixir', 'heex', 'eex' },
 
   -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
   auto_install = true,
@@ -812,17 +823,18 @@ local servers = {
   -- rust_analyzer = {},
   elixirls = {},
   -- nextls = {},
-  tsserver = {
-    init_options = {
-      -- This is the default which would be overwritten otherwise
-      hostInfo = 'neovim',
-      -- 16 gb
-      maxTsServerMemory = 16384,
-      -- Never use LSP for syntax anyway
-      tsserver = { useSyntaxServer = 'never' },
-    },
-  },
+  -- tsserver = {
+  --   init_options = {
+  --     -- This is the default which would be overwritten otherwise
+  --     hostInfo = 'neovim',
+  --     -- 16 gb
+  --     maxTsServerMemory = 16384,
+  --     -- Never use LSP for syntax anyway
+  --     tsserver = { useSyntaxServer = 'never' },
+  --   },
+  -- },
   sqlls = {},
+  eslint = {},
   -- html = { filetypes = { 'html', 'twig', 'hbs'} },
 
   lua_ls = {
@@ -856,9 +868,19 @@ mason_lspconfig.setup_handlers {
       filetypes = (servers[server_name] or {}).filetypes,
       init_options = (servers[server_name] or {}).init_options,
       cmd = (servers[server_name] or {}).cmd,
-      root_dir = require('lspconfig').util.root_pattern '.git',
+      -- root_dir = require('lspconfig').util.root_pattern '.git',
     }
   end,
+}
+
+require('typescript-tools').setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+  root_dir = require('lspconfig').util.root_pattern '.git',
+  settings = {
+    separate_diagnostic_server = true,
+    tsserver_max_memory = 'auto',
+  },
 }
 
 -- [[ Configure nvim-cmp ]]

@@ -1,3 +1,4 @@
+-- To ugrade compare it with https://github.com/nvim-lua/kickstart.nvim/compare/f15af9b8be96f7231c184e0e8636f5732ebda9e9..master
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are required (otherwise wrong leader will be used)
@@ -364,9 +365,9 @@ require('lazy').setup({
     'lukas-reineke/indent-blankline.nvim',
     -- Enable `lukas-reineke/indent-blankline.nvim`
     -- See `:help indent_blankline.txt`
+    main = 'ibl',
     opts = {
-      char = '┊',
-      show_trailing_blankline_indent = false,
+      -- indent = { char = '┊' },
     },
   },
 
@@ -617,89 +618,91 @@ vim.keymap.set('n', '<leader>fr', require('telescope.builtin').resume, { desc = 
 
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
-require('nvim-treesitter.configs').setup {
-  -- Add languages to be installed here that you want installed for treesitter
-  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim', 'elixir', 'heex', 'eex' },
+vim.defer_fn(function()
+  require('nvim-treesitter.configs').setup {
+    -- Add languages to be installed here that you want installed for treesitter
+    ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim', 'elixir', 'heex', 'eex' },
 
-  -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
-  auto_install = true,
+    -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
+    auto_install = true,
 
-  highlight = { enable = true },
-  indent = { enable = true },
-  incremental_selection = {
-    enable = true,
-    keymaps = {
-      init_selection = '<c-v>',
-      node_incremental = '<c-v>',
-      scope_incremental = false,
-      node_decremental = '<bs>',
-    },
-  },
-  textobjects = {
-    select = {
+    highlight = { enable = true },
+    indent = { enable = true },
+    incremental_selection = {
       enable = true,
-      lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
       keymaps = {
-        -- You can use the capture groups defined in textobjects.scm
-        ['aa'] = '@parameter.outer',
-        ['ia'] = '@parameter.inner',
-        ['as'] = '@block.outer',
-        ['is'] = '@block.inner',
-        ['af'] = '@function.outer',
-        ['if'] = '@function.inner',
-        ['ac'] = '@class.outer',
-        ['ic'] = '@class.inner',
+        init_selection = '<c-v>',
+        node_incremental = '<c-v>',
+        scope_incremental = false,
+        node_decremental = '<bs>',
       },
     },
-    move = {
-      enable = true,
-      set_jumps = true, -- whether to set jumps in the jumplist
-      goto_next_start = {
-        [']f'] = '@function.outer',
-        [']]'] = '@class.outer',
+    textobjects = {
+      select = {
+        enable = true,
+        lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
+        keymaps = {
+          -- You can use the capture groups defined in textobjects.scm
+          ['aa'] = '@parameter.outer',
+          ['ia'] = '@parameter.inner',
+          ['as'] = '@block.outer',
+          ['is'] = '@block.inner',
+          ['af'] = '@function.outer',
+          ['if'] = '@function.inner',
+          ['ac'] = '@class.outer',
+          ['ic'] = '@class.inner',
+        },
       },
-      goto_next_end = {
-        [']F'] = '@function.outer',
-        [']['] = '@class.outer',
+      move = {
+        enable = true,
+        set_jumps = true, -- whether to set jumps in the jumplist
+        goto_next_start = {
+          [']f'] = '@function.outer',
+          [']]'] = '@class.outer',
+        },
+        goto_next_end = {
+          [']F'] = '@function.outer',
+          [']['] = '@class.outer',
+        },
+        goto_previous_start = {
+          ['[f'] = '@function.outer',
+          ['[['] = '@class.outer',
+        },
+        goto_previous_end = {
+          ['[F'] = '@function.outer',
+          ['[]'] = '@class.outer',
+        },
+        -- goto_next = {
+        --   [']f'] = '@function.outer',
+        --   [']c'] = '@class.outer',
+        --   [']s'] = { query = '@scope', query_group = 'locals', desc = 'Next scope' },
+        -- },
+        -- goto_previous = {
+        --   ['[f'] = '@function.outer',
+        --   ['[c'] = '@class.outer',
+        --   ['[s'] = { query = '@scope', query_group = 'locals', desc = 'Prev scope' },
+        -- },
+        -- goto_previous_start = {
+        --   ['[m'] = '@function.outer',
+        --   ['[['] = '@class.outer',
+        -- },
+        -- goto_previous_end = {
+        --   ['[M'] = '@function.outer',
+        --   ['[]'] = '@class.outer',
+        -- },
       },
-      goto_previous_start = {
-        ['[f'] = '@function.outer',
-        ['[['] = '@class.outer',
-      },
-      goto_previous_end = {
-        ['[F'] = '@function.outer',
-        ['[]'] = '@class.outer',
-      },
-      -- goto_next = {
-      --   [']f'] = '@function.outer',
-      --   [']c'] = '@class.outer',
-      --   [']s'] = { query = '@scope', query_group = 'locals', desc = 'Next scope' },
-      -- },
-      -- goto_previous = {
-      --   ['[f'] = '@function.outer',
-      --   ['[c'] = '@class.outer',
-      --   ['[s'] = { query = '@scope', query_group = 'locals', desc = 'Prev scope' },
-      -- },
-      -- goto_previous_start = {
-      --   ['[m'] = '@function.outer',
-      --   ['[['] = '@class.outer',
-      -- },
-      -- goto_previous_end = {
-      --   ['[M'] = '@function.outer',
-      --   ['[]'] = '@class.outer',
+      -- swap = {
+      --   enable = true,
+      --   swap_next = {
+      --     ['<leader>a'] = '@parameter.inner',
+      --   },
+      --   swap_previous = {
+      --     ['<leader>A'] = '@parameter.inner',
+      --   },
       -- },
     },
-    -- swap = {
-    --   enable = true,
-    --   swap_next = {
-    --     ['<leader>a'] = '@parameter.inner',
-    --   },
-    --   swap_previous = {
-    --     ['<leader>A'] = '@parameter.inner',
-    --   },
-    -- },
-  },
-}
+  }
+end, 0)
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', function()
@@ -807,6 +810,12 @@ local on_attach = function(client, bufnr)
     vim.lsp.buf.format()
   end, { desc = 'Format current buffer with LSP' })
 end
+
+-- document existing key chains
+require('which-key').register {
+  ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
+  ['<leader>f'] = { name = '[F]ind', _ = 'which_key_ignore' },
+}
 
 -- Enable the following language servers
 --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.

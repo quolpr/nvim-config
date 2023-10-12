@@ -43,7 +43,7 @@ require('lazy').setup({
     'neovim/nvim-lspconfig',
     dependencies = {
       -- Automatically install LSPs to stdpath for neovim
-      { 'williamboman/mason.nvim', config = true },
+      'williamboman/mason.nvim',
       'williamboman/mason-lspconfig.nvim',
 
       -- Useful status updates for LSP
@@ -367,6 +367,7 @@ require('lazy').setup({
     -- See `:help indent_blankline.txt`
     main = 'ibl',
     opts = {
+      scope = { enabled = false },
       -- indent = { char = '┊' },
     },
   },
@@ -590,7 +591,7 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 -- See `:help telescope` and `:help telescope.setup()`
 require('telescope').setup {
   defaults = {
-    path_display = { 'smart' },
+    path_display = { 'truncate' },
     mappings = {
       i = {
         ['<C-u>'] = false,
@@ -817,6 +818,11 @@ require('which-key').register {
   ['<leader>f'] = { name = '[F]ind', _ = 'which_key_ignore' },
 }
 
+-- mason-lspconfig requires that these setup functions are called in this order
+-- before setting up the servers.
+require('mason').setup()
+require('mason-lspconfig').setup()
+
 -- Enable the following language servers
 --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
 --
@@ -877,7 +883,7 @@ mason_lspconfig.setup_handlers {
       filetypes = (servers[server_name] or {}).filetypes,
       init_options = (servers[server_name] or {}).init_options,
       cmd = (servers[server_name] or {}).cmd,
-      -- root_dir = require('lspconfig').util.root_pattern '.git',
+      root_dir = require('lspconfig').util.root_pattern '.git',
     }
   end,
 }
@@ -958,12 +964,12 @@ cmp.setup {
     end, { 'i', 's' }),
   },
   sources = {
-    { name = 'nvim_lsp' },
-    { name = 'luasnip' },
-    { name = 'buffer' },
-    { name = 'nvim_lua' },
-    { name = 'path' },
-    { name = 'copilot' },
+    { name = 'nvim_lsp', priority = 5 },
+    { name = 'copilot', priority = 4 },
+    { name = 'luasnip', priority = 3 },
+    { name = 'buffer', priority = 2 },
+    { name = 'nvim_lua', priority = 1 },
+    { name = 'path', priority = 0 },
   },
   formatting = {
     format = lspkind.cmp_format {

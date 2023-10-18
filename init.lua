@@ -19,6 +19,7 @@ if not vim.loop.fs_stat(lazypath) then
     lazypath,
   }
 end
+
 vim.opt.rtp:prepend(lazypath)
 
 -- NOTE: Here is where you install your plugins.
@@ -56,7 +57,7 @@ require('lazy').setup({
     config = function()
       -- Switch for controlling whether you want autoformatting.
       --  Use :KickstartFormatToggle to toggle autoformatting on or off
-      local format_is_enabled = true
+      local format_is_enabled = false
       vim.api.nvim_create_user_command('KickstartFormatToggle', function()
         format_is_enabled = not format_is_enabled
         print('Setting autoformatting to: ' .. tostring(format_is_enabled))
@@ -485,6 +486,13 @@ require('lazy').setup({
       'nvim-tree/nvim-web-devicons',
     },
   },
+  {
+    'ThePrimeagen/harpoon',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+    },
+  },
+
   -- It should give better TS perfromance
   -- {
   --   'pmizio/typescript-tools.nvim',
@@ -575,6 +583,9 @@ vim.keymap.set('n', '<Esc>', ':noh <CR>', { desc = 'Clear highlights' })
 vim.keymap.set('n', '<leader>fm', function()
   vim.lsp.buf.format { async = true }
 end, { desc = 'Format file' })
+vim.keymap.set('n', '<leader>cf', function()
+  vim.lsp.buf.format { async = true }
+end, { desc = 'Format file' })
 
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
@@ -603,6 +614,13 @@ require('telescope').setup {
 
 -- Enable telescope fzf native, if installed
 pcall(require('telescope').load_extension, 'fzf')
+require("telescope").load_extension('harpoon')
+
+-- Configure harpoon
+vim.keymap.set('n', '<leader>hf', require('telescope').extensions.harpoon.marks, { desc = '[H]arpoon [F]ind' })
+vim.keymap.set('n', '<leader>ha', require("harpoon.mark").add_file, { desc = '[H]arpoon [A]dd' })
+vim.keymap.set('n', '<leader>hr', require("harpoon.mark").rm_file, { desc = '[H]arpoon [R]remove' })
+vim.keymap.set('n', '<leader>hc', require("harpoon.mark").clear_all, { desc = '[H]arpoon [C]lear All' })
 
 -- See `:help telescope.builtin`
 vim.keymap.set('n', '<leader>fb', function()
@@ -611,7 +629,7 @@ end, { desc = 'Recent files' })
 vim.keymap.set('n', '<leader>ff', function()
   require('telescope.builtin').git_files { show_untracked = true }
 end, { desc = 'Find Files' })
-vim.keymap.set('n', '<leader>fh', require('telescope.builtin').help_tags, { desc = '[F]ind [H]elp' })
+vim.keymap.set('n', '<leader>fh', require('telescope').extensions.harpoon.marks, { desc = '[F]ind [H]arpoon' })
 vim.keymap.set('n', '<leader>fg', require('telescope.builtin').live_grep, { desc = '[F]ind by [G]rep' })
 vim.keymap.set('n', '<leader>fs', require('telescope.builtin').git_status, { desc = '[F]ind Git [S]tatus' })
 vim.keymap.set('n', '<leader>fw', require('telescope.builtin').grep_string, { desc = '[F]ind current [W]ord' })
@@ -707,10 +725,10 @@ end, 0)
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', function()
-  vim.diagnostic.goto_prev { severity = { min = vim.diagnostic.severity.WARN } }
+  vim.diagnostic.goto_prev { severity = { min = vim.diagnostic.severity.ERROR } }
 end, { desc = 'Go to previous diagnostic message' })
 vim.keymap.set('n', ']d', function()
-  vim.diagnostic.goto_next { severity = { min = vim.diagnostic.severity.WARN } }
+  vim.diagnostic.goto_next { severity = { min = vim.diagnostic.severity.ERROR } }
 end, { desc = 'Go to next diagnostic message' })
 vim.keymap.set('n', 'ds', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
 vim.keymap.set('n', 'dq', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })
@@ -764,15 +782,16 @@ vim.o.winbar = "%{%v:lua.require'nvim-navic'.get_location()%}"
 -- [[ Configure LSP ]]
 --  This function gets run when an LSP connects to a particular buffer.
 local on_attach = function(client, bufnr)
+  -- print 'attach!'
   -- For other languages we are using null-ls
   if client.name ~= 'elixirls' then
     client.server_capabilities.documentFormattingProvider = false
     client.server_capabilities.documentRangeFormattingProvider = false
   end
 
-  if client.server_capabilities.documentSymbolProvider then
-    navic.attach(client, bufnr)
-  end
+  -- if client.server_capabilities.documentSymbolProvider then
+  --   navic.attach(client, bufnr)
+  -- end
 
   -- NOTE: Remember that lua is a real programming language, and as such it is possible
   -- to define small helper and utility functions so you don't have to repeat yourself
@@ -788,9 +807,18 @@ local on_attach = function(client, bufnr)
     vim.keymap.set('n', keys, func, { buffer = bufnr, desc = desc })
   end
 
+  local vmap = function(keys, func, desc)
+    if desc then
+      desc = 'LSP: ' .. desc
+    end
+
+    vim.keymap.set('v', keys, func, { buffer = bufnr, desc = desc })
+  end
+
   -- nmap('-', '<cmd>Neotree source=filesystem reveal=true position=current <CR>', 'Open neotree')
   nmap('<leader>cc', vim.lsp.buf.rename, '[C]ode [C]hange')
   nmap('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
+  vmap('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
 
   nmap('gd', vim.lsp.buf.definition, '[C]ode Goto [D]efinition')
   nmap('gr', vim.lsp.buf.references, '[C]ode Goto [R]eferences')

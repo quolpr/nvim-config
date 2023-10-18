@@ -614,13 +614,13 @@ require('telescope').setup {
 
 -- Enable telescope fzf native, if installed
 pcall(require('telescope').load_extension, 'fzf')
-require("telescope").load_extension('harpoon')
+require('telescope').load_extension 'harpoon'
 
 -- Configure harpoon
 vim.keymap.set('n', '<leader>hf', require('telescope').extensions.harpoon.marks, { desc = '[H]arpoon [F]ind' })
-vim.keymap.set('n', '<leader>ha', require("harpoon.mark").add_file, { desc = '[H]arpoon [A]dd' })
-vim.keymap.set('n', '<leader>hr', require("harpoon.mark").rm_file, { desc = '[H]arpoon [R]remove' })
-vim.keymap.set('n', '<leader>hc', require("harpoon.mark").clear_all, { desc = '[H]arpoon [C]lear All' })
+vim.keymap.set('n', '<leader>ha', require('harpoon.mark').add_file, { desc = '[H]arpoon [A]dd' })
+vim.keymap.set('n', '<leader>hr', require('harpoon.mark').rm_file, { desc = '[H]arpoon [R]remove' })
+vim.keymap.set('n', '<leader>hc', require('harpoon.mark').clear_all, { desc = '[H]arpoon [C]lear All' })
 
 -- See `:help telescope.builtin`
 vim.keymap.set('n', '<leader>fb', function()

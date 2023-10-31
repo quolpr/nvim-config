@@ -57,7 +57,7 @@ require('lazy').setup({
     config = function()
       -- Switch for controlling whether you want autoformatting.
       --  Use :KickstartFormatToggle to toggle autoformatting on or off
-      local format_is_enabled = false
+      local format_is_enabled = true
       vim.api.nvim_create_user_command('KickstartFormatToggle', function()
         format_is_enabled = not format_is_enabled
         print('Setting autoformatting to: ' .. tostring(format_is_enabled))
@@ -492,7 +492,13 @@ require('lazy').setup({
       'nvim-lua/plenary.nvim',
     },
   },
-
+  -- {
+  --   'geralfonso/harpoon',
+  --   dependencies = {
+  --     'nvim-lua/plenary.nvim',
+  --   },
+  --   branch = 'improve-telescope-results',
+  -- },
   -- It should give better TS perfromance
   -- {
   --   'pmizio/typescript-tools.nvim',
@@ -614,10 +620,11 @@ require('telescope').setup {
 
 -- Enable telescope fzf native, if installed
 pcall(require('telescope').load_extension, 'fzf')
-require('telescope').load_extension 'harpoon'
+-- require('telescope').load_extension 'harpoon'
 
 -- Configure harpoon
-vim.keymap.set('n', '<leader>hf', require('telescope').extensions.harpoon.marks, { desc = '[H]arpoon [F]ind' })
+-- vim.keymap.set('n', '<leader>hf', require('telescope').extensions.harpoon.marks, { desc = '[H]arpoon [F]ind' })
+vim.keymap.set('n', '<leader>hf', require('harpoon.ui').toggle_quick_menu, { desc = '[H]arpoon Find' })
 vim.keymap.set('n', '<leader>ha', require('harpoon.mark').add_file, { desc = '[H]arpoon [A]dd' })
 vim.keymap.set('n', '<leader>hr', require('harpoon.mark').rm_file, { desc = '[H]arpoon [R]remove' })
 vim.keymap.set('n', '<leader>hc', require('harpoon.mark').clear_all, { desc = '[H]arpoon [C]lear All' })
@@ -629,7 +636,7 @@ end, { desc = 'Recent files' })
 vim.keymap.set('n', '<leader>ff', function()
   require('telescope.builtin').git_files { show_untracked = true }
 end, { desc = 'Find Files' })
-vim.keymap.set('n', '<leader>fh', require('telescope').extensions.harpoon.marks, { desc = '[F]ind [H]arpoon' })
+-- vim.keymap.set('n', '<leader>fh', require('telescope').extensions.harpoon.marks, { desc = '[F]ind [H]arpoon' })
 vim.keymap.set('n', '<leader>fg', require('telescope.builtin').live_grep, { desc = '[F]ind by [G]rep' })
 vim.keymap.set('n', '<leader>fs', require('telescope.builtin').git_status, { desc = '[F]ind Git [S]tatus' })
 vim.keymap.set('n', '<leader>fw', require('telescope.builtin').grep_string, { desc = '[F]ind current [W]ord' })

@@ -1,4 +1,4 @@
--- To ugrade compare it with https://github.com/nvim-lua/kickstart.nvim/compare/f15af9b8be96f7231c184e0e8636f5732ebda9e9..master
+-- To ugrade compare it with https://github.com/nvim-lua/kickstart.nvim/compare/99acb843ac9b0470ca5e1a3b0f8561979c5d5e19..master
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are required (otherwise wrong leader will be used)
@@ -647,7 +647,7 @@ vim.keymap.set('n', '<leader>fr', require('telescope.builtin').resume, { desc = 
 vim.defer_fn(function()
   require('nvim-treesitter.configs').setup {
     -- Add languages to be installed here that you want installed for treesitter
-    ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim', 'elixir', 'heex', 'eex' },
+    ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim', 'elixir', 'heex', 'eex', 'bash' },
 
     -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
     auto_install = true,

@@ -37,6 +37,9 @@ require('lazy').setup({
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
 
+  -- I love multi cursors
+  'mg979/vim-visual-multi',
+
   -- NOTE: This is where your plugins related to LSP can be installed.
   --  The configuration is done below. Search for lspconfig to find it below.
   {
@@ -439,7 +442,7 @@ require('lazy').setup({
     dependencies = { 'lambdalisue/fern.vim', 'lambdalisue/nerdfont.vim' },
   },
   { 'lambdalisue/fern-hijack.vim', dependencies = { 'lambdalisue/fern.vim' } },
-  { 'lambdalisue/fern-git-status.vim', dependencies = { 'lambdalisue/fern.vim' } },
+  -- { 'lambdalisue/fern-git-status.vim', dependencies = { 'lambdalisue/fern.vim' } },
   { 'kevinhwang91/nvim-bqf' },
   {
     'rmagatti/auto-session',
@@ -454,27 +457,31 @@ require('lazy').setup({
       require('colorizer').setup()
     end,
   },
-  -- {
-  --   'nvim-neo-tree/neo-tree.nvim',
-  --   branch = 'v3.x',
-  --   dependencies = {
-  --     'nvim-lua/plenary.nvim',
-  --     'nvim-tree/nvim-web-devicons', -- not strictly required, but recommended
-  --     'MunifTanjim/nui.nvim',
-  --   },
-  --   config = function()
-  --     require('neo-tree').setup {
-  --       enable_diagnostics = false,
-  --       close_if_last_window = false,
-  --       default_component_configs = {
-  --         last_modified = { enabled = false },
-  --         file_size = { enabled = false },
-  --         created = { enabled = false },
-  --         type = { enabled = false },
-  --       },
-  --     }
-  --   end,
-  -- },
+  {
+    'nvim-neo-tree/neo-tree.nvim',
+    branch = 'v3.x',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'nvim-tree/nvim-web-devicons', -- not strictly required, but recommended
+      'MunifTanjim/nui.nvim',
+      '3rd/image.nvim',
+    },
+    config = function()
+      require('neo-tree').setup {
+        enable_diagnostics = false,
+        close_if_last_window = false,
+        default_component_configs = {
+          last_modified = { enabled = false },
+          file_size = { enabled = false },
+          created = { enabled = false },
+          type = { enabled = false },
+        },
+        filesystem = {
+          async_directory_scan = 'never',
+        },
+      }
+    end,
+  },
   { 'SmiteshP/nvim-navic', dependencies = { 'neovim/nvim-lspconfig' } },
   { 'RRethy/vim-illuminate' },
   {
@@ -492,6 +499,33 @@ require('lazy').setup({
       'nvim-lua/plenary.nvim',
     },
   },
+  {
+    'nmac427/guess-indent.nvim',
+
+    config = function()
+      require('guess-indent').setup {}
+    end,
+  },
+  { 'rgroli/other.nvim' },
+  -- Auto close/rename html tags
+  {
+    'nvim-ts-autotag',
+    config = function()
+      require('nvim-treesitter.configs').setup {
+        autotag = {
+          enable = true,
+        },
+      }
+    end,
+  },
+  -- Experimenting with this
+  -- {
+  --   'max397574/better-escape.nvim',
+  --   config = function()
+  --     require('better_escape').setup()
+  --   end,
+  -- },
+
   -- {
   --   'geralfonso/harpoon',
   --   dependencies = {
@@ -590,7 +624,7 @@ vim.keymap.set('n', '<leader>fm', function()
   vim.lsp.buf.format { async = true }
 end, { desc = 'Format file' })
 vim.keymap.set('n', '<leader>cf', function()
-  vim.lsp.buf.format { async = true }
+  vim.cmd 'EslintFixAll'
 end, { desc = 'Format file' })
 
 -- [[ Highlight on yank ]]
@@ -789,6 +823,11 @@ vim.o.winbar = "%{%v:lua.require'nvim-navic'.get_location()%}"
 -- [[ Configure LSP ]]
 --  This function gets run when an LSP connects to a particular buffer.
 local on_attach = function(client, bufnr)
+  -- if client.name ~= 'eslint' then
+  --   client.server_capabilities.documentFormattingProvider = true
+  --   client.server_capabilities.documentRangeFormattingProvider = true
+  -- end
+
   -- print 'attach!'
   -- For other languages we are using null-ls
   if client.name ~= 'elixirls' then
@@ -822,7 +861,7 @@ local on_attach = function(client, bufnr)
     vim.keymap.set('v', keys, func, { buffer = bufnr, desc = desc })
   end
 
-  -- nmap('-', '<cmd>Neotree source=filesystem reveal=true position=current <CR>', 'Open neotree')
+  nmap('_', '<cmd>Neotree source=filesystem reveal=true position=current <CR>', 'Open neotree')
   nmap('<leader>cc', vim.lsp.buf.rename, '[C]ode [C]hange')
   nmap('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
   vmap('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
@@ -936,7 +975,7 @@ mason_lspconfig.setup_handlers {
 -- Additional mason installation
 local mason = require 'mason-registry'
 
-local pkgs = { 'prettierd', 'cspell' }
+local pkgs = { 'prettierd', 'cspell', 'stylua' }
 
 for i, package_name in ipairs(pkgs) do
   local pkg = mason.get_package(package_name)

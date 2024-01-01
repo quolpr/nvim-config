@@ -141,28 +141,52 @@ require('lazy').setup({
 
       'hrsh7th/cmp-buffer',
       'hrsh7th/cmp-path',
-      {
-        'zbirenbaum/copilot-cmp',
-        config = function()
-          require('copilot_cmp').setup()
-        end,
-        dependencies = {
-          {
-
-            'zbirenbaum/copilot.lua',
-            config = function()
-              require('copilot').setup {
-                suggestion = { enabled = false },
-                panel = { enabled = false },
-              }
-            end,
-          },
-        },
-      },
+      -- {
+      --   'zbirenbaum/copilot-cmp',
+      --   config = function()
+      --     require('copilot_cmp').setup()
+      --   end,
+      --   dependencies = {
+      --     {
+      --
+      --       'zbirenbaum/copilot.lua',
+      --       config = function()
+      --         require('copilot').setup {
+      --           suggestion = { enabled = false },
+      --           panel = { enabled = false },
+      --
+      --       end,
+      --     },
+      --   },
+      -- },
       -- Icons in CMP
       { 'onsails/lspkind.nvim' },
     },
   },
+
+  {
+
+    'zbirenbaum/copilot.lua',
+    config = function()
+      vim.g.copilot_proxy = 'http://94.142.138.128:3128'
+
+      require('copilot').setup {
+        suggestion = {
+          auto_trigger = true,
+          keymap = {
+            accept = '<C-l>',
+            accept_word = false,
+            accept_line = false,
+            next = '<C-j>',
+            prev = '<C-k>',
+            dismiss = '<C-d>',
+          },
+        },
+      }
+    end,
+  },
+
+  { 'AndreM222/copilot-lualine' },
 
   -- Useful plugin to show you pending keybinds.
   {
@@ -342,6 +366,7 @@ require('lazy').setup({
       }
 
       ins_right { 'progress', color = { fg = colors.fg } }
+      ins_right { 'copilot', show_colors = true }
       ins_right {
         'branch',
         icon = '',
@@ -509,7 +534,7 @@ require('lazy').setup({
   { 'rgroli/other.nvim' },
   -- Auto close/rename html tags
   {
-    'nvim-ts-autotag',
+    'windwp/nvim-ts-autotag',
     config = function()
       require('nvim-treesitter.configs').setup {
         autotag = {
@@ -991,13 +1016,13 @@ local cmp = require 'cmp'
 local luasnip = require 'luasnip'
 local lspkind = require 'lspkind'
 
-lspkind.init {
-  symbol_map = {
-    Copilot = '',
-  },
-}
+-- lspkind.init {
+--   symbol_map = {
+--     Copilot = '',
+--   },
+-- }
 
-vim.api.nvim_set_hl(0, 'CmpItemKindCopilot', { fg = '#6CC644' })
+-- vim.api.nvim_set_hl(0, 'CmpItemKindCopilot', { fg = '#6CC644' })
 
 require('luasnip.loaders.from_vscode').lazy_load()
 luasnip.config.setup {}
@@ -1039,7 +1064,7 @@ cmp.setup {
   },
   sources = {
     { name = 'nvim_lsp', priority = 5 },
-    { name = 'copilot', priority = 4 },
+    -- { name = 'copilot', priority = 4 },
     { name = 'luasnip', priority = 3 },
     { name = 'buffer', priority = 2 },
     { name = 'nvim_lua', priority = 1 },

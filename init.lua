@@ -800,7 +800,6 @@ local function telescope_live_grep_open_files()
 end
 vim.keymap.set('n', '<leader>f/', telescope_live_grep_open_files, { desc = '[F]ind [/] in Open Files' })
 
-vim.keymap.set('n', '<leader>fu', require('telescope.builtin').builtin, { desc = '[F]ind Select Telescope' })
 vim.keymap.set('n', '<leader>fb', function()
   require('telescope.builtin').buffers { sort_mru = true, ignore_current_buffer = true }
 end, { desc = 'Recent files' })

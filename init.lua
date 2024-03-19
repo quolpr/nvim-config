@@ -1,3 +1,5 @@
+-- Last commit review: 773e482d4b40cec4095e4b60fbd753cb69b3f51b
+
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -24,10 +26,12 @@ vim.opt.showmode = false
 -- Sync clipboard between OS and Neovim.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
-vim.opt.clipboard = 'unnamedplus'
+-- vim.opt.clipboard = 'unnamedplus'
 
 -- Enable break indent
 vim.opt.breakindent = true
+
+vim.opt.tabstop = 2
 
 -- Save undo history
 vim.opt.undofile = true
@@ -61,7 +65,7 @@ vim.opt.inccommand = 'split'
 vim.opt.cursorline = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
-vim.opt.scrolloff = 10
+vim.opt.scrolloff = 5
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
@@ -79,7 +83,7 @@ vim.keymap.set('x', '<leader>p', [["_dP]])
 vim.keymap.set({ 'n', 'v' }, '<leader>d', [["_d]])
 
 vim.keymap.set('n', '<leader>fm', function()
-  vim.lsp.buf.format { async = true }
+  require('conform').format()
 end, { desc = 'Format file' })
 vim.keymap.set('n', '<leader>cf', function()
   vim.cmd 'EslintFixAll'
@@ -99,8 +103,12 @@ vim.opt.hlsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Diagnostic keymaps
-vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
-vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
+vim.keymap.set('n', '[d', function()
+  vim.diagnostic.goto_prev { severity = { min = vim.diagnostic.severity.ERROR } }
+end, { desc = 'Go to previous [D]iagnostic message' })
+vim.keymap.set('n', ']d', function()
+  vim.diagnostic.goto_next { severity = { min = vim.diagnostic.severity.ERROR } }
+end, { desc = 'Go to next [D]iagnostic message' })
 vim.keymap.set('n', 'ds', vim.diagnostic.open_float, { desc = '[S]how diagnostic error messages' })
 vim.keymap.set('n', 'dq', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
@@ -184,8 +192,15 @@ require('lazy').setup {
   --  This is equivalent to:
   --    require('Comment').setup({})
 
-  -- "gc" to comment visual regions/lines
-  { 'numToStr/Comment.nvim', opts = {} },
+  {
+    'numToStr/Comment.nvim',
+    dependencies = { 'JoosepAlviste/nvim-ts-context-commentstring' },
+    config = function()
+      require('Comment').setup {
+        pre_hook = require('ts_context_commentstring.integrations.comment_nvim').create_pre_hook(),
+      }
+    end,
+  },
 
   -- Here is a more advanced example where we pass configuration
   -- options to `gitsigns.nvim`. This is equivalent to the following lua:
@@ -410,6 +425,10 @@ require('lazy').setup {
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
       { 'j-hui/fidget.nvim', opts = {} },
+
+      -- `neodev` configures Lua LSP for your Neovim config, runtime and plugins
+      -- used for completion, annotations and signatures of Neovim apis
+      { 'folke/neodev.nvim', opts = {} },
     },
     config = function()
       -- For autoformat conform.nvim is used
@@ -568,7 +587,8 @@ require('lazy').setup {
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
         -- clangd = {},
-        -- gopls = {},
+        gopls = {},
+        golangci_lint_ls = {},
         -- pyright = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
@@ -599,18 +619,6 @@ require('lazy').setup {
           -- capabilities = {},
           settings = {
             Lua = {
-              runtime = { version = 'LuaJIT' },
-              workspace = {
-                checkThirdParty = false,
-                -- Tells lua_ls where to find all the Lua files that you have loaded
-                -- for your neovim configuration.
-                library = {
-                  '${3rd}/luv/library',
-                  unpack(vim.api.nvim_get_runtime_file('', true)),
-                },
-                -- If lua_ls is really slow on your computer, you can try this instead:
-                -- library = { vim.env.VIMRUNTIME },
-              },
               completion = {
                 callSnippet = 'Replace',
               },
@@ -637,6 +645,7 @@ require('lazy').setup {
         'prettierd',
         'cspell',
         'stylua',
+        'gofumpt',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -672,6 +681,8 @@ require('lazy').setup {
         -- is found.
         javascript = { { 'prettierd' } },
         typescript = { { 'prettierd' } },
+        typescriptreact = { { 'prettierd' } },
+        go = { 'gofumpt' },
       },
     },
   },
@@ -699,13 +710,16 @@ require('lazy').setup {
       --  nvim-cmp does not ship with all sources by default. They are split
       --  into multiple repos for maintenance purposes.
       'hrsh7th/cmp-nvim-lsp',
-      'hrsh7th/cmp-path',
 
       'hrsh7th/cmp-buffer',
       'hrsh7th/cmp-path',
       'onsails/lspkind.nvim',
 
       'rafamadriz/friendly-snippets',
+
+      -- nvim-cmp source for neovim Lua API
+      -- so that things like vim.keymap.set, etc. are autocompleted
+      'hrsh7th/cmp-nvim-lua',
     },
     config = function()
       -- See `:help cmp`
@@ -774,18 +788,19 @@ require('lazy').setup {
           --
           -- <c-l> will move you to the right of each of the expansion locations.
           -- <c-h> is similar, except moving you backwards.
-          ['<C-l>'] = cmp.mapping(function()
-            if luasnip.expand_or_locally_jumpable() then
-              luasnip.expand_or_jump()
-            end
-          end, { 'i', 's' }),
-          ['<C-h>'] = cmp.mapping(function()
-            if luasnip.locally_jumpable(-1) then
-              luasnip.jump(-1)
-            end
-          end, { 'i', 's' }),
+          -- ['<C-l>'] = cmp.mapping(function()
+          --   if luasnip.expand_or_locally_jumpable() then
+          --     luasnip.expand_or_jump()
+          --   end
+          -- end, { 'i', 's' }),
+          -- ['<C-h>'] = cmp.mapping(function()
+          --   if luasnip.locally_jumpable(-1) then
+          --     luasnip.jump(-1)
+          --   end
+          -- end, { 'i', 's' }),
         },
         sources = {
+          { name = 'nvim_lua' },
           { name = 'nvim_lsp' },
           { name = 'luasnip' },
           { name = 'buffer' },
@@ -890,6 +905,7 @@ require('lazy').setup {
     config = function()
       vim.g.copilot_proxy = 'http://91.108.241.124:56382'
 
+      -- tiiiime
       require('copilot').setup {
         suggestion = {
           auto_trigger = true,
@@ -1124,6 +1140,9 @@ require('lazy').setup {
   { 'kevinhwang91/nvim-bqf' },
   {
     'rmagatti/auto-session',
+    config = function()
+      require('auto-session').setup()
+    end,
   },
   { 'jose-elias-alvarez/null-ls.nvim', dependencies = { 'davidmh/cspell.nvim' } },
   -- Highlight #hexhex colors
@@ -1140,13 +1159,58 @@ require('lazy').setup {
       require('nvim-ts-autotag').setup()
     end,
   },
-  {
-    'nmac427/guess-indent.nvim',
+  -- {
+  --   'nmac427/guess-indent.nvim',
+  --
+  --   config = function()
+  --     require('guess-indent').setup {}
+  --   end,
+  -- },
 
+  {
+    'nvim-treesitter/nvim-treesitter-context',
     config = function()
-      require('guess-indent').setup {}
+      require('treesitter-context').setup {
+        enable = true,
+        max_lines = 10,
+      }
     end,
   },
+
+  {
+    'nvimtools/none-ls.nvim',
+    config = function()
+      local cspell = require 'cspell'
+
+      require('null-ls').setup {
+        sources = {
+          cspell.diagnostics.with {
+            diagnostics_postprocess = function(diagnostic)
+              diagnostic.severity = vim.diagnostic.severity['INFO']
+            end,
+          },
+          cspell.code_actions,
+        },
+      }
+    end,
+    dependencies = {
+      'davidmh/cspell.nvim',
+    },
+  },
+  -- {
+  --   'ray-x/go.nvim',
+  --   dependencies = { -- optional packages
+  --     'neovim/nvim-lspconfig',
+  --     'nvim-treesitter/nvim-treesitter',
+  --   },
+  --   config = function()
+  --     require('go').setup()
+  --   end,
+  --   event = { 'CmdlineEnter' },
+  --   ft = { 'go', 'gomod' },
+  --   build = ':lua require("go.install").update_all_sync()', -- if you need to install/update all binaries
+  -- },
+  { 'nvim-pack/nvim-spectre' },
 }
 
 -- The line beneath this is called `modeline`. See `:help modeline`

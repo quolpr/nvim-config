@@ -1,4 +1,4 @@
--- Last commit review: 773e482d4b40cec4095e4b60fbd753cb69b3f51b
+-- Last commit review: 5aeddfdd5d0308506ec63b0e4f8de33e2a39355f
 
 -- Set <space> as the leader key
 -- See `:help mapleader`
@@ -32,6 +32,7 @@ vim.opt.showmode = false
 vim.opt.breakindent = true
 
 vim.opt.tabstop = 2
+vim.opt.shiftwidth = 0
 
 -- Save undo history
 vim.opt.undofile = true
@@ -74,6 +75,9 @@ vim.opt.scrolloff = 5
 vim.keymap.set('n', 'vv', '<C-w>v', { desc = 'Split window vertically' })
 vim.keymap.set('n', '<leader>s', '<cmd> update <CR>', { desc = 'Save file' })
 
+-- Delete all buffers except current
+vim.keymap.set('n', '<leader>bd', '<cmd>%bd|e#<cr>', { desc = 'Close all buffers but the current one' }) -- https://stackoverflow.com/a/42071865/516188
+
 -- copy/paste from computer buffer
 vim.keymap.set({ 'n', 'v' }, '<leader>y', [["+y]])
 vim.keymap.set('n', '<leader>p', [["+p]])
@@ -85,6 +89,7 @@ vim.keymap.set({ 'n', 'v' }, '<leader>d', [["_d]])
 vim.keymap.set('n', '<leader>fm', function()
   require('conform').format()
 end, { desc = 'Format file' })
+
 vim.keymap.set('n', '<leader>cf', function()
   vim.cmd 'EslintFixAll'
 end, { desc = 'Fix file' })
@@ -549,22 +554,47 @@ require('lazy').setup {
           --
           -- When you move your cursor, the highlights will be cleared (the second autocommand).
           local client = vim.lsp.get_client_by_id(event.data.client_id)
-
-          if client.name ~= 'elixirls' then
+          if client and client.name ~= 'elixirls' then
             client.server_capabilities.documentFormattingProvider = false
             client.server_capabilities.documentRangeFormattingProvider = false
           end
 
+          -- The following two autocommands are used to highlight references of the
+          -- word under your cursor when your cursor rests there for a little while.
+          --    See `:help CursorHold` for information about when this is executed
+          --
+          -- When you move your cursor, the highlights will be cleared (the second autocommand).
           if client and client.server_capabilities.documentHighlightProvider then
+            local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
               buffer = event.buf,
+              group = highlight_augroup,
               callback = vim.lsp.buf.document_highlight,
             })
 
             vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
               buffer = event.buf,
+              group = highlight_augroup,
               callback = vim.lsp.buf.clear_references,
             })
+
+            vim.api.nvim_create_autocmd('LspDetach', {
+              group = vim.api.nvim_create_augroup('kickstart-lsp-detach', { clear = true }),
+              callback = function(event2)
+                vim.lsp.buf.clear_references()
+                vim.api.nvim_clear_autocmds { group = 'kickstart-lsp-highlight', buffer = event2.buf }
+              end,
+            })
+          end
+
+          -- The following autocommand is used to enable inlay hints in your
+          -- code, if the language server you are using supports them
+          --
+          -- This may be unwanted, since they displace some of your code
+          if client and client.server_capabilities.inlayHintProvider and vim.lsp.inlay_hint then
+            map('<leader>th', function()
+              vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+            end, '[T]oggle Inlay [H]ints')
           end
         end,
       })
@@ -666,12 +696,18 @@ require('lazy').setup {
 
   { -- Autoformat
     'stevearc/conform.nvim',
+    lazy = false,
     opts = {
       notify_on_error = false,
-      format_on_save = {
-        timeout_ms = 500,
+      format_after_save = {
         lsp_fallback = true,
+        timeout_ms = 5000,
       },
+      -- format_on_save = {
+      --   timeout_ms = 500,
+      --   lsp_fallback = true,
+      --   async = true,
+      -- },
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
@@ -761,43 +797,19 @@ require('lazy').setup {
           --    $body
           --  end
           --
-          ['<Tab>'] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-              cmp.select_next_item()
-            else
-              fallback()
-            end
-          end, { 'i', 's' }),
-          ['<S-Tab>'] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-              cmp.select_prev_item()
-            else
-              fallback()
-            end
-          end, { 'i', 's' }),
-          ['<CR>'] = cmp.mapping.confirm {
-            behavior = cmp.ConfirmBehavior.Replace,
-            select = true,
-          },
-
-          -- Think of <c-l> as moving to the right of your snippet expansion.
-          --  So if you have a snippet that's like:
-          --  function $name($args)
-          --    $body
-          --  end
-          --
           -- <c-l> will move you to the right of each of the expansion locations.
           -- <c-h> is similar, except moving you backwards.
-          -- ['<C-l>'] = cmp.mapping(function()
-          --   if luasnip.expand_or_locally_jumpable() then
-          --     luasnip.expand_or_jump()
-          --   end
-          -- end, { 'i', 's' }),
-          -- ['<C-h>'] = cmp.mapping(function()
-          --   if luasnip.locally_jumpable(-1) then
-          --     luasnip.jump(-1)
-          --   end
-          -- end, { 'i', 's' }),
+          --
+          ['<C-l>'] = cmp.mapping(function()
+            if luasnip.expand_or_locally_jumpable() then
+              luasnip.expand_or_jump()
+            end
+          end, { 'i', 's' }),
+          ['<C-h>'] = cmp.mapping(function()
+            if luasnip.locally_jumpable(-1) then
+              luasnip.jump(-1)
+            end
+          end, { 'i', 's' }),
         },
         sources = {
           { name = 'nvim_lua' },
@@ -860,7 +872,7 @@ require('lazy').setup {
 
       ---@diagnostic disable-next-line: missing-fields
       require('nvim-treesitter.configs').setup {
-        ensure_installed = { 'bash', 'c', 'html', 'lua', 'markdown', 'vim', 'vimdoc' },
+        ensure_installed = { 'bash', 'c', 'html', 'lua', 'markdown', 'vim', 'vimdoc', 'diff' },
         -- Autoinstall languages that are not installed
         auto_install = true,
         highlight = { enable = true },
@@ -1068,6 +1080,22 @@ require('lazy').setup {
       }
 
       ins_right { 'progress', color = { fg = colors.fg } }
+      ins_right {
+
+        function()
+          local is_loaded = vim.api.nvim_buf_is_loaded
+          local tbl = vim.api.nvim_list_bufs()
+          local loaded_bufs = 0
+          for i = 1, #tbl do
+            if is_loaded(tbl[i]) then
+              loaded_bufs = loaded_bufs + 1
+            end
+          end
+          return loaded_bufs
+        end,
+        icon = '',
+        color = { fg = 'DarkCyan', gui = 'bold' },
+      }
       ins_right { 'copilot', show_colors = true }
       ins_right {
         'branch',
@@ -1115,6 +1143,8 @@ require('lazy').setup {
       -- TODO: port it to lua
       vim.cmd [[
         nmap - :Fern . -reveal=% -wait <CR>
+        nmap _ :Fern %:h -wait <CR>
+        
 
         function! s:init_fern() abort
           nmap <buffer> <C-J> <C-W><C-J>

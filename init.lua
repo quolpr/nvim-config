@@ -328,6 +328,8 @@ require('lazy').setup {
     event = 'VimEnter',
     branch = '0.1.x',
     dependencies = {
+      'nvim-telescope/telescope-smart-history.nvim',
+      'kkharji/sqlite.lua',
       'nvim-lua/plenary.nvim',
       { -- If encountering errors, see telescope-fzf-native README for install instructions
         'nvim-telescope/telescope-fzf-native.nvim',
@@ -350,6 +352,8 @@ require('lazy').setup {
       -- { 'nvim-tree/nvim-web-devicons' }
     },
     config = function()
+      local data = assert(vim.fn.stdpath 'data') --[[@as string]]
+
       -- Telescope is a fuzzy finder that comes with a lot of different things that
       -- it can fuzzy find! It's more than just a "file finder", it can search
       -- many different aspects of Neovim, your workspace, LSP, and more!
@@ -376,8 +380,9 @@ require('lazy').setup {
           path_display = { 'truncate' },
           mappings = {
             i = {
-              ['<C-u>'] = false,
-              ['<C-d>'] = false,
+              -- Cycle in history of search!
+              ['<C-l>'] = require('telescope.actions').cycle_history_next,
+              ['<C-h>'] = require('telescope.actions').cycle_history_prev,
             },
           },
         },
@@ -391,8 +396,16 @@ require('lazy').setup {
         -- },
         -- pickers = {}
         extensions = {
+          wrap_results = true,
+
+          fzf = {},
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
+          },
+
+          history = {
+            path = vim.fs.joinpath(data, 'telescope_history.sqlite3'),
+            limit = 100,
           },
         },
       }
@@ -400,6 +413,7 @@ require('lazy').setup {
       -- Enable telescope extensions, if they are installed
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
+      pcall(require('telescope').load_extension, 'smart_history')
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
@@ -407,9 +421,32 @@ require('lazy').setup {
       vim.keymap.set('n', '<leader>ff', function()
         builtin.git_files { show_untracked = true }
       end, { desc = '[F]ind [F]iles' })
+
+      local getVisualSelection = function()
+        vim.cmd 'noau normal! "vy"'
+        local text = vim.fn.getreg 'v'
+        vim.fn.setreg('v', {})
+
+        text = string.gsub(text, '\n', '')
+        if #text > 0 then
+          return text
+        else
+          return ''
+        end
+      end
+      vim.keymap.set('v', '<leader>fw', function()
+        local text = getVisualSelection()
+        builtin.grep_string { search = text }
+      end, { desc = '[F]ind current [W]ord' })
+
       vim.keymap.set('n', '<leader>fw', builtin.grep_string, { desc = '[F]ind current [W]ord' })
       vim.keymap.set('n', '<leader>fg', builtin.live_grep, { desc = '[F]ind by [G]rep' })
       vim.keymap.set('n', '<leader>fr', builtin.resume, { desc = '[F]ind [R]esume' })
+      vim.keymap.set('n', '<leader>fs', function()
+        builtin.lsp_document_symbols { fname_width = 60, symbol_width = 60 }
+      end, { desc = '[F]ind [S]ymbols' })
+      vim.keymap.set('n', '<leader>fS', builtin.lsp_dynamic_workspace_symbols, { desc = '[F]ind [S]ymbols' })
+      -- vim.keymap.set('n', '<leader>fh', builtin.search_history, { desc = '[F]ind [H]istory' })
       vim.keymap.set('n', '<leader><leader>', builtin.git_status, { desc = '[F]ind by git [S]tatus' })
 
       -- Shortcut for searching your neovim configuration files
@@ -739,6 +776,17 @@ require('lazy').setup {
           end
           return 'make install_jsregexp'
         end)(),
+        dependencies = {
+          -- `friendly-snippets` contains a variety of premade snippets.
+          --    See the README about individual language/framework/plugin snippets:
+          --    https://github.com/rafamadriz/friendly-snippets
+          {
+            'rafamadriz/friendly-snippets',
+            config = function()
+              require('luasnip.loaders.from_vscode').lazy_load()
+            end,
+          },
+        },
       },
       'saadparwaiz1/cmp_luasnip',
 
@@ -750,8 +798,6 @@ require('lazy').setup {
       'hrsh7th/cmp-buffer',
       'hrsh7th/cmp-path',
       'onsails/lspkind.nvim',
-
-      'rafamadriz/friendly-snippets',
 
       -- nvim-cmp source for neovim Lua API
       -- so that things like vim.keymap.set, etc. are autocompleted

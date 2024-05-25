@@ -17,6 +17,8 @@ vim.opt.number = true
 --  Experiment for yourself to see if you like it!
 vim.opt.relativenumber = true
 
+vim.opt.showtabline = 0
+
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
 
@@ -85,6 +87,9 @@ vim.keymap.set('n', '<leader>p', [["+p]])
 -- When you delete/paste don't rewrite last register
 vim.keymap.set('x', '<leader>p', [["_dP]])
 vim.keymap.set({ 'n', 'v' }, '<leader>d', [["_d]])
+
+vim.keymap.set('n', 'T', ':tabnext <CR>', { desc = '[T]ab [N]ext' })
+-- vim.keymap.set('n', 'Tc', ':tabclose <CR>', { desc = '[T]ab [C]lose' })
 
 vim.keymap.set('n', '<leader>fm', function()
   require('conform').format()
@@ -331,6 +336,7 @@ require('lazy').setup {
       'nvim-telescope/telescope-smart-history.nvim',
       'kkharji/sqlite.lua',
       'nvim-lua/plenary.nvim',
+      -- 'nvim-telescope/telescope-frecency.nvim',
       { -- If encountering errors, see telescope-fzf-native README for install instructions
         'nvim-telescope/telescope-fzf-native.nvim',
 
@@ -345,11 +351,19 @@ require('lazy').setup {
         end,
       },
       { 'nvim-telescope/telescope-ui-select.nvim' },
+      {
+
+        'danielfalk/smart-open.nvim',
+        branch = '0.2.x',
+        dependencies = {
+          'kkharji/sqlite.lua',
+        },
+      },
 
       -- Useful for getting pretty icons, but requires special font.
       --  If you already have a Nerd Font, or terminal set up with fallback fonts
       --  you can enable this
-      -- { 'nvim-tree/nvim-web-devicons' }
+      { 'nvim-tree/nvim-web-devicons' },
     },
     config = function()
       local data = assert(vim.fn.stdpath 'data') --[[@as string]]
@@ -407,20 +421,38 @@ require('lazy').setup {
             path = vim.fs.joinpath(data, 'telescope_history.sqlite3'),
             limit = 100,
           },
+          -- frecency = {
+          --   workspace = 'CWD',
+          --   ignore_patterns = { '*.git/*', '*/tmp/*' },
+          --   show_scores = true,
+          --   show_unindexed = false,
+          --   disable_devicons = false,
+          --   db_safe_mode = false,
+          --   path_display = { 'truncate' },
+          -- },
+
+          smart_open = {
+            match_algorithm = 'fzf',
+            show_scores = true,
+            result_limit = 50,
+          },
         },
       }
 
       -- Enable telescope extensions, if they are installed
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
+      -- To cycle back is search history
       pcall(require('telescope').load_extension, 'smart_history')
+      -- require('telescope').load_extension 'frecency'
+      require('telescope').load_extension 'smart_open'
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
 
-      vim.keymap.set('n', '<leader>ff', function()
-        builtin.git_files { show_untracked = true }
-      end, { desc = '[F]ind [F]iles' })
+      -- vim.keymap.set('n', '<leader>ff', function()
+      --   builtin.git_files { show_untracked = true }
+      -- end, { desc = '[F]ind [F]iles' })
 
       local getVisualSelection = function()
         vim.cmd 'noau normal! "vy"'
@@ -442,17 +474,36 @@ require('lazy').setup {
       vim.keymap.set('n', '<leader>fw', builtin.grep_string, { desc = '[F]ind current [W]ord' })
       vim.keymap.set('n', '<leader>fg', builtin.live_grep, { desc = '[F]ind by [G]rep' })
       vim.keymap.set('n', '<leader>fr', builtin.resume, { desc = '[F]ind [R]esume' })
+
+      -- In current buffer
+      vim.keymap.set('n', '<leader>fd', function()
+        builtin.diagnostics { bufnr = 0 }
+      end, { desc = '[F]ind [D]iagnostic' })
+      -- In all buffers
+      vim.keymap.set('n', '<leader>fD', function()
+        builtin.diagnostics { bufnr = nil }
+      end, { desc = '[F]ind [D]iagnostic' })
+
       vim.keymap.set('n', '<leader>fs', function()
         builtin.lsp_document_symbols { fname_width = 60, symbol_width = 60 }
       end, { desc = '[F]ind [S]ymbols' })
       vim.keymap.set('n', '<leader>fS', builtin.lsp_dynamic_workspace_symbols, { desc = '[F]ind [S]ymbols' })
       -- vim.keymap.set('n', '<leader>fh', builtin.search_history, { desc = '[F]ind [H]istory' })
-      vim.keymap.set('n', '<leader><leader>', builtin.git_status, { desc = '[F]ind by git [S]tatus' })
+      -- vim.keymap.set('n', '<leader><leader>', builtin.git_status, { desc = '[F]ind by git [S]tatus' })
+
+      vim.keymap.set('n', '<leader>ff', function()
+        require('telescope').extensions.smart_open.smart_open {
+          cwd_only = true,
+        }
+        -- require('telescope').extensions.frecency.frecency {
+        --   workspace = 'CWD',
+        -- }
+      end, { desc = 'Find files' })
 
       -- Shortcut for searching your neovim configuration files
-      vim.keymap.set('n', '<leader>fn', function()
-        builtin.find_files { cwd = vim.fn.stdpath 'config' }
-      end, { desc = '[S]earch [N]eovim files' })
+      -- vim.keymap.set('n', '<leader>fn', function()
+      --   builtin.find_files { cwd = vim.fn.stdpath 'config' }
+      -- end, { desc = '[S]earch [N]eovim files' })
     end,
   },
 
@@ -710,9 +761,7 @@ require('lazy').setup {
       vim.list_extend(ensure_installed, {
         'stylua',
         'prettierd',
-        'cspell',
         'stylua',
-        'gofumpt',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -755,7 +804,7 @@ require('lazy').setup {
         javascript = { { 'prettierd' } },
         typescript = { { 'prettierd' } },
         typescriptreact = { { 'prettierd' } },
-        go = { 'gofumpt' },
+        go = { 'gofmt' },
       },
     },
   },
@@ -802,6 +851,14 @@ require('lazy').setup {
       -- nvim-cmp source for neovim Lua API
       -- so that things like vim.keymap.set, etc. are autocompleted
       'hrsh7th/cmp-nvim-lua',
+      {
+        'MattiasMTS/cmp-dbee',
+        dependencies = {
+          { 'kndndrj/nvim-dbee' },
+        },
+        ft = 'sql', -- optional but good to have
+        opts = {}, -- needed
+      },
     },
     config = function()
       -- See `:help cmp`
@@ -863,6 +920,7 @@ require('lazy').setup {
           { name = 'luasnip' },
           { name = 'buffer' },
           { name = 'path' },
+          { name = 'cmp-dbee' },
         },
         formatting = {
           format = require('lspkind').cmp_format {
@@ -956,19 +1014,60 @@ require('lazy').setup {
   -- My additional plugins:
 
   'mg979/vim-visual-multi',
-  'tpope/vim-fugitive',
-  'tpope/vim-rhubarb',
+  {
+    'NeogitOrg/neogit',
+    dependencies = {
+      'nvim-lua/plenary.nvim', -- required
+      -- Only one of these is needed, not both.
+      'nvim-telescope/telescope.nvim', -- optional
+      'ibhagwan/fzf-lua', -- optional
+    },
+    config = function()
+      local neogit = require 'neogit'
+      neogit.setup {}
+
+      vim.keymap.set('n', '<leader>go', function()
+        neogit.open { kind = 'tab' }
+      end, { desc = '[G]it [O]pen' })
+    end,
+  },
+  {
+    'sindrets/diffview.nvim',
+    config = function()
+      vim.keymap.set('n', '<leader>gh', ':DiffviewFileHistory % <CR>', { desc = '[G]it file [h]istory' })
+      vim.keymap.set('n', '<leader>gH', ':DiffviewFileHistory <CR>', { desc = '[G]it [H]istory' })
+    end,
+    dependencies = {
+      'nvim-tree/nvim-web-devicons',
+    },
+  },
+  {
+    'FabijanZulj/blame.nvim',
+    config = function()
+      require('blame').setup()
+      vim.keymap.set('n', '<leader>gb', ':BlameToggle <CR>', { desc = '[G]it [B]lame' })
+    end,
+  },
+  {
+    'ruifm/gitlinker.nvim',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+    },
+    config = function()
+      require('gitlinker').setup()
+      -- gy = [g]it [y]ank
+    end,
+  },
   {
     'zbirenbaum/copilot.lua',
     config = function()
       vim.g.copilot_proxy = 'http://91.108.241.124:56382'
 
-      -- tiiiime
       require('copilot').setup {
         suggestion = {
           auto_trigger = true,
           keymap = {
-            accept = '<C-l>',
+            accept = '<C-i>',
             accept_word = false,
             accept_line = false,
             next = '<C-j>',
@@ -1220,7 +1319,6 @@ require('lazy').setup {
       require('auto-session').setup()
     end,
   },
-  { 'jose-elias-alvarez/null-ls.nvim', dependencies = { 'davidmh/cspell.nvim' } },
   -- Highlight #hexhex colors
   {
     'NvChad/nvim-colorizer.lua',
@@ -1253,26 +1351,26 @@ require('lazy').setup {
     end,
   },
 
-  {
-    'nvimtools/none-ls.nvim',
-    config = function()
-      local cspell = require 'cspell'
-
-      require('null-ls').setup {
-        sources = {
-          cspell.diagnostics.with {
-            diagnostics_postprocess = function(diagnostic)
-              diagnostic.severity = vim.diagnostic.severity['INFO']
-            end,
-          },
-          cspell.code_actions,
-        },
-      }
-    end,
-    dependencies = {
-      'davidmh/cspell.nvim',
-    },
-  },
+  -- {
+  --   'nvimtools/none-ls.nvim',
+  --   config = function()
+  --     local cspell = require 'cspell'
+  --
+  --     require('null-ls').setup {
+  --       sources = {
+  --         cspell.diagnostics.with {
+  --           diagnostics_postprocess = function(diagnostic)
+  --             diagnostic.severity = vim.diagnostic.severity['INFO']
+  --           end,
+  --         },
+  --         cspell.code_actions,
+  --       },
+  --     }
+  --   end,
+  --   dependencies = {
+  --     'davidmh/cspell.nvim',
+  --   },
+  -- },
   -- {
   --   'ray-x/go.nvim',
   --   dependencies = { -- optional packages
@@ -1286,7 +1384,43 @@ require('lazy').setup {
   --   ft = { 'go', 'gomod' },
   --   build = ':lua require("go.install").update_all_sync()', -- if you need to install/update all binaries
   -- },
+
+  -- Find and replace in project:
   { 'nvim-pack/nvim-spectre' },
+  -- Db viewer
+  {
+    'kndndrj/nvim-dbee',
+    dependencies = {
+      'MunifTanjim/nui.nvim',
+    },
+    build = function()
+      -- Install tries to automatically detect the install method.
+      -- if it fails, try calling it with one of these parameters:
+      --    "curl", "wget", "bitsadmin", "go"
+      require('dbee').install()
+    end,
+    config = function()
+      require('dbee').setup(--[[optional config]])
+    end,
+  },
+
+  {
+    'vim-test/vim-test',
+    config = function()
+      vim.keymap.set('n', '<leader>rt', ':TestNearest -strategy=neovim_sticky<CR>', { desc = '[R]un [T]est' })
+    end,
+  },
+
+  {
+    'Bekaboo/dropbar.nvim',
+    -- optional, but required for fuzzy finder support
+    dependencies = {
+      'nvim-telescope/telescope-fzf-native.nvim',
+    },
+  },
+
+  -- Support % for do/end and others
+  { 'andymass/vim-matchup' },
 }
 
 -- The line beneath this is called `modeline`. See `:help modeline`

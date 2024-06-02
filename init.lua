@@ -30,11 +30,16 @@ vim.opt.showmode = false
 --  See `:help 'clipboard'`
 -- vim.opt.clipboard = 'unnamedplus'
 
--- Enable break indent
-vim.opt.breakindent = true
+-- Neovim controls whether wrapped lines will be visually indented to match the indentation of the first line
+vim.o.breakindent = true
+-- This will make long lines wrap onto the next line visually.
+vim.o.wrap = true
+-- The linebreak option ensures that lines break at word boundaries instead of in the middle of words. This can make the wrapped text more readable.
+vim.o.linebreak = true
 
-vim.opt.tabstop = 2
-vim.opt.shiftwidth = 0
+vim.cmd [[
+autocmd FileType go setlocal tabstop=2
+]]
 
 -- Save undo history
 vim.opt.undofile = true
@@ -274,6 +279,7 @@ require('lazy').setup {
       vim.keymap.set('n', '<leader>a', '<cmd>AerialToggle!<CR>', { desc = '[A]erial' })
     end,
   },
+  'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
   -- {
   --   'Wansmer/langmapper.nvim',
   --   lazy = false,
@@ -394,7 +400,7 @@ require('lazy').setup {
 
         -- Toggles
         map('n', '<leader>tb', gs.toggle_current_line_blame, { desc = 'toggle git blame line' })
-        map('n', '<leader>td', gs.toggle_deleted, { desc = 'toggle git show deleted' })
+        -- map('n', '<leader>td', gs.toggle_deleted, { desc = 'toggle git show deleted' })
 
         -- Text object
         map({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>', { desc = 'select git hunk' })
@@ -760,6 +766,23 @@ require('lazy').setup {
             client.server_capabilities.documentRangeFormattingProvider = false
           end
 
+          if client and client.name == 'gopls' then
+            if not client.server_capabilities.semanticTokensProvider then
+              local semantic = client.config.capabilities.textDocument.semanticTokens
+
+              if semantic then
+                client.server_capabilities.semanticTokensProvider = {
+                  full = true,
+                  legend = {
+                    tokenTypes = semantic.tokenTypes,
+                    tokenModifiers = semantic.tokenModifiers,
+                  },
+                  range = true,
+                }
+              end
+            end
+          end
+
           -- -- The following two autocommands are used to highlight references of the
           -- -- word under your cursor when your cursor rests there for a little while.
           -- --    See `:help CursorHold` for information about when this is executed
@@ -823,11 +846,38 @@ require('lazy').setup {
         gopls = {
           settings = {
             gopls = {
-              ['ui.inlayhint.hints'] = {
-                compositeLiteralFields = true,
-                constantValues = true,
-                parameterNames = true,
+              gofumpt = true,
+              codelenses = {
+                gc_details = false,
+                generate = true,
+                regenerate_cgo = true,
+                run_govulncheck = true,
+                test = true,
+                tidy = true,
+                upgrade_dependency = true,
+                vendor = true,
               },
+              hints = {
+                assignVariableTypes = true,
+                compositeLiteralFields = true,
+                compositeLiteralTypes = true,
+                constantValues = true,
+                functionTypeParameters = true,
+                parameterNames = true,
+                rangeVariableTypes = true,
+              },
+              analyses = {
+                fieldalignment = true,
+                nilness = true,
+                unusedparams = true,
+                unusedwrite = true,
+                useany = true,
+              },
+              usePlaceholders = true,
+              completeUnimported = true,
+              staticcheck = true,
+              directoryFilters = { '-.git', '-.vscode', '-.idea', '-.vscode-test', '-node_modules' },
+              semanticTokens = true,
             },
           },
         },
@@ -856,6 +906,7 @@ require('lazy').setup {
         },
         sqlls = {},
         eslint = {},
+        biome = {},
         -- yamlls = {},
         vacuum = {},
         lua_ls = {
@@ -910,6 +961,22 @@ require('lazy').setup {
       }
     end,
   },
+  {
+    'mfussenegger/nvim-dap',
+    dependencies = {
+      {
+        'williamboman/mason.nvim',
+        opts = function(_, opts)
+          opts.ensure_installed = opts.ensure_installed or {}
+          vim.list_extend(opts.ensure_installed, { 'delve' })
+        end,
+      },
+      {
+        'leoluz/nvim-dap-go',
+        config = true,
+      },
+    },
+  },
 
   { -- Autoformat
     'stevearc/conform.nvim',
@@ -932,9 +999,9 @@ require('lazy').setup {
         --
         -- You can use a sub-list to tell conform to run *until* a formatter
         -- is found.
-        javascript = { { 'prettierd' } },
-        typescript = { { 'prettierd' } },
-        typescriptreact = { { 'prettierd' } },
+        javascript = { { 'biome' } },
+        typescript = { { 'biome' } },
+        typescriptreact = { { 'biome' } },
         go = { 'gofmt' },
       },
     },
@@ -1147,17 +1214,17 @@ require('lazy').setup {
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     dependencies = {
-      -- Support % for do/end and others
-      'andymass/vim-matchup',
+      -- Support % for do/end and others. Horrible performance :(
+      -- 'andymass/vim-matchup',
     },
     config = function()
       -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
 
       ---@diagnostic disable-next-line: missing-fields
       require('nvim-treesitter.configs').setup {
-        matchup = {
-          enable = true,
-        },
+        -- matchup = {
+        --   enable = true,
+        -- },
         ensure_installed = { 'bash', 'c', 'html', 'lua', 'markdown', 'vim', 'vimdoc', 'diff' },
         -- Autoinstall languages that are not installed
         auto_install = true,
@@ -1587,14 +1654,26 @@ require('lazy').setup {
 
   -- VERY buggy :(
   {
-    'nvim-neotest/neotest',
+    'quolpr/neotest',
+    branch = 'master',
     dependencies = {
+      'antoinemadec/FixCursorHold.nvim',
       'fredrikaverpil/neotest-golang',
       'nvim-neotest/nvim-nio',
       'nvim-lua/plenary.nvim',
       -- 'antoinemadec/FixCursorHold.nvim',
       'nvim-treesitter/nvim-treesitter',
       'andythigpen/nvim-coverage',
+      {
+        'fredrikaverpil/neotest-golang',
+        dependencies = {
+          {
+            'leoluz/nvim-dap-go',
+            opts = {},
+          },
+        },
+        branch = 'main',
+      },
     },
     config = function()
       require('coverage').setup()
@@ -1619,13 +1698,20 @@ require('lazy').setup {
           '-timeout=60s',
           '-coverprofile=' .. vim.fn.getcwd() .. '/coverage.out',
         },
+
+        dap_go_enabled = true,
       }
 
       ---@diagnostic disable-next-line: missing-fields
       neotest.setup {
+        status = {
+          enabled = true,
+          signs = true,
+          virtual_text = false,
+        },
         output = {
           enabled = true,
-          open_on_run = false,
+          open_on_run = true,
         },
         -- your neotest config here
         adapters = {
@@ -1647,6 +1733,9 @@ require('lazy').setup {
 
         require('neotest').run.run()
       end, { desc = '[T]est [r]un' })
+      vim.keymap.set('n', '<leader>td', function()
+        require('neotest').run.run { suite = false, strategy = 'dap' }
+      end, { desc = '[T]est [D]ebug' })
 
       vim.keymap.set('n', '<leader>tR', function()
         require('neotest').run.run(vim.fn.expand '%')
@@ -1654,7 +1743,7 @@ require('lazy').setup {
 
       vim.keymap.set('n', '<leader>ts', function()
         neotest.output.open { enter = true }
-      end, { desc = '[T]est [s]how result' })
+      end, { desc = '[T]est [S]how result' })
 
       vim.keymap.set('n', '<leader>tS', function()
         neotest.output_panel.open()
@@ -1663,6 +1752,10 @@ require('lazy').setup {
       vim.keymap.set('n', '<leader>tl', function()
         neotest.run.run_last()
       end, { desc = '[T]est [L]ast' })
+
+      vim.keymap.set('n', '<leader>tp', function()
+        neotest.output.open { enter = true, last_run = true }
+      end, { desc = '[T]est [P]revious run preview' })
 
       local wasLoaded = false
       vim.keymap.set('n', '<leader>tct', function()
@@ -1848,6 +1941,209 @@ require('lazy').setup {
     config = function()
       require('bufresize').setup()
     end,
+  },
+  {
+    -- NOTE: Yes, you can install new plugins here!
+    'mfussenegger/nvim-dap',
+    -- NOTE: And you can specify dependencies as well
+    dependencies = {
+      -- Creates a beautiful debugger UI
+      'rcarriga/nvim-dap-ui',
+      'theHamsta/nvim-dap-virtual-text',
+
+      -- Required dependency for nvim-dap-ui
+      'nvim-neotest/nvim-nio',
+
+      -- Installs the debug adapters for you
+      'williamboman/mason.nvim',
+      'jay-babu/mason-nvim-dap.nvim',
+
+      -- Add your own debuggers here
+      'leoluz/nvim-dap-go',
+    },
+    config = function()
+      local dap = require 'dap'
+      local dapui = require 'dapui'
+
+      require('nvim-dap-virtual-text').setup {}
+
+      require('mason-nvim-dap').setup {
+        -- Makes a best effort to setup the various debuggers with
+        -- reasonable debug configurations
+        automatic_installation = true,
+
+        -- You can provide additional configuration to the handlers,
+        -- see mason-nvim-dap README for more information
+        handlers = {},
+
+        -- You'll need to check that you have the required things installed
+        -- online, please don't ask me how to install them :)
+        ensure_installed = {
+          -- Update this to ensure that you have the debuggers for the langs you want
+          'delve',
+        },
+      }
+
+      -- Dap UI setup
+      -- For more information, see |:help nvim-dap-ui|
+      dapui.setup {
+        -- Set icons to characters that are more likely to work in every terminal.
+        --    Feel free to remove or use ones that you like more! :)
+        --    Don't feel like these are good choices.
+        icons = { expanded = '▾', collapsed = '▸', current_frame = '*' },
+        controls = {
+          icons = {
+            pause = '⏸',
+            play = '▶',
+            step_into = '⏎',
+            step_over = '⏭',
+            step_out = '⏮',
+            step_back = 'b',
+            run_last = '▶▶',
+            terminate = '⏹',
+            disconnect = '⏏',
+          },
+        },
+      }
+
+      -- Toggle to see last session result. Without this, you can't see session output in case of unhandled exception.
+      vim.keymap.set('n', '<F7>', dapui.toggle, { desc = 'Debug: See last session result.' })
+
+      dap.listeners.after.event_initialized['dapui_config'] = dapui.open
+      dap.listeners.before.event_terminated['dapui_config'] = dapui.close
+      dap.listeners.before.event_exited['dapui_config'] = dapui.close
+
+      -- Install golang specific config
+      require('dap-go').setup {
+        delve = {
+          -- On Windows delve must be run attached or it crashes.
+          -- See https://github.com/leoluz/nvim-dap-go/blob/main/README.md#configuring
+          detached = vim.fn.has 'win32' == 0,
+        },
+      }
+    end,
+
+    keys = {
+      {
+        '<leader>db',
+        function()
+          require('dap').toggle_breakpoint()
+        end,
+        desc = 'toggle [d]ebug [b]reakpoint',
+      },
+      {
+        '<leader>dB',
+        function()
+          require('dap').set_breakpoint(vim.fn.input 'Breakpoint condition: ')
+        end,
+        desc = '[d]ebug [B]reakpoint',
+      },
+      {
+        '<leader>dc',
+        function()
+          require('dap').continue()
+        end,
+        desc = '[d]ebug [c]ontinue (start here)',
+      },
+      {
+        '<leader>dC',
+        function()
+          require('dap').run_to_cursor()
+        end,
+        desc = '[d]ebug [C]ursor',
+      },
+      {
+        '<leader>dg',
+        function()
+          require('dap').goto_()
+        end,
+        desc = '[d]ebug [g]o to line',
+      },
+      {
+        '<leader>do',
+        function()
+          require('dap').step_over()
+        end,
+        desc = '[d]ebug step [o]ver',
+      },
+      {
+        '<leader>dO',
+        function()
+          require('dap').step_out()
+        end,
+        desc = '[d]ebug step [O]ut',
+      },
+      {
+        '<leader>di',
+        function()
+          require('dap').step_into()
+        end,
+        desc = '[d]ebug [i]nto',
+      },
+      {
+        '<leader>dj',
+        function()
+          require('dap').down()
+        end,
+        desc = '[d]ebug [j]ump down',
+      },
+      {
+        '<leader>dk',
+        function()
+          require('dap').up()
+        end,
+        desc = '[d]ebug [k]ump up',
+      },
+      {
+        '<leader>dl',
+        function()
+          require('dap').run_last()
+        end,
+        desc = '[d]ebug [l]ast',
+      },
+      {
+        '<leader>dp',
+        function()
+          require('dap').pause()
+        end,
+        desc = '[d]ebug [p]ause',
+      },
+      {
+        '<leader>dr',
+        function()
+          require('dap').repl.toggle()
+        end,
+        desc = '[d]ebug [r]epl',
+      },
+      {
+        '<leader>dR',
+        function()
+          require('dap').clear_breakpoints()
+        end,
+        desc = '[d]ebug [R]emove breakpoints',
+      },
+      {
+        '<leader>ds',
+        function()
+          require('dap').session()
+        end,
+        desc = '[d]ebug [s]ession',
+      },
+      {
+        '<leader>dt',
+        function()
+          require('dap').terminate()
+        end,
+        desc = '[d]ebug [t]erminate',
+      },
+      {
+        '<leader>dw',
+        function()
+          require('dap.ui.widgets').hover()
+        end,
+        desc = '[d]ebug [w]idgets',
+      },
+    },
   },
 }
 

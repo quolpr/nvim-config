@@ -12,7 +12,15 @@ func TestSum(t *testing.T) {
 	b := 2
 	c := abc.Sum(a, b)
 
-	time.Sleep(time.Second * 1)
+	fmt.Println("hi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!")
+	time.Sleep(time.Millisecond * 5000)
+	fmt.Println("hi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!")
+	time.Sleep(time.Millisecond * 500)
+	fmt.Println("hi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!")
+	time.Sleep(time.Millisecond * 500)
+	fmt.Println("hi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!")
+	time.Sleep(time.Millisecond * 500)
+	fmt.Println("hi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!")
 
 	if c != a+b+1 {
 		t.Errorf("Sum(%d, %d) = %d, want %d", a, b, c, a+b)

@@ -66,11 +66,11 @@ end
 
 --- @param cwd string
 --- @param args string[]
---- @return  {recv: fun(): {type: 'stdout', data: LogEntry} | {type: 'stderr', error: string} | {type: 'exit', code: number}}
+--- @return  number, {recv: fun(): {type: 'stdout', data: LogEntry} | {type: 'stderr', error: string} | {type: 'exit', code: number}}
 function M.run(cwd, args)
   local sender, receiver = a.control.channel.mpsc()
 
-  Job:new({
+  local job = Job:new {
     command = 'go',
     args = args,
     cwd = cwd,
@@ -90,9 +90,12 @@ function M.run(cwd, args)
     on_exit = function(_, return_val)
       sender.send { type = 'exit', code = return_val }
     end,
-  }):start()
+  }
 
-  return receiver
+  job:start()
+  -- TODO: add job:shutdown()
+
+  return job.pid, receiver
 
   -- print 'process done'
   -- local proc = nio.process.run {

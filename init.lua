@@ -123,12 +123,12 @@ vim.keymap.set('n', '<leader>cf', function()
 end, { desc = 'Fix file' })
 
 -- Keep cursor in center
-vim.keymap.set('n', '<C-d>', '<C-d>zz')
-vim.keymap.set('n', '<C-u>', '<C-u>zz')
+-- vim.keymap.set('n', '<C-d>', '<C-d>zz')
+-- vim.keymap.set('n', '<C-u>', '<C-u>zz')
 
 -- Keep cursor in center
-vim.keymap.set('n', 'n', 'nzzzv')
-vim.keymap.set('n', 'N', 'Nzzzv')
+-- vim.keymap.set('n', 'n', 'nzzzv')
+-- vim.keymap.set('n', 'N', 'Nzzzv')
 -- END MY KEYMAPS
 
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
@@ -1003,15 +1003,16 @@ require('lazy').setup {
     lazy = false,
     opts = {
       notify_on_error = false,
-      format_after_save = {
-        lsp_fallback = true,
-        timeout_ms = 5000,
-      },
-      -- format_on_save = {
-      --   timeout_ms = 500,
+      -- format_after_save = {
       --   lsp_fallback = true,
-      --   async = true,
+      --   timeout_ms = 5000,
+      --   async = false,
       -- },
+      format_on_save = {
+        timeout_ms = 2000,
+        lsp_fallback = true,
+        async = false,
+      },
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
@@ -2228,6 +2229,10 @@ require('lazy').setup {
     config = function()
       require('gotest').setup {}
     end,
+    dependencies = {
+      'm00qek/baleia.nvim',
+      'nvim-lua/plenary.nvim',
+    },
     keys = function()
       local gotest = require 'gotest'
       local keys = {
@@ -2284,7 +2289,7 @@ require('lazy').setup {
     -- During profiling I noticed that matchparen is the slow scroll
     'monkoose/matchparen.nvim',
     config = function()
-      require('matchparen').setup()
+      require('matchparen').setup {}
     end,
   },
 }

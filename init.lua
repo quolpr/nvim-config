@@ -241,6 +241,8 @@ vim.filetype.add {
 vim.opt.langmap =
   'ФИСВУАПРШОЛДЬТЩЗЙКЫЕГМЦЧНЯ;ABCDEFGHIJKLMNOPQRSTUVWXYZ,фисвуапршолдьтщзйкыегмцчня;abcdefghijklmnopqrstuvwxyz'
 
+vim.g.loaded_matchparen = 1
+
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup {
   {
@@ -480,6 +482,14 @@ require('lazy').setup {
     config = function()
       local data = assert(vim.fn.stdpath 'data') --[[@as string]]
 
+      local fzf_opts = {
+        fuzzy = true, -- false will only do exact matching
+        override_generic_sorter = true, -- override the generic sorter
+        override_file_sorter = true, -- override the file sorter
+        case_mode = 'smart_case', -- or "ignore_case" or "respect_case"
+        -- the default case_mode is "smart_case"
+      }
+
       -- Telescope is a fuzzy finder that comes with a lot of different things that
       -- it can fuzzy find! It's more than just a "file finder", it can search
       -- many different aspects of Neovim, your workspace, LSP, and more!
@@ -503,7 +513,7 @@ require('lazy').setup {
       -- See `:help telescope` and `:help telescope.setup()`
       require('telescope').setup {
         defaults = {
-          path_display = { 'truncate' },
+          path_display = { 'filename_first' },
           mappings = {
             i = {
               -- Cycle in history of search!
@@ -523,13 +533,7 @@ require('lazy').setup {
         -- pickers = {}
         extensions = {
           wrap_results = true,
-
-          fzf = {
-            fuzzy = true, -- false will only do exact matching
-            override_generic_sorter = true, -- override the generic sorter
-            override_file_sorter = true, -- override the file sorter
-            case_mode = 'smart_case', -- or "ignore_case" or "respect_case"
-          },
+          fzf = fzf_opts,
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
           },
@@ -551,12 +555,15 @@ require('lazy').setup {
           smart_open = {
             match_algorithm = 'fzf',
             show_scores = true,
-            result_limit = 50,
+            result_limit = 25,
           },
         },
         pickers = {
           colorscheme = {
             enable_preview = true,
+          },
+          lsp_dynamic_workspace_symbols = {
+            sorter = require('telescope').extensions.fzf.native_fzf_sorter(fzf_opts),
           },
         },
       }
@@ -895,7 +902,7 @@ require('lazy').setup {
                 rangeVariableTypes = true,
               },
               analyses = {
-                fieldalignment = true,
+                fieldalignment = false,
                 nilness = true,
                 unusedparams = true,
                 unusedwrite = true,
@@ -1634,125 +1641,123 @@ require('lazy').setup {
   --   end,
   -- },
 
-  {
-    'quolpr/neotest',
-    branch = 'master',
-    dependencies = {
-      'antoinemadec/FixCursorHold.nvim',
-      'fredrikaverpil/neotest-golang',
-      'nvim-neotest/nvim-nio',
-      'nvim-lua/plenary.nvim',
-      'antoinemadec/FixCursorHold.nvim',
-      'nvim-treesitter/nvim-treesitter',
-      {
-        'fredrikaverpil/neotest-golang',
-        branch = 'main',
-      },
-    },
-    config = function()
-      -- get neotest namespace (api call creates or returns namespace)
-      local neotest_ns = vim.api.nvim_create_namespace 'neotest'
-      vim.diagnostic.config({
-        virtual_text = {
-          format = function(diagnostic)
-            local message = diagnostic.message:gsub('\n', ' '):gsub('\t', ' '):gsub('%s+', ' '):gsub('^%s+', '')
-            return message
-          end,
-        },
-      }, neotest_ns)
-
-      local neotest = require 'neotest'
-
-      local config = { -- Specify configuration
-        go_test_args = {
-          '-v',
-          '-race',
-          '-timeout=60s',
-        },
-
-        dap_go_enabled = true,
-      }
-
-      ---@diagnostic disable-next-line: missing-fields
-      neotest.setup {
-        status = {
-          enabled = true,
-          signs = true,
-          virtual_text = false,
-        },
-        output = {
-          enabled = true,
-          open_on_run = true,
-        },
-        -- your neotest config here
-        adapters = {
-          require 'neotest-golang'(config), -- Registration
-        },
-      }
-
-      vim.api.nvim_create_autocmd('FileType', {
-        pattern = 'neotest-output-panel',
-        callback = function()
-          vim.cmd 'norm G'
-        end,
-      })
-    end,
-    keys = function()
-      local keys = {
-        {
-          '<leader>tt',
-          function()
-            require('neotest').summary.toggle()
-          end,
-          desc = '[T]est [T]oggle',
-        },
-        {
-          '<leader>tr',
-          function()
-            require('neotest').run.run()
-          end,
-          desc = '[T]est [R]un',
-        },
-        {
-          '<leader>tR',
-          function()
-            require('neotest').run.run(vim.fn.expand '%')
-          end,
-          desc = '[T]est [R]un file',
-        },
-        {
-          '<leader>ts',
-          function()
-            require('neotest').output.open { enter = true }
-          end,
-          desc = '[T]est [S]how result',
-        },
-        {
-          '<leader>tS',
-          function()
-            require('neotest').output_panel.open()
-          end,
-          desc = '[T]est [S]how all results',
-        },
-        {
-          '<leader>tl',
-          function()
-            require('neotest').run.run_last()
-          end,
-          desc = '[T]est [L]ast',
-        },
-        {
-          '<leader>tp',
-          function()
-            require('neotest').output.open { enter = true, last_run = true }
-          end,
-          desc = '[T]est [P]revious run preview',
-        },
-      }
-
-      return keys
-    end,
-  },
+  -- {
+  --   'quolpr/neotest',
+  --   branch = 'master',
+  --   dependencies = {
+  --     'fredrikaverpil/neotest-golang',
+  --     'nvim-neotest/nvim-nio',
+  --     'nvim-lua/plenary.nvim',
+  --     'nvim-treesitter/nvim-treesitter',
+  --     {
+  --       'fredrikaverpil/neotest-golang',
+  --       branch = 'main',
+  --     },
+  --   },
+  --   config = function()
+  --     -- get neotest namespace (api call creates or returns namespace)
+  --     local neotest_ns = vim.api.nvim_create_namespace 'neotest'
+  --     vim.diagnostic.config({
+  --       virtual_text = {
+  --         format = function(diagnostic)
+  --           local message = diagnostic.message:gsub('\n', ' '):gsub('\t', ' '):gsub('%s+', ' '):gsub('^%s+', '')
+  --           return message
+  --         end,
+  --       },
+  --     }, neotest_ns)
+  --
+  --     local neotest = require 'neotest'
+  --
+  --     local config = { -- Specify configuration
+  --       go_test_args = {
+  --         '-v',
+  --         '-race',
+  --         '-timeout=60s',
+  --       },
+  --
+  --       dap_go_enabled = true,
+  --     }
+  --
+  --     ---@diagnostic disable-next-line: missing-fields
+  --     neotest.setup {
+  --       status = {
+  --         enabled = true,
+  --         signs = true,
+  --         virtual_text = false,
+  --       },
+  --       output = {
+  --         enabled = true,
+  --         open_on_run = true,
+  --       },
+  --       -- your neotest config here
+  --       adapters = {
+  --         require 'neotest-golang'(config), -- Registration
+  --       },
+  --     }
+  --
+  --     vim.api.nvim_create_autocmd('FileType', {
+  --       pattern = 'neotest-output-panel',
+  --       callback = function()
+  --         vim.cmd 'norm G'
+  --       end,
+  --     })
+  --   end,
+  --   keys = function()
+  --     local keys = {
+  --       {
+  --         '<leader>tt',
+  --         function()
+  --           require('neotest').summary.toggle()
+  --         end,
+  --         desc = '[T]est [T]oggle',
+  --       },
+  --       {
+  --         '<leader>tr',
+  --         function()
+  --           require('neotest').run.run()
+  --         end,
+  --         desc = '[T]est [R]un',
+  --       },
+  --       {
+  --         '<leader>tR',
+  --         function()
+  --           require('neotest').run.run(vim.fn.expand '%')
+  --         end,
+  --         desc = '[T]est [R]un file',
+  --       },
+  --       {
+  --         '<leader>ts',
+  --         function()
+  --           require('neotest').output.open { enter = true }
+  --         end,
+  --         desc = '[T]est [S]how result',
+  --       },
+  --       {
+  --         '<leader>tS',
+  --         function()
+  --           require('neotest').output_panel.open()
+  --         end,
+  --         desc = '[T]est [S]how all results',
+  --       },
+  --       {
+  --         '<leader>tl',
+  --         function()
+  --           require('neotest').run.run_last()
+  --         end,
+  --         desc = '[T]est [L]ast',
+  --       },
+  --       {
+  --         '<leader>tp',
+  --         function()
+  --           require('neotest').output.open { enter = true, last_run = true }
+  --         end,
+  --         desc = '[T]est [P]revious run preview',
+  --       },
+  --     }
+  --
+  --     return keys
+  --   end,
+  -- },
 
   -- Show labels on f/F jumps
   -- {
@@ -2197,6 +2202,90 @@ require('lazy').setup {
         desc = '[C]ode [d]iagnostics of current buffer',
       },
     },
+  },
+  {
+    'folke/persistence.nvim',
+    opts = {
+      -- add any custom options here
+    },
+    config = function()
+      require('persistence').setup {}
+      vim.api.nvim_set_keymap('n', '<leader>qr', [[<cmd>lua require("persistence").load({ last = true })<cr>]], { desc = 'Restore persistance' })
+    end,
+  },
+  {
+    'ibhagwan/fzf-lua',
+    -- optional for icon support
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      -- calling `setup` is optional for customization
+      require('fzf-lua').setup {}
+    end,
+  },
+  {
+    dir = './lua/gotest',
+    dev = true,
+    config = function()
+      require('gotest').setup {}
+    end,
+    keys = function()
+      local gotest = require 'gotest'
+      local keys = {
+        {
+          '<leader>tr',
+          function()
+            gotest.run_current(gotest.current_win_mode())
+          end,
+          desc = '[T]est [R]un',
+        },
+        {
+          '<leader>tR',
+          function()
+            gotest.run_file(gotest.current_win_mode())
+          end,
+          desc = '[T]est [R]un file',
+        },
+        {
+          '<leader>tt',
+          function()
+            gotest.open 'popup'
+          end,
+          desc = '[T]est [T]toggle result',
+        },
+        {
+          '<leader>ts',
+          function()
+            gotest.open 'split'
+          end,
+          desc = '[T]est [S]plit result',
+        },
+
+        {
+          '<leader>tp',
+          function()
+            gotest.run_previous(gotest.current_win_mode())
+          end,
+          desc = '[T]est [P]revious',
+        },
+      }
+
+      return keys
+    end,
+  },
+  {
+    'rcarriga/nvim-notify',
+    config = function()
+      vim.notify = require 'notify'
+    end,
+    priority = 1000,
+  },
+  {
+    -- faster matchparen
+    -- During profiling I noticed that matchparen is the slow scroll
+    'monkoose/matchparen.nvim',
+    config = function()
+      require('matchparen').setup()
+    end,
   },
 }
 

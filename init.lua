@@ -149,7 +149,7 @@ end, { desc = 'Go to next [D]iagnostic message' })
 --
 -- NOTE: This won't work in all terminal emulators/tmux/etc. Try your own mapping
 -- or just use <C-\><C-n> to exit terminal mode
-vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
+-- vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
 -- TIP: Disable arrow keys in normal mode
 -- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
@@ -442,227 +442,288 @@ require('lazy').setup {
   --
   -- Use the `dependencies` key to specify the dependencies of a particular plugin
 
-  { -- Fuzzy Finder (files, lsp, etc)
-    'nvim-telescope/telescope.nvim',
-    event = 'VimEnter',
-    branch = 'master',
-    dependencies = {
-      'nvim-telescope/telescope-smart-history.nvim',
-      'kkharji/sqlite.lua',
-      'nvim-lua/plenary.nvim',
-      -- 'nvim-telescope/telescope-frecency.nvim',
-      { -- If encountering errors, see telescope-fz-native README for install instructions
-        'nvim-telescope/telescope-fzf-native.nvim',
-
-        -- `build` is used to run some command when the plugin is installed/updated.
-        -- This is only run then, not every time Neovim starts up.
-        build = 'make',
-
-        -- `cond` is a condition used to determine whether this plugin should be
-        -- installed and loaded.
-        cond = function()
-          return vim.fn.executable 'make' == 1
-        end,
-      },
-      { 'nvim-telescope/telescope-ui-select.nvim' },
-      {
-
-        'danielfalk/smart-open.nvim',
-        branch = '0.2.x',
-        dependencies = {
-          'kkharji/sqlite.lua',
-        },
-      },
-
-      -- Useful for getting pretty icons, but requires special font.
-      --  If you already have a Nerd Font, or terminal set up with fallback fonts
-      --  you can enable this
-      { 'nvim-tree/nvim-web-devicons' },
-    },
+  {
+    'ibhagwan/fzf-lua',
+    -- optional for icon support
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
     config = function()
-      local data = assert(vim.fn.stdpath 'data') --[[@as string]]
-
-      local fzf_opts = {
-        fuzzy = true, -- false will only do exact matching
-        override_generic_sorter = true, -- override the generic sorter
-        override_file_sorter = true, -- override the file sorter
-        case_mode = 'smart_case', -- or "ignore_case" or "respect_case"
-        -- the default case_mode is "smart_case"
-      }
-
-      -- Telescope is a fuzzy finder that comes with a lot of different things that
-      -- it can fuzzy find! It's more than just a "file finder", it can search
-      -- many different aspects of Neovim, your workspace, LSP, and more!
-      --
-      -- The easiest way to use telescope, is to start by doing something like:
-      --  :Telescope help_tags
-      --
-      -- After running this command, a window will open up and you're able to
-      -- type in the prompt window. You'll see a list of help_tags options and
-      -- a corresponding preview of the help.
-      --
-      -- Two important keymaps to use while in telescope are:
-      --  - Insert mode: <c-/>
-      --  - Normal mode: ?
-      --
-      -- This opens a window that shows you all of the keymaps for the current
-      -- telescope picker. This is really useful to discover what Telescope can
-      -- do as well as how to actually do it!
-
-      -- [[ Configure Telescope ]]
-      -- See `:help telescope` and `:help telescope.setup()`
-      require('telescope').setup {
-        defaults = {
-          path_display = { 'filename_first' },
-          mappings = {
-            i = {
-              -- Cycle in history of search!
-              ['<C-l>'] = require('telescope.actions').cycle_history_next,
-              ['<C-h>'] = require('telescope.actions').cycle_history_prev,
-            },
+      -- calling `setup` is optional for customization
+      require('fzf-lua').setup {
+        nvim_freeze_workaround = 1,
+        lsp = {
+          symbols = {
+            symbol_style = 2,
           },
         },
-        -- You can put your default mappings / updates / etc. in here
-        --  All the info you're looking for is in `:help telescope.setup()`
-        --
-        -- defaults = {
-        --   mappings = {
-        --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-        --   },
-        -- },
-        -- pickers = {}
-        extensions = {
-          wrap_results = true,
-          fzf = fzf_opts,
-          ['ui-select'] = {
-            require('telescope.themes').get_dropdown(),
-          },
-
-          history = {
-            path = vim.fs.joinpath(data, 'telescope_history.sqlite3'),
-            limit = 100,
-          },
-          -- frecency = {
-          --   workspace = 'CWD',
-          --   ignore_patterns = { '*.git/*', '*/tmp/*' },
-          --   show_scores = true,
-          --   show_unindexed = false,
-          --   disable_devicons = false,
-          --   db_safe_mode = false,
-          --   path_display = { 'truncate' },
-          -- },
-
-          smart_open = {
-            match_algorithm = 'fzf',
-            show_scores = true,
-            result_limit = 25,
-          },
-        },
-        pickers = {
-          colorscheme = {
-            enable_preview = true,
-          },
-          lsp_dynamic_workspace_symbols = {
-            sorter = require('telescope').extensions.fzf.native_fzf_sorter(fzf_opts),
-          },
+        files = {
+          formatter = 'path.filename_first',
         },
       }
 
-      -- Enable telescope extensions, if they are installed
-      pcall(require('telescope').load_extension, 'fzf')
-      pcall(require('telescope').load_extension, 'ui-select')
-      -- To cycle back is search history
-      pcall(require('telescope').load_extension, 'smart_history')
-      -- require('telescope').load_extension 'frecency'
-      require('telescope').load_extension 'smart_open'
-      -- require('telescope').load_extension 'harpoon'
+      local fzf = require 'fzf-lua'
 
-      -- local harpoon = require 'harpoon'
-      -- local conf = require('telescope.config').values
-      -- local function toggle_telescope(harpoon_files)
-      --   local file_paths = {}
-      --   for _, item in ipairs(harpoon_files.items) do
-      --     table.insert(file_paths, item.value)
-      --   end
-      --
-      --   require('telescope.pickers')
-      --     .new({}, {
-      --       prompt_title = 'Harpoon',
-      --       finder = require('telescope.finders').new_table {
-      --         results = file_paths,
-      --       },
-      --       previewer = conf.file_previewer {},
-      --       sorter = conf.generic_sorter {},
-      --     })
-      --     :find()
-      -- end
-      --
-      -- vim.keymap.set('n', '<leader>fh', function()
-      --   toggle_telescope(harpoon:list())
-      -- end, { desc = 'Open harpoon window' })
-
-      -- vim.keymap.set('n', '<C-e>', function()
-      --   toggle_telescope(harpoon:list())
-      -- end, { desc = 'Open harpoon window' })
-
-      -- See `:help telescope.builtin`
-      local builtin = require 'telescope.builtin'
-
-      -- vim.keymap.set('n', '<leader>ff', function()
-      --   builtin.git_files { show_untracked = true }
-      -- end, { desc = '[F]ind [F]iles' })
+      vim.keymap.set('n', '<leader>ff', function()
+        fzf.git_files { show_untracked = true, formatter = 'path.filename_first' }
+      end, { desc = '[F]ind [F]iles' })
 
       vim.keymap.set('v', '<leader>fw', function()
-        local text = getVisualSelection()
-        builtin.grep_string { search = text }
+        fzf.grep_visual { formatter = 'path.filename_first' }
       end, { desc = '[F]ind current [W]ord' })
 
-      vim.keymap.set('n', '<leader>fw', builtin.grep_string, { desc = '[F]ind current [W]ord' })
-      vim.keymap.set('n', '<leader>fg', builtin.live_grep, { desc = '[F]ind by [G]rep' })
-      vim.keymap.set('n', '<leader>fr', builtin.resume, { desc = '[F]ind [R]esume' })
+      vim.keymap.set('n', '<leader>fw', function()
+        fzf.grep_cword { formatter = 'path.filename_first' }
+      end, { desc = '[F]ind current [W]ord' })
+
+      vim.keymap.set('n', '<leader>fg', function()
+        fzf.live_grep { formatter = 'path.filename_first' }
+      end, { desc = '[F]ind by [G]rep' })
+
+      vim.keymap.set('n', '<leader>fr', fzf.resume, { desc = '[F]ind [R]esume' })
 
       -- In current buffer
       vim.keymap.set('n', '<leader>fd', function()
-        builtin.diagnostics { bufnr = 0 }
+        fzf.diagnostics_document { formatter = 'path.filename_first' }
       end, { desc = '[F]ind [D]iagnostic' })
       -- In all buffers
       vim.keymap.set('n', '<leader>fD', function()
-        builtin.diagnostics { bufnr = nil }
+        fzf.diagnostics_workspace { formatter = 'path.filename_first' }
       end, { desc = '[F]ind [D]iagnostic' })
 
-      vim.keymap.set('n', '<leader>fs', function()
-        builtin.lsp_document_symbols { fname_width = 60, symbol_width = 60 }
-      end, { desc = '[F]ind [S]ymbols' })
-      vim.keymap.set('n', '<leader>fS', builtin.lsp_dynamic_workspace_symbols, { desc = '[F]ind [S]ymbols' })
-      -- vim.keymap.set('n', '<leader>fh', builtin.search_history, { desc = '[F]ind [H]istory' })
-      -- vim.keymap.set('n', '<leader><leader>', builtin.git_status, { desc = '[F]ind by git [S]tatus' })
-
-      vim.keymap.set('n', '<leader>ff', function()
-        require('telescope').extensions.smart_open.smart_open {
-          cwd_only = true,
-        }
-        -- require('telescope').extensions.frecency.frecency {
-        --   workspace = 'CWD',
-        -- }
-      end, { desc = '[F]ind [F]iles' })
+      vim.keymap.set('n', '<leader>fo', function()
+        fzf.git_status { formatter = 'path.filename_first' }
+      end, { desc = '[F]ind by git status' })
 
       vim.keymap.set('n', '<leader><leader>', function()
-        builtin.git_status()
+        fzf.lsp_live_workspace_symbols { formatter = 'path.filename_first' }
       end, { desc = '[F]ind by git [S]tatus' })
-
-      -- vim.keymap.set('n', '<leader>fm', function()
-      --   builtin.marks { mark_type = 'local' }
-      -- end, { desc = '[F]ind [M]arks' })
-      -- vim.keymap.set('n', '<leader>fm', function()
-      --   require('telescope').extensions.harpoon.marks()
-      -- end, { desc = '[F]ind [M]arks' })
-
-      -- Shortcut for searching your neovim configuration files
-      -- vim.keymap.set('n', '<leader>fn', function()
-      --   builtin.find_files { cwd = vim.fn.stdpath 'config' }
-      -- end, { desc = '[S]earch [N]eovim files' })
     end,
   },
+
+  -- { -- Fuzzy Finder (files, lsp, etc)
+  --   'nvim-telescope/telescope.nvim',
+  --   event = 'VimEnter',
+  --   branch = 'master',
+  --   dependencies = {
+  --     'nvim-telescope/telescope-smart-history.nvim',
+  --     'kkharji/sqlite.lua',
+  --     'nvim-lua/plenary.nvim',
+  --     -- 'nvim-telescope/telescope-frecency.nvim',
+  --     { -- If encountering errors, see telescope-fz-native README for install instructions
+  --       'nvim-telescope/telescope-fzf-native.nvim',
+  --
+  --       -- `build` is used to run some command when the plugin is installed/updated.
+  --       -- This is only run then, not every time Neovim starts up.
+  --       build = 'make',
+  --
+  --       -- `cond` is a condition used to determine whether this plugin should be
+  --       -- installed and loaded.
+  --       cond = function()
+  --         return vim.fn.executable 'make' == 1
+  --       end,
+  --     },
+  --     { 'nvim-telescope/telescope-ui-select.nvim' },
+  --     {
+  --
+  --       'danielfalk/smart-open.nvim',
+  --       branch = '0.2.x',
+  --       dependencies = {
+  --         'kkharji/sqlite.lua',
+  --       },
+  --     },
+  --
+  --     -- Useful for getting pretty icons, but requires special font.
+  --     --  If you already have a Nerd Font, or terminal set up with fallback fonts
+  --     --  you can enable this
+  --     { 'nvim-tree/nvim-web-devicons' },
+  --   },
+  --   config = function()
+  --     local data = assert(vim.fn.stdpath 'data') --[[@as string]]
+  --
+  --     local fzf_opts = {
+  --       fuzzy = true, -- false will only do exact matching
+  --       override_generic_sorter = true, -- override the generic sorter
+  --       override_file_sorter = true, -- override the file sorter
+  --       case_mode = 'smart_case', -- or "ignore_case" or "respect_case"
+  --       -- the default case_mode is "smart_case"
+  --     }
+  --
+  --     -- Telescope is a fuzzy finder that comes with a lot of different things that
+  --     -- it can fuzzy find! It's more than just a "file finder", it can search
+  --     -- many different aspects of Neovim, your workspace, LSP, and more!
+  --     --
+  --     -- The easiest way to use telescope, is to start by doing something like:
+  --     --  :Telescope help_tags
+  --     --
+  --     -- After running this command, a window will open up and you're able to
+  --     -- type in the prompt window. You'll see a list of help_tags options and
+  --     -- a corresponding preview of the help.
+  --     --
+  --     -- Two important keymaps to use while in telescope are:
+  --     --  - Insert mode: <c-/>
+  --     --  - Normal mode: ?
+  --     --
+  --     -- This opens a window that shows you all of the keymaps for the current
+  --     -- telescope picker. This is really useful to discover what Telescope can
+  --     -- do as well as how to actually do it!
+  --
+  --     -- [[ Configure Telescope ]]
+  --     -- See `:help telescope` and `:help telescope.setup()`
+  --     require('telescope').setup {
+  --       defaults = {
+  --         path_display = { 'filename_first' },
+  --         mappings = {
+  --           i = {
+  --             -- Cycle in history of search!
+  --             ['<C-l>'] = require('telescope.actions').cycle_history_next,
+  --             ['<C-h>'] = require('telescope.actions').cycle_history_prev,
+  --           },
+  --         },
+  --       },
+  --       -- You can put your default mappings / updates / etc. in here
+  --       --  All the info you're looking for is in `:help telescope.setup()`
+  --       --
+  --       -- defaults = {
+  --       --   mappings = {
+  --       --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
+  --       --   },
+  --       -- },
+  --       -- pickers = {}
+  --       extensions = {
+  --         wrap_results = true,
+  --         fzf = fzf_opts,
+  --         ['ui-select'] = {
+  --           require('telescope.themes').get_dropdown(),
+  --         },
+  --
+  --         history = {
+  --           path = vim.fs.joinpath(data, 'telescope_history.sqlite3'),
+  --           limit = 100,
+  --         },
+  --         -- frecency = {
+  --         --   workspace = 'CWD',
+  --         --   ignore_patterns = { '*.git/*', '*/tmp/*' },
+  --         --   show_scores = true,
+  --         --   show_unindexed = false,
+  --         --   disable_devicons = false,
+  --         --   db_safe_mode = false,
+  --         --   path_display = { 'truncate' },
+  --         -- },
+  --
+  --         smart_open = {
+  --           match_algorithm = 'fzf',
+  --           show_scores = true,
+  --           result_limit = 25,
+  --         },
+  --       },
+  --       pickers = {
+  --         colorscheme = {
+  --           enable_preview = true,
+  --         },
+  --         lsp_dynamic_workspace_symbols = {
+  --           sorter = require('telescope').extensions.fzf.native_fzf_sorter(fzf_opts),
+  --         },
+  --       },
+  --     }
+  --
+  --     -- Enable telescope extensions, if they are installed
+  --     pcall(require('telescope').load_extension, 'fzf')
+  --     pcall(require('telescope').load_extension, 'ui-select')
+  --     -- To cycle back is search history
+  --     pcall(require('telescope').load_extension, 'smart_history')
+  --     -- require('telescope').load_extension 'frecency'
+  --     require('telescope').load_extension 'smart_open'
+  --     -- require('telescope').load_extension 'harpoon'
+  --
+  --     -- local harpoon = require 'harpoon'
+  --     -- local conf = require('telescope.config').values
+  --     -- local function toggle_telescope(harpoon_files)
+  --     --   local file_paths = {}
+  --     --   for _, item in ipairs(harpoon_files.items) do
+  --     --     table.insert(file_paths, item.value)
+  --     --   end
+  --     --
+  --     --   require('telescope.pickers')
+  --     --     .new({}, {
+  --     --       prompt_title = 'Harpoon',
+  --     --       finder = require('telescope.finders').new_table {
+  --     --         results = file_paths,
+  --     --       },
+  --     --       previewer = conf.file_previewer {},
+  --     --       sorter = conf.generic_sorter {},
+  --     --     })
+  --     --     :find()
+  --     -- end
+  --     --
+  --     -- vim.keymap.set('n', '<leader>fh', function()
+  --     --   toggle_telescope(harpoon:list())
+  --     -- end, { desc = 'Open harpoon window' })
+  --
+  --     -- vim.keymap.set('n', '<C-e>', function()
+  --     --   toggle_telescope(harpoon:list())
+  --     -- end, { desc = 'Open harpoon window' })
+  --
+  --     -- See `:help telescope.builtin`
+  --     local builtin = require 'telescope.builtin'
+  --
+  --     -- vim.keymap.set('n', '<leader>ff', function()
+  --     --   builtin.git_files { show_untracked = true }
+  --     -- end, { desc = '[F]ind [F]iles' })
+  --
+  --     vim.keymap.set('v', '<leader>fw', function()
+  --       local text = getVisualSelection()
+  --       builtin.grep_string { search = text }
+  --     end, { desc = '[F]ind current [W]ord' })
+  --
+  --     vim.keymap.set('n', '<leader>fw', builtin.grep_string, { desc = '[F]ind current [W]ord' })
+  --     vim.keymap.set('n', '<leader>fg', builtin.live_grep, { desc = '[F]ind by [G]rep' })
+  --     vim.keymap.set('n', '<leader>fr', builtin.resume, { desc = '[F]ind [R]esume' })
+  --
+  --     -- In current buffer
+  --     vim.keymap.set('n', '<leader>fd', function()
+  --       builtin.diagnostics { bufnr = 0 }
+  --     end, { desc = '[F]ind [D]iagnostic' })
+  --     -- In all buffers
+  --     vim.keymap.set('n', '<leader>fD', function()
+  --       builtin.diagnostics { bufnr = nil }
+  --     end, { desc = '[F]ind [D]iagnostic' })
+  --
+  --     vim.keymap.set('n', '<leader>fs', function()
+  --       builtin.lsp_document_symbols { fname_width = 60, symbol_width = 60 }
+  --     end, { desc = '[F]ind [S]ymbols' })
+  --     vim.keymap.set('n', '<leader>fS', builtin.lsp_dynamic_workspace_symbols, { desc = '[F]ind [S]ymbols' })
+  --     -- vim.keymap.set('n', '<leader>fh', builtin.search_history, { desc = '[F]ind [H]istory' })
+  --     -- vim.keymap.set('n', '<leader><leader>', builtin.git_status, { desc = '[F]ind by git [S]tatus' })
+  --
+  --     vim.keymap.set('n', '<leader>ff', function()
+  --       require('telescope').extensions.smart_open.smart_open {
+  --         cwd_only = true,
+  --       }
+  --       -- require('telescope').extensions.frecency.frecency {
+  --       --   workspace = 'CWD',
+  --       -- }
+  --     end, { desc = '[F]ind [F]iles' })
+  --
+  --     vim.keymap.set('n', '<leader>fo', function()
+  --       builtin.git_status()
+  --     end, { desc = '[F]ind by git status' })
+  --
+  --     vim.keymap.set('n', '<leader><leader>', function()
+  --       builtin.lsp_dynamic_workspace_symbols()
+  --     end, { desc = '[F]ind by git [S]tatus' })
+  --
+  --     -- vim.keymap.set('n', '<leader>fm', function()
+  --     --   builtin.marks { mark_type = 'local' }
+  --     -- end, { desc = '[F]ind [M]arks' })
+  --     -- vim.keymap.set('n', '<leader>fm', function()
+  --     --   require('telescope').extensions.harpoon.marks()
+  --     -- end, { desc = '[F]ind [M]arks' })
+  --
+  --     -- Shortcut for searching your neovim configuration files
+  --     -- vim.keymap.set('n', '<leader>fn', function()
+  --     --   builtin.find_files { cwd = vim.fn.stdpath 'config' }
+  --     -- end, { desc = '[S]earch [N]eovim files' })
+  --   end,
+  -- },
 
   { -- LSP Configuration & Plugins
     'neovim/nvim-lspconfig',
@@ -671,6 +732,7 @@ require('lazy').setup {
       'williamboman/mason.nvim',
       'williamboman/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
+      'fzf-lua',
 
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
@@ -757,29 +819,63 @@ require('lazy').setup {
           -- Jump to the definition of the word under your cursor.
           --  This is where a variable was first declared, or where a function is defined, etc.
           --  To jump back, press <C-T>.
-          map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
-
-          map('ds', vim.diagnostic.open_float, '[D]iagnost [S]how')
+          map('gd', function()
+            require('fzf-lua').lsp_definitions { formatter = 'path.filename_first' }
+          end, '[G]oto [D]efinition')
 
           -- Find references for the word under your cursor.
-          map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
+          map('gr', function()
+            require('fzf-lua').lsp_references { formatter = 'path.filename_first' }
+          end, '[G]oto [R]eferences')
 
           -- Jump to the implementation of the word under your cursor.
           --  Useful when your language has ways of declaring types without an actual implementation.
-          map('gi', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
+          map('gi', function()
+            require('fzf-lua').lsp_implementations { formatter = 'path.filename_first' }
+          end, '[G]oto [I]mplementation')
 
           -- Jump to the type of the word under your cursor.
           --  Useful when you're not sure what type a variable is and you want to see
           --  the definition of its *type*, not where it was *defined*.
-          map('gD', require('telescope.builtin').lsp_type_definitions, 'Type [D]efinition')
+          map('gD', function()
+            require('fzf-lua').lsp_typedefs { formatter = 'path.filename_first' }
+          end, 'Type [D]efinition')
 
-          -- Fuzzy find all the symbols in your current document.
-          --  Symbols are things like variables, functions, types, etc.
-          map('<leader>cs', require('telescope.builtin').lsp_document_symbols, '[C]ode [S]ymbols')
+          map('gc', function()
+            require('fzf-lua').lsp_outgoing_calls { formatter = 'path.filename_first' }
+          end, '[G]oto outgoing [C]alls')
+          map('gC', function()
+            require('fzf-lua').lsp_incoming_calls { formatter = 'path.filename_first' }
+          end, '[G]oto incoming [C]alls')
 
-          -- Fuzzy find all the symbols in your current workspace
-          --  Similar to document symbols, except searches over your whole project.
-          map('<leader>cS', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[C]ode workspace [S]ymbols')
+          map('ds', vim.diagnostic.open_float, '[D]iagnost [S]how')
+
+          -- -- Jump to the definition of the word under your cursor.
+          -- --  This is where a variable was first declared, or where a function is defined, etc.
+          -- --  To jump back, press <C-T>.
+          -- map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
+          --
+          -- map('ds', vim.diagnostic.open_float, '[D]iagnost [S]how')
+          --
+          -- -- Find references for the word under your cursor.
+          -- map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
+          --
+          -- -- Jump to the implementation of the word under your cursor.
+          -- --  Useful when your language has ways of declaring types without an actual implementation.
+          -- map('gi', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
+          --
+          -- -- Jump to the type of the word under your cursor.
+          -- --  Useful when you're not sure what type a variable is and you want to see
+          -- --  the definition of its *type*, not where it was *defined*.
+          -- map('gD', require('telescope.builtin').lsp_type_definitions, 'Type [D]efinition')
+          --
+          -- -- Fuzzy find all the symbols in your current document.
+          -- --  Symbols are things like variables, functions, types, etc.
+          -- map('<leader>cs', require('telescope.builtin').lsp_document_symbols, '[C]ode [S]ymbols')
+          --
+          -- -- Fuzzy find all the symbols in your current workspace
+          -- --  Similar to document symbols, except searches over your whole project.
+          -- map('<leader>cS', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[C]ode workspace [S]ymbols')
 
           -- Rename the variable under your cursor
           --  Most Language Servers support renaming across files, etc.
@@ -1312,32 +1408,32 @@ require('lazy').setup {
   --   end,
   -- },
 
-  -- {
-  --   'zbirenbaum/copilot.lua',
-  --   config = function()
-  --     vim.g.copilot_proxy = 'http://91.108.241.124:56382'
-  --
-  --     require('copilot').setup {
-  --       suggestion = {
-  --         auto_trigger = true,
-  --         keymap = {
-  --           accept = '<C-u>',
-  --           accept_word = false,
-  --           accept_line = false,
-  --           next = '<C-j>',
-  --           prev = '<C-k>',
-  --           dismiss = '<C-d>',
-  --         },
-  --       },
-  --       filetypes = {
-  --         yaml = true,
-  --       },
-  --     }
-  --   end,
-  --   dependencies = {
-  --     'AndreM222/copilot-lualine',
-  --   },
-  -- },
+  {
+    'zbirenbaum/copilot.lua',
+    config = function()
+      vim.g.copilot_proxy = 'http://91.108.241.124:56382'
+
+      require('copilot').setup {
+        suggestion = {
+          auto_trigger = true,
+          keymap = {
+            accept = '<C-u>',
+            accept_word = false,
+            accept_line = false,
+            next = '<C-j>',
+            prev = '<C-k>',
+            dismiss = '<C-d>',
+          },
+        },
+        filetypes = {
+          yaml = true,
+        },
+      }
+    end,
+    dependencies = {
+      'AndreM222/copilot-lualine',
+    },
+  },
 
   {
     -- Set lualine as statusline
@@ -2135,16 +2231,16 @@ require('lazy').setup {
     },
   },
   -- Copilot on steroids
-  {
-    'supermaven-inc/supermaven-nvim',
-    config = function()
-      require('supermaven-nvim').setup {
-        keymaps = {
-          accept_suggestion = '<C-u>',
-        },
-      }
-    end,
-  },
+  -- {
+  --   'supermaven-inc/supermaven-nvim',
+  --   config = function()
+  --     require('supermaven-nvim').setup {
+  --       keymaps = {
+  --         accept_suggestion = '<C-u>',
+  --       },
+  --     }
+  --   end,
+  -- },
   {
     'folke/trouble.nvim',
     opts = {
@@ -2212,15 +2308,6 @@ require('lazy').setup {
     config = function()
       require('persistence').setup {}
       vim.api.nvim_set_keymap('n', '<leader>qr', [[<cmd>lua require("persistence").load({ last = true })<cr>]], { desc = 'Restore persistance' })
-    end,
-  },
-  {
-    'ibhagwan/fzf-lua',
-    -- optional for icon support
-    dependencies = { 'nvim-tree/nvim-web-devicons' },
-    config = function()
-      -- calling `setup` is optional for customization
-      require('fzf-lua').setup {}
     end,
   },
   {

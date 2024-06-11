@@ -8,9 +8,37 @@ local event = require('nui.utils.autocmd').event
 local a = require 'plenary.async'
 local u = require 'plenary.async.util'
 --- @type Baleia
-local baleia = nil
+local baleia = require('baleia').setup {
+  async = false,
+}
 
 local M = {}
+
+-- Function to display or update the sticky header window
+local function display_progress_header(bufid, winid)
+  -- local content = { '== Sticky Header Content ==' } -- Content to display in the header
+  local height = 1 -- Height of the header window
+
+  local parent_width = api.nvim_win_get_width(winid)
+  local parent_height = api.nvim_win_get_height(winid)
+  local popupid = api.nvim_open_win(bufid, false, {
+    width = parent_width - 6,
+    height = height,
+    focusable = false,
+    noautocmd = true,
+    style = 'minimal',
+    win = winid,
+    relative = 'win',
+    row = parent_height - 1,
+    -- col = parent_width - cur_width,
+    col = 0,
+    zindex = 100,
+    anchor = 'NW',
+  })
+
+  return popupid
+end
+
 ---@diagnostic disable-next-line: unused-local
 function M.setup(args)
   baleia = require('baleia').setup {
@@ -22,6 +50,11 @@ local split_buf = api.nvim_create_buf(false, true)
 local popup_buf = api.nvim_create_buf(false, true)
 
 local buffers = { split_buf, popup_buf }
+
+local progress_split_buf = api.nvim_create_buf(false, true)
+local progress_popup_buf = api.nvim_create_buf(false, true)
+
+local progress_buffers = { progress_split_buf, progress_popup_buf }
 
 local is_split_opened = false
 local is_popup_opened = false
@@ -66,6 +99,7 @@ local function show_diagnostics(bufnr, ns, results)
 end
 
 local function open_popup()
+  local popupid = nil
   local popup = Popup {
     enter = true,
     bufnr = popup_buf,
@@ -82,7 +116,10 @@ local function open_popup()
 
   popup:on(event.WinClosed, function()
     is_popup_opened = false
-  end)
+    if popupid then
+      vim.api.nvim_win_close(popupid, false)
+    end
+  end, { once = true })
 
   -- popup:on(event.BufLeave, function()
   --   is_popup_opened = false
@@ -91,12 +128,16 @@ local function open_popup()
 
   popup:mount()
 
+  popupid = display_progress_header(progress_split_buf, popup.winid)
+
   is_popup_opened = true
 
   return popup
 end
 
 local function open_split()
+  local popupid = nil
+
   local split = Split {
     relative = 'editor',
     position = 'bottom',
@@ -107,10 +148,18 @@ local function open_split()
 
   split:on(event.WinClosed, function()
     is_split_opened = false
-  end)
+    if popupid then
+      vim.api.nvim_win_close(popupid, false)
+    end
+  end, { once = true })
 
   -- mount/open the component
   split:mount()
+
+  vim.api.nvim_win_set_option(split.winid, 'statusline', '')
+  vim.api.nvim_win_set_option(split.winid, 'laststatus', 0)
+
+  popupid = display_progress_header(progress_split_buf, split.winid)
 
   is_split_opened = true
 end
@@ -127,7 +176,7 @@ local function try_open_popup()
   end
 end
 
----@param mode win_mode
+----@param mode win_mode
 local function try_open(mode)
   if mode == 'popup' then
     try_open_popup()
@@ -147,7 +196,11 @@ local function scroll_down(buf)
     if win_bufnr == buf then
       local line_count = vim.api.nvim_buf_line_count(buf)
 
-      vim.api.nvim_win_set_cursor(win, { line_count, 0 })
+      if line_count == 0 or line_count == 1 then
+        return
+      end
+
+      vim.api.nvim_win_set_cursor(win, { line_count - 1, 0 })
     end
   end
 end
@@ -160,7 +213,7 @@ local function should_continue_scroll(buf)
       local current_pos = vim.api.nvim_win_get_cursor(win)
       local line_count = vim.api.nvim_buf_line_count(buf)
 
-      return current_pos[1] == line_count
+      return current_pos[1] >= line_count - 1
     end
   end
 end
@@ -205,8 +258,10 @@ function M.run(current_buffer, func_names, sub_func_names, cwd, module)
     local cloned_args = { unpack(args, 2, 2 + #args) }
 
     for _, buf in ipairs(buffers) do
-      baleia.buf_set_lines(buf, 0, 1, false, {
+      baleia.buf_set_lines(buf, 0, -1, false, {
+        '',
         'Running test: ' .. table.concat(cloned_args, ' '),
+        '',
       })
       scroll_down(buf)
     end
@@ -217,17 +272,23 @@ function M.run(current_buffer, func_names, sub_func_names, cwd, module)
         local passedTime = vim.loop.now() - current_time
         -- todo: add spinner
         for _, buf in ipairs(buffers) do
-          baleia.buf_set_lines(buf, 1, 2, false, {
+          baleia.buf_set_lines(buf, 2, 3, false, {
             'Time elapsed: ' .. string.format('%.2f', passedTime / 1000) .. 's',
           })
+        end
+
+        for _, buf in ipairs(progress_buffers) do
+          local progress = string.format('%-7s %s', 'Running', string.format('%.2f', passedTime / 1000) .. 's')
+          vim.api.nvim_buf_set_lines(buf, 0, -1, false, { progress })
+          vim.api.nvim_buf_add_highlight(buf, -1, 'DiagnosticInfo', 0, 0, -1)
         end
         u.sleep(100)
       end
     end)
     for _, buf in ipairs(buffers) do
-      baleia.buf_set_lines(buf, 2, 4, false, { 'Status: running', '' })
+      baleia.buf_set_lines(buf, 3, 5, false, { 'Status: running', '', '' })
       scroll_down(buf)
-      vim.api.nvim_buf_add_highlight(buf, -1, 'DiagnosticInfo', 2, 0, -1)
+      vim.api.nvim_buf_add_highlight(buf, -1, 'DiagnosticInfo', 3, 0, -1)
     end
 
     local pid, receiver = cmd.run(cwd, args)
@@ -244,17 +305,37 @@ function M.run(current_buffer, func_names, sub_func_names, cwd, module)
         return
       end
 
+      for _, buf in ipairs(progress_buffers) do
+        if result.type == 'exit' then
+          local caption = ''
+          local color = ''
+
+          if result.code ~= 0 then
+            caption = 'Failed'
+            color = 'DiagnosticError'
+          else
+            caption = 'Passed'
+            color = 'DiagnosticOk'
+          end
+
+          local passedTime = vim.loop.now() - current_time
+          local progress = string.format('%-7s %s', caption, string.format('%.2f', passedTime / 1000) .. 's')
+          vim.api.nvim_buf_set_lines(buf, 0, -1, false, { progress })
+          vim.api.nvim_buf_add_highlight(buf, -1, color, 0, 0, -1)
+        end
+      end
+
       for _, buf in ipairs(buffers) do
         local should_scroll = should_continue_scroll(buf)
         if result.type == 'exit' then
           if result.code ~= 0 then
-            baleia.buf_set_lines(buf, 2, 4, false, { 'Status: failed', '' })
+            baleia.buf_set_lines(buf, 3, 5, false, { 'Status: failed', '' })
 
-            vim.api.nvim_buf_add_highlight(buf, -1, 'DiagnosticError', 2, 0, -1)
+            vim.api.nvim_buf_add_highlight(buf, -1, 'DiagnosticError', 3, 0, -1)
           else
-            baleia.buf_set_lines(buf, 2, 4, false, { 'Status: passed', '' })
+            baleia.buf_set_lines(buf, 3, 5, false, { 'Status: passed', '' })
 
-            vim.api.nvim_buf_add_highlight(buf, -1, 'DiagnosticOk', 2, 0, -1)
+            vim.api.nvim_buf_add_highlight(buf, -1, 'DiagnosticOk', 3, 0, -1)
           end
 
           show_diagnostics(current_buffer, ns, results)
@@ -271,7 +352,9 @@ function M.run(current_buffer, func_names, sub_func_names, cwd, module)
               return line ~= ''
             end, lines)
 
-            baleia.buf_set_lines(buf, line_count, -1, false, lines)
+            table.insert(lines, '')
+
+            baleia.buf_set_lines(buf, line_count - 1, -1, false, lines)
           end
 
           table.insert(results, result.data)
@@ -280,7 +363,7 @@ function M.run(current_buffer, func_names, sub_func_names, cwd, module)
         if result.type == 'stderr' then
           local lines = vim.split(result.error, '\n')
           if #lines > 0 then
-            baleia.buf_set_lines(buf, 4, -1, false, lines)
+            baleia.buf_set_lines(buf, 5, -1, false, lines)
 
             for i = 0, #lines - 1 do
               vim.api.nvim_buf_add_highlight(buf, -1, 'DiagnosticError', 4 + i, 0, -1)
@@ -409,8 +492,9 @@ function M.current_win_mode()
   end
 end
 
--- M.open 'popup'
--- M.run(api.nvim_get_current_buf(), { 'TestSum' }, nil, '/Users/quolpr/.config/nvim/go_test', './abc')
--- require('plenary.reload').reload_module('gotest', false)
+M.open 'split'
+
+M.run(api.nvim_get_current_buf(), { 'TestSum' }, nil, '/Users/quolpr/.config/nvim/go_test', './abc')
+require('plenary.reload').reload_module('gotest', false)
 
 return M

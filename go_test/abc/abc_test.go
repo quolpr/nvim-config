@@ -19,8 +19,6 @@ func TestSum(t *testing.T) {
 	fmt.Println("hi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!")
 	time.Sleep(time.Millisecond * 500)
 	fmt.Println("hi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!")
-	time.Sleep(time.Millisecond * 500)
-	fmt.Println("hi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!\nhi!")
 
 	if c != a+b+1 {
 		t.Errorf("Sum(%d, %d) = %d, want %d", a, b, c, a+b)

@@ -3,6 +3,8 @@
 -- vim.opt.spell = true
 -- vim.opt.spelllang = 'en_us,ru'
 
+vim.opt.termguicolors = true
+
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -139,12 +141,19 @@ vim.opt.hlsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Diagnostic keymaps
-vim.keymap.set('n', '[d', function()
+vim.keymap.set('n', '[e', function()
   vim.diagnostic.goto_prev { severity = { min = vim.diagnostic.severity.ERROR } }
-end, { desc = 'Go to previous [D]iagnostic message' })
-vim.keymap.set('n', ']d', function()
+end, { desc = 'Go to previous diagnostic [E]rror message' })
+vim.keymap.set('n', ']e', function()
   vim.diagnostic.goto_next { severity = { min = vim.diagnostic.severity.ERROR } }
-end, { desc = 'Go to next [D]iagnostic message' })
+end, { desc = 'Go to next diagnostic [E]rror message' })
+
+vim.keymap.set('n', '[w', function()
+  vim.diagnostic.goto_prev { severity = { min = vim.diagnostic.severity.WARN } }
+end, { desc = 'Go to previous diagnostic [W]arn message' })
+vim.keymap.set('n', ']w', function()
+  vim.diagnostic.goto_next { severity = { min = vim.diagnostic.severity.WARN } }
+end, { desc = 'Go to next diagnostic [W]arn message' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -736,7 +745,7 @@ require('lazy').setup {
       'williamboman/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
       'fzf-lua',
-      'luckasRanarison/clear-action.nvim',
+      -- 'luckasRanarison/clear-action.nvim',
 
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
@@ -884,12 +893,12 @@ require('lazy').setup {
           -- Rename the variable under your cursor
           --  Most Language Servers support renaming across files, etc.
           map('<leader>cc', vim.lsp.buf.rename, '[C]ode [C]hange')
-          map('<leader>ca', require('clear-action').code_action, '[C]ode [A]ction')
-          -- vmap('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
+          -- map('<leader>ca', require('clear-action').code_action, '[C]ode [A]ction')
+          vmap('<leader>ca', require('fzf-lua').lsp_code_actions, '[C]ode [A]ction')
 
           -- Execute a code action, usually your cursor needs to be on top of an error
           -- or a suggestion from your LSP for this to activate.
-          -- map('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
+          map('<leader>ca', require('fzf-lua').lsp_code_actions, '[C]ode [A]ction')
 
           -- Opens a popup that displays documentation about the word under your cursor
           --  See `:help K` for why this keymap
@@ -2370,6 +2379,11 @@ require('lazy').setup {
   {
     'rcarriga/nvim-notify',
     config = function()
+      ---@diagnostic disable-next-line: missing-fields
+      require('notify').setup {
+        stages = 'static',
+      }
+
       vim.notify = require 'notify'
     end,
     priority = 1000,
@@ -2382,24 +2396,52 @@ require('lazy').setup {
       require('matchparen').setup {}
     end,
   },
-  {
-    'luckasRanarison/clear-action.nvim',
-    config = function()
-      require('clear-action').setup {
-        signs = {
-          enable = false,
-        },
-        popup = {
-          enable = true,
-        },
-      }
-    end,
-  },
+  -- {
+  --   'luckasRanarison/clear-action.nvim',
+  --   config = function()
+  --     require('clear-action').setup {
+  --       signs = {
+  --         enable = false,
+  --       },
+  --       popup = {
+  --         enable = true,
+  --       },
+  --     }
+  --   end,
+  -- },
   -- {
   --   'ravibrock/spellwarn.nvim',
   --   event = 'VeryLazy',
   --   config = true,
   -- },
+
+  {
+    'nvimtools/none-ls.nvim',
+    dependencies = {
+      'davidmh/cspell.nvim',
+    },
+    config = function()
+      local config = {
+        --- @return string|nil The path of the json file
+        find_json = function()
+          return (vim.fn.stdpath 'config') .. '/cspell.json'
+        end,
+      }
+
+      local cspell = require 'cspell'
+      require('null-ls').setup {
+        sources = {
+          cspell.diagnostics.with {
+            config = config,
+            diagnostics_postprocess = function(diagnostic)
+              diagnostic.severity = vim.diagnostic.severity['WARN']
+            end,
+          },
+          cspell.code_actions.with { config = config },
+        },
+      }
+    end,
+  },
 }
 
 -- The line beneath this is called `modeline`. See `:help modeline`

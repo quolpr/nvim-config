@@ -254,6 +254,7 @@ vim.opt.langmap =
   'ФИСВУАПРШОЛДЬТЩЗЙКЫЕГМЦЧНЯ;ABCDEFGHIJKLMNOPQRSTUVWXYZ,фисвуапршолдьтщзйкыегмцчня;abcdefghijklmnopqrstuvwxyz'
 
 vim.g.loaded_matchparen = 1
+vim.g.loaded_matchit = 1
 
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup {
@@ -1302,16 +1303,16 @@ require('lazy').setup {
     build = ':TSUpdate',
     dependencies = {
       -- Support % for do/end and others. Horrible performance :(
-      -- 'andymass/vim-matchup',
+      'andymass/vim-matchup',
     },
     config = function()
       -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
 
       ---@diagnostic disable-next-line: missing-fields
       require('nvim-treesitter.configs').setup {
-        -- matchup = {
-        --   enable = true,
-        -- },
+        matchup = {
+          enable = true,
+        },
         ensure_installed = { 'bash', 'c', 'html', 'lua', 'markdown', 'vim', 'vimdoc', 'diff' },
         -- Autoinstall languages that are not installed
         auto_install = true,
@@ -2388,14 +2389,14 @@ require('lazy').setup {
     end,
     priority = 1000,
   },
-  {
-    -- faster matchparen
-    -- During profiling I noticeed that matchparen is the slow scroll
-    'monkoose/matchparen.nvim',
-    config = function()
-      require('matchparen').setup {}
-    end,
-  },
+  -- {
+  --   -- faster matchparen
+  --   -- During profiling I noticeed that matchparen is the slow scroll
+  --   'monkoose/matchparen.nvim',
+  --   config = function()
+  --     require('matchparen').setup {}
+  --   end,
+  -- },
   -- {
   --   'luckasRanarison/clear-action.nvim',
   --   config = function()

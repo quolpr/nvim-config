@@ -1,5 +1,8 @@
 --Last commit review: 5aeddfdd5d0308506ec63b0e4f8de33e2a39355fer
 
+-- vim.opt.spell = true
+-- vim.opt.spelllang = 'en_us,ru'
+
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -733,6 +736,7 @@ require('lazy').setup {
       'williamboman/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
       'fzf-lua',
+      'luckasRanarison/clear-action.nvim',
 
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
@@ -880,12 +884,12 @@ require('lazy').setup {
           -- Rename the variable under your cursor
           --  Most Language Servers support renaming across files, etc.
           map('<leader>cc', vim.lsp.buf.rename, '[C]ode [C]hange')
-          map('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
-          vmap('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
+          map('<leader>ca', require('clear-action').code_action, '[C]ode [A]ction')
+          -- vmap('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
 
           -- Execute a code action, usually your cursor needs to be on top of an error
           -- or a suggestion from your LSP for this to activate.
-          map('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
+          -- map('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
 
           -- Opens a popup that displays documentation about the word under your cursor
           --  See `:help K` for why this keymap
@@ -1004,7 +1008,7 @@ require('lazy').setup {
                 unusedwrite = true,
                 useany = true,
               },
-              usePlaceholders = true,
+              usePlaceholders = false,
               completeUnimported = true,
               staticcheck = true,
               directoryFilters = { '-.git', '-.vscode', '-.idea', '-.vscode-test', '-node_modules' },
@@ -1201,7 +1205,7 @@ require('lazy').setup {
           -- Accept ([y]es) the completion.
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
-          ['<C-y>'] = cmp.mapping.confirm { select = true },
+          ['<C-y>'] = cmp.mapping.confirm { select = false },
 
           -- Manually trigger a completion from nvim-cmp.
           --  Generally you don't need this, because nvim-cmp will display
@@ -1875,7 +1879,6 @@ require('lazy').setup {
 
   -- Show tooltip on args while typing
   {
-
     'ray-x/lsp_signature.nvim',
     event = 'VeryLazy',
     opts = {
@@ -2373,12 +2376,30 @@ require('lazy').setup {
   },
   {
     -- faster matchparen
-    -- During profiling I noticed that matchparen is the slow scroll
+    -- During profiling I noticeed that matchparen is the slow scroll
     'monkoose/matchparen.nvim',
     config = function()
       require('matchparen').setup {}
     end,
   },
+  {
+    'luckasRanarison/clear-action.nvim',
+    config = function()
+      require('clear-action').setup {
+        signs = {
+          enable = false,
+        },
+        popup = {
+          enable = true,
+        },
+      }
+    end,
+  },
+  -- {
+  --   'ravibrock/spellwarn.nvim',
+  --   event = 'VeryLazy',
+  --   config = true,
+  -- },
 }
 
 -- The line beneath this is called `modeline`. See `:help modeline`

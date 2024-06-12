@@ -3,6 +3,7 @@ package abc_test
 import (
 	"abc/go_test/abc"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 )
@@ -26,6 +27,8 @@ func TestSum(t *testing.T) {
 }
 func TestSum2(t *testing.T) {
 	fmt.Println("TestSum2 heyy!")
+
+	fmt.Fprint(os.Stderr, "number of foo\n")
 
 	t.Run("TestSum", func(t *testing.T) {
 		a := 1

@@ -2,8 +2,10 @@
 
 -- vim.opt.spell = true
 -- vim.opt.spelllang = 'en_us,ru'
+--
 
 vim.opt.termguicolors = true
+vim.opt.termsync = false
 
 -- Set <space> as the leader key
 -- See `:help mapleader`
@@ -254,7 +256,7 @@ vim.opt.langmap =
   'ФИСВУАПРШОЛДЬТЩЗЙКЫЕГМЦЧНЯ;ABCDEFGHIJKLMNOPQRSTUVWXYZ,фисвуапршолдьтщзйкыегмцчня;abcdefghijklmnopqrstuvwxyz'
 
 vim.g.loaded_matchparen = 1
-vim.g.loaded_matchit = 1
+-- vim.g.loaded_matchit = 1
 
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup {
@@ -751,10 +753,6 @@ require('lazy').setup {
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
       { 'j-hui/fidget.nvim', opts = {} },
-
-      -- `neodev` configures Lua LSP for your Neovim config, runtime and plugins
-      -- used for completion, annotations and signatures of Neovim apis
-      { 'folke/neodev.nvim', opts = {} },
     },
     config = function()
       -- For autoformat conform.nvim is used
@@ -1052,7 +1050,9 @@ require('lazy').setup {
         sqlls = {},
         eslint = {},
         biome = {},
+        bufls = {},
         -- yamlls = {},
+        --
         vacuum = {},
         lua_ls = {
           -- cmd = {...},
@@ -1133,11 +1133,23 @@ require('lazy').setup {
         javascript = { { 'biome' } },
         typescript = { { 'biome' } },
         typescriptreact = { { 'biome' } },
-        go = { 'gofmt' },
+        go = { 'gofmt', 'goimports' },
+        proto = { 'buf' },
       },
     },
   },
-
+  {
+    'folke/lazydev.nvim',
+    ft = 'lua', -- only load on lua files
+    opts = {
+      library = {
+        -- See the configuration section for more details
+        -- Load luvit types when the `vim.uv` word is found
+        { path = 'luvit-meta/library', words = { 'vim%.uv' } },
+      },
+    },
+  },
+  { 'Bilal2453/luvit-meta', lazy = true }, -- optional `vim.uv` typings
   { -- Autocompletion
     'hrsh7th/nvim-cmp',
     event = 'InsertEnter',
@@ -1244,6 +1256,10 @@ require('lazy').setup {
           -- end, { 'i', 's' }),
         },
         sources = {
+          {
+            name = 'lazydev',
+            group_index = 0, -- set group index to 0 to skip loading LuaLS completions
+          },
           { name = 'nvim_lsp' },
           { name = 'nvim_lua' },
           { name = 'buffer' },
@@ -1283,7 +1299,7 @@ require('lazy').setup {
       --  - va)  - [V]isually select [A]round [)]paren
       --  - yinq - [Y]ank [I]nside [N]ext [']quote
       --  - ci'  - [C]hange [I]nside [']quote
-      require('mini.ai').setup { n_lines = 500 }
+      -- require('mini.ai').setup { n_lines = 500 }
 
       -- require('mini.hues').setup { background = '#002734', foreground = '#c0c8cc' }
       -- Add/delete/replace surroundings (brackets, quotes, etc.)
@@ -1303,16 +1319,16 @@ require('lazy').setup {
     build = ':TSUpdate',
     dependencies = {
       -- Support % for do/end and others. Horrible performance :(
-      'andymass/vim-matchup',
+      -- 'andymass/vim-matchup',
     },
     config = function()
       -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
 
       ---@diagnostic disable-next-line: missing-fields
       require('nvim-treesitter.configs').setup {
-        matchup = {
-          enable = true,
-        },
+        -- matchup = {
+        --   enable = true,
+        -- },
         ensure_installed = { 'bash', 'c', 'html', 'lua', 'markdown', 'vim', 'vimdoc', 'diff' },
         -- Autoinstall languages that are not installed
         auto_install = true,
@@ -1692,12 +1708,13 @@ require('lazy').setup {
   { 'kevinhwang91/nvim-bqf' },
 
   -- Highlight #hexhex colors
-  {
-    'NvChad/nvim-colorizer.lua',
-    config = function()
-      require('colorizer').setup {}
-    end,
-  },
+  -- Slow at lua profiling
+  -- {
+  --   'norcalli/nvim-colorizer.lua',
+  --   config = function()
+  --     require('colorizer').setup {}
+  --   end,
+  -- },
 
   -- Auto close/rename html tags
   {
@@ -1871,21 +1888,21 @@ require('lazy').setup {
   -- },
 
   -- Show labels on f/F jumps
-  -- {
-  --   'unblevable/quick-scope',
-  --   config = function()
-  --     vim.cmd [[
-  --       let g:qs_second_highlight=0
-  --
-  --       " augroup qs_colors
-  --       "   autocmd!
-  --       "   autocmd ColorScheme * highlight QuickScopePrimary gui=underline ctermfg=155 cterm=underline
-  --       "   autocmd ColorScheme * highlight QuickScopeSecondary gui=underline ctermfg=81 cterm=underline
-  --       " augroup END
-  --       " highlight QuickScopePrimary guifg='#000' gui=underline cterm=underline
-  --     ]]
-  --   end,
-  -- },
+  {
+    'unblevable/quick-scope',
+    config = function()
+      vim.cmd [[
+        let g:qs_second_highlight=0
+
+        " augroup qs_colors
+        "   autocmd!
+        "   autocmd ColorScheme * highlight QuickScopePrimary gui=underline ctermfg=155 cterm=underline
+        "   autocmd ColorScheme * highlight QuickScopeSecondary gui=underline ctermfg=81 cterm=underline
+        " augroup END
+        " highlight QuickScopePrimary guifg='#000' gui=underline cterm=underline
+      ]]
+    end,
+  },
 
   -- Show tooltip on args while typing
   {
@@ -2324,43 +2341,48 @@ require('lazy').setup {
     end,
   },
   {
-    dir = './lua/gotest',
-    dev = true,
-    config = function()
-      require('gotest').setup {}
-    end,
+    dir = '~/projects/quolpr/quicktest.nvim',
+    opts = {},
     dependencies = {
-      'm00qek/baleia.nvim',
       'nvim-lua/plenary.nvim',
+      'MunifTanjim/nui.nvim',
+      'm00qek/baleia.nvim',
     },
     keys = function()
-      local gotest = require 'gotest'
+      local qt = function()
+        return require 'quicktest'
+      end
+
       local keys = {
         {
           '<leader>tr',
           function()
-            gotest.run_current(gotest.current_win_mode())
+            -- current_win_mode return currently opened panel, split or popup
+            qt().run_line(qt().current_win_mode())
+            -- You can force open split or popup like this:
+            -- qt().run_current('split')
+            -- qt().run_current('popup')
           end,
           desc = '[T]est [R]un',
         },
         {
           '<leader>tR',
           function()
-            gotest.run_file(gotest.current_win_mode())
+            qt().run_file(qt().current_win_mode())
           end,
           desc = '[T]est [R]un file',
         },
         {
           '<leader>tt',
           function()
-            gotest.open 'popup'
+            qt().toggle_win 'popup'
           end,
           desc = '[T]est [T]toggle result',
         },
         {
           '<leader>ts',
           function()
-            gotest.open 'split'
+            qt().toggle_win 'split'
           end,
           desc = '[T]est [S]plit result',
         },
@@ -2368,7 +2390,7 @@ require('lazy').setup {
         {
           '<leader>tp',
           function()
-            gotest.run_previous(gotest.current_win_mode())
+            qt().run_previous(qt().current_win_mode())
           end,
           desc = '[T]est [P]revious',
         },
@@ -2377,6 +2399,58 @@ require('lazy').setup {
       return keys
     end,
   },
+  -- {
+  --   dir = '~/projects/quolpr/quicktest.nvim',
+  --   config = function()
+  --     require('quicktest').setup()
+  --   end,
+  --   dependencies = {
+  --     'nvim-lua/plenary.nvim',
+  --   },
+  --   -- keys = function()
+  --   --   local gotest = require 'quicktest'
+  --   --   local keys = {
+  --   --     {
+  --   --       '<leader>tr',
+  --   --       function()
+  --   --         gotest.run_current(gotest.current_win_mode())
+  --   --       end,
+  --   --       desc = '[T]est [R]un',
+  --   --     },
+  --   --     {
+  --   --       '<leader>tR',
+  --   --       function()
+  --   --         gotest.run_file(gotest.current_win_mode())
+  --   --       end,
+  --   --       desc = '[T]est [R]un file',
+  --   --     },
+  --   --     {
+  --   --       '<leader>tt',
+  --   --       function()
+  --   --         gotest.open 'popup'
+  --   --       end,
+  --   --       desc = '[T]est [T]toggle result',
+  --   --     },
+  --   --     {
+  --   --       '<leader>ts',
+  --   --       function()
+  --   --         gotest.open 'split'
+  --   --       end,
+  --   --       desc = '[T]est [S]plit result',
+  --   --     },
+  --   --
+  --   --     {
+  --   --       '<leader>tp',
+  --   --       function()
+  --   --         gotest.run_previous(gotest.current_win_mode())
+  --   --       end,
+  --   --       desc = '[T]est [P]revious',
+  --   --     },
+  --   --   }
+  --   --
+  --   --   return keys
+  --   -- end,
+  -- },
   {
     'rcarriga/nvim-notify',
     config = function()
@@ -2389,14 +2463,14 @@ require('lazy').setup {
     end,
     priority = 1000,
   },
-  -- {
-  --   -- faster matchparen
-  --   -- During profiling I noticeed that matchparen is the slow scroll
-  --   'monkoose/matchparen.nvim',
-  --   config = function()
-  --     require('matchparen').setup {}
-  --   end,
-  -- },
+  {
+    -- faster matchparen
+    -- During profiling I noticeed that matchparen is the slow scroll
+    'monkoose/matchparen.nvim',
+    config = function()
+      require('matchparen').setup {}
+    end,
+  },
   -- {
   --   'luckasRanarison/clear-action.nvim',
   --   config = function()
@@ -2442,6 +2516,25 @@ require('lazy').setup {
         },
       }
     end,
+  },
+  {
+    'kdheepak/lazygit.nvim',
+    cmd = {
+      'LazyGit',
+      'LazyGitConfig',
+      'LazyGitCurrentFile',
+      'LazyGitFilter',
+      'LazyGitFilterCurrentFile',
+    },
+    -- optional for floating window border decoration
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+    },
+    -- setting the keybinding for LazyGit with 'keys' is recommended in
+    -- order to load the plugin when the command is run for the first time
+    keys = {
+      { '<leader>lg', '<cmd>LazyGit<cr>', desc = 'LazyGit' },
+    },
   },
 }
 

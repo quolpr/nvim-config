@@ -1367,29 +1367,29 @@ require('lazy').setup {
   -- My additional plugins:
 
   'mg979/vim-visual-multi',
-  {
-    'NeogitOrg/neogit',
-    dependencies = {
-      'nvim-lua/plenary.nvim', -- required
-      -- Only one of these is needed, not both.
-      'nvim-telescope/telescope.nvim', -- optional
-      'ibhagwan/fzf-lua', -- optional
-    },
-    config = function()
-      local neogit = require 'neogit'
-      neogit.setup {}
-    end,
-    keys = {
-      {
-        '<leader>go',
-        function()
-          local neogit = require 'neogit'
-          neogit.open { kind = 'tab' }
-        end,
-        desc = '[G]it [O]pen',
-      },
-    },
-  },
+  -- {
+  --   'NeogitOrg/neogit',
+  --   dependencies = {
+  --     'nvim-lua/plenary.nvim', -- required
+  --     -- Only one of these is needed, not both.
+  --     'nvim-telescope/telescope.nvim', -- optional
+  --     'ibhagwan/fzf-lua', -- optional
+  --   },
+  --   config = function()
+  --     local neogit = require 'neogit'
+  --     neogit.setup {}
+  --   end,
+  --   keys = {
+  --     {
+  --       '<leader>go',
+  --       function()
+  --         local neogit = require 'neogit'
+  --         neogit.open { kind = 'tab' }
+  --       end,
+  --       desc = '[G]it [O]pen',
+  --     },
+  --   },
+  -- },
   {
     'sindrets/diffview.nvim',
     dependencies = {
@@ -2533,7 +2533,7 @@ require('lazy').setup {
     -- setting the keybinding for LazyGit with 'keys' is recommended in
     -- order to load the plugin when the command is run for the first time
     keys = {
-      { '<leader>lg', '<cmd>LazyGit<cr>', desc = 'LazyGit' },
+      { '<leader>go', '<cmd>LazyGit<cr>', desc = '[G]it [O]pen' },
     },
   },
 }

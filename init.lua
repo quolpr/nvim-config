@@ -473,6 +473,11 @@ require('lazy').setup {
         files = {
           formatter = 'path.filename_first',
         },
+        git = {
+          files = {
+            cmd = 'git ls-files --others --exclude-standard --cached',
+          },
+        },
       }
 
       local fzf = require 'fzf-lua'
@@ -1317,18 +1322,12 @@ require('lazy').setup {
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
-    dependencies = {
-      -- Support % for do/end and others. Horrible performance :(
-      -- 'andymass/vim-matchup',
-    },
+    dependencies = {},
     config = function()
       -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
 
       ---@diagnostic disable-next-line: missing-fields
       require('nvim-treesitter.configs').setup {
-        -- matchup = {
-        --   enable = true,
-        -- },
         ensure_installed = { 'bash', 'c', 'html', 'lua', 'markdown', 'vim', 'vimdoc', 'diff' },
         -- Autoinstall languages that are not installed
         auto_install = true,
@@ -1438,32 +1437,32 @@ require('lazy').setup {
   --   end,
   -- },
 
-  {
-    'zbirenbaum/copilot.lua',
-    config = function()
-      vim.g.copilot_proxy = 'http://91.108.241.124:56382'
-
-      require('copilot').setup {
-        suggestion = {
-          auto_trigger = true,
-          keymap = {
-            accept = '<C-u>',
-            accept_word = false,
-            accept_line = false,
-            next = '<C-j>',
-            prev = '<C-k>',
-            dismiss = '<C-d>',
-          },
-        },
-        filetypes = {
-          yaml = true,
-        },
-      }
-    end,
-    dependencies = {
-      'AndreM222/copilot-lualine',
-    },
-  },
+  -- {
+  --   'zbirenbaum/copilot.lua',
+  --   config = function()
+  --     vim.g.copilot_proxy = 'http://91.108.241.124:56382'
+  --
+  --     require('copilot').setup {
+  --       suggestion = {
+  --         auto_trigger = true,
+  --         keymap = {
+  --           accept = '<C-u>',
+  --           accept_word = false,
+  --           accept_line = false,
+  --           next = '<C-j>',
+  --           prev = '<C-k>',
+  --           dismiss = '<C-d>',
+  --         },
+  --       },
+  --       filetypes = {
+  --         yaml = true,
+  --       },
+  --     }
+  --   end,
+  --   dependencies = {
+  --     'AndreM222/copilot-lualine',
+  --   },
+  -- },
 
   {
     -- Set lualine as statusline
@@ -1735,30 +1734,30 @@ require('lazy').setup {
   },
 
   -- Db viewer
-  {
-    'kndndrj/nvim-dbee',
-    dependencies = {
-      'MunifTanjim/nui.nvim',
-    },
-    build = function()
-      -- Install tries to automatically detect the install method.
-      -- if it fails, try calling it with one of these parameters:
-      --    "curl", "wget", "bitsadmin", "go"
-      require('dbee').install()
-    end,
-    config = function()
-      require('dbee').setup(--[[optional config]])
-    end,
-    keys = {
-      {
-        '<leader>d',
-        function()
-          require('dbee').toggle()
-        end,
-        desc = '[D]b viwer',
-      },
-    },
-  },
+  -- {
+  --   'kndndrj/nvim-dbee',
+  --   dependencies = {
+  --     'MunifTanjim/nui.nvim',
+  --   },
+  --   build = function()
+  --     -- Install tries to automatically detect the install method.
+  --     -- if it fails, try calling it with one of these parameters:
+  --     --    "curl", "wget", "bitsadmin", "go"
+  --     require('dbee').install()
+  --   end,
+  --   config = function()
+  --     require('dbee').setup(--[[optional config]])
+  --   end,
+  --   keys = {
+  --     {
+  --       '<leader>d',
+  --       function()
+  --         require('dbee').toggle()
+  --       end,
+  --       desc = '[D]b viwer',
+  --     },
+  --   },
+  -- },
 
   -- {
   --   'vim-test/vim-test',
@@ -1888,21 +1887,22 @@ require('lazy').setup {
   -- },
 
   -- Show labels on f/F jumps
-  {
-    'unblevable/quick-scope',
-    config = function()
-      vim.cmd [[
-        let g:qs_second_highlight=0
-
-        " augroup qs_colors
-        "   autocmd!
-        "   autocmd ColorScheme * highlight QuickScopePrimary gui=underline ctermfg=155 cterm=underline
-        "   autocmd ColorScheme * highlight QuickScopeSecondary gui=underline ctermfg=81 cterm=underline
-        " augroup END
-        " highlight QuickScopePrimary guifg='#000' gui=underline cterm=underline
-      ]]
-    end,
-  },
+  -- {
+  --   'unblevable/quick-scope',
+  --   config = function()
+  --     vim.cmd [[
+  --       let g:qs_second_highlight=0
+  --       let g:qs_highlight_on_keys = ['f', 'F', 't', 'T']
+  --
+  --       " augroup qs_colors
+  --       "   autocmd!
+  --       "   autocmd ColorScheme * highlight QuickScopePrimary gui=underline ctermfg=155 cterm=underline
+  --       "   autocmd ColorScheme * highlight QuickScopeSecondary gui=underline ctermfg=81 cterm=underline
+  --       " augroup END
+  --       " highlight QuickScopePrimary guifg='#000' gui=underline cterm=underline
+  --     ]]
+  --   end,
+  -- },
 
   -- Show tooltip on args while typing
   {
@@ -2260,17 +2260,17 @@ require('lazy').setup {
       },
     },
   },
-  -- Copilot on steroids
-  -- {
-  --   'supermaven-inc/supermaven-nvim',
-  --   config = function()
-  --     require('supermaven-nvim').setup {
-  --       keymaps = {
-  --         accept_suggestion = '<C-u>',
-  --       },
-  --     }
-  --   end,
-  -- },
+  --  Copilot on steroids
+  {
+    'supermaven-inc/supermaven-nvim',
+    config = function()
+      require('supermaven-nvim').setup {
+        keymaps = {
+          accept_suggestion = '<C-u>',
+        },
+      }
+    end,
+  },
   {
     'folke/trouble.nvim',
     opts = {
@@ -2341,63 +2341,63 @@ require('lazy').setup {
     end,
   },
   {
-    dir = '~/projects/quolpr/quicktest.nvim',
+    'quolpr/quicktest.nvim',
     opts = {},
     dependencies = {
       'nvim-lua/plenary.nvim',
       'MunifTanjim/nui.nvim',
       'm00qek/baleia.nvim',
     },
-    keys = function()
-      local qt = function()
-        return require 'quicktest'
-      end
+    keys = {
+      {
+        '<leader>tr',
+        function()
+          local qt = require 'quicktest'
+          -- current_win_mode return currently opened panel, split or popup
+          qt.run_line()
+          -- You can force open split or popup like this:
+          -- qt().run_current('split')
+          -- qt().run_current('popup')
+        end,
+        desc = '[T]est [R]un',
+      },
+      {
+        '<leader>tR',
+        function()
+          local qt = require 'quicktest'
 
-      local keys = {
-        {
-          '<leader>tr',
-          function()
-            -- current_win_mode return currently opened panel, split or popup
-            qt().run_line(qt().current_win_mode())
-            -- You can force open split or popup like this:
-            -- qt().run_current('split')
-            -- qt().run_current('popup')
-          end,
-          desc = '[T]est [R]un',
-        },
-        {
-          '<leader>tR',
-          function()
-            qt().run_file(qt().current_win_mode())
-          end,
-          desc = '[T]est [R]un file',
-        },
-        {
-          '<leader>tt',
-          function()
-            qt().toggle_win 'popup'
-          end,
-          desc = '[T]est [T]toggle result',
-        },
-        {
-          '<leader>ts',
-          function()
-            qt().toggle_win 'split'
-          end,
-          desc = '[T]est [S]plit result',
-        },
+          qt.run_file()
+        end,
+        desc = '[T]est [R]un file',
+      },
+      {
+        '<leader>tp',
+        function()
+          local qt = require 'quicktest'
 
-        {
-          '<leader>tp',
-          function()
-            qt().run_previous(qt().current_win_mode())
-          end,
-          desc = '[T]est [P]revious',
-        },
-      }
+          qt.run_previous()
+        end,
+        desc = '[T]est Run [P]revious',
+      },
+      {
+        '<leader>tt',
+        function()
+          local qt = require 'quicktest'
 
-      return keys
-    end,
+          qt.toggle_win 'popup'
+        end,
+        desc = '[T]est [T]oggle popup window',
+      },
+      {
+        '<leader>ts',
+        function()
+          local qt = require 'quicktest'
+
+          qt.toggle_win 'split'
+        end,
+        desc = '[T]est Toggle [S]plit window',
+      },
+    },
   },
   -- {
   --   dir = '~/projects/quolpr/quicktest.nvim',
@@ -2464,8 +2464,17 @@ require('lazy').setup {
     priority = 1000,
   },
   {
+    -- Horrible performance on highlight, so use matchparen.nvim
+    'andymass/vim-matchup',
+    setup = function()
+      vim.cmd [[
+        let g:matchup_matchparen_enabled = 0
+      ]]
+    end,
+  },
+  {
     -- faster matchparen
-    -- During profiling I noticeed that matchparen is the slow scroll
+    -- During profiling I noticeed that matchparen is the slow scroll, so that's why I use nvim version
     'monkoose/matchparen.nvim',
     config = function()
       require('matchparen').setup {}
@@ -2534,6 +2543,133 @@ require('lazy').setup {
     -- order to load the plugin when the command is run for the first time
     keys = {
       { '<leader>go', '<cmd>LazyGit<cr>', desc = '[G]it [O]pen' },
+    },
+  },
+  -- {
+  --   'nvim-neo-tree/neo-tree.nvim',
+  --   branch = 'v3.x',
+  --   dependencies = {
+  --     'nvim-lua/plenary.nvim',
+  --     'nvim-tree/nvim-web-devicons', -- not strictly required, but recommended
+  --     'MunifTanjim/nui.nvim',
+  --     '3rd/image.nvim',
+  --   },
+  --   config = function()
+  --     require('neo-tree').setup {
+  --       enable_diagnostics = false,
+  --       close_if_last_window = false,
+  --       default_component_configs = {
+  --         last_modified = { enabled = false },
+  --         file_size = { enabled = false },
+  --         created = { enabled = false },
+  --         type = { enabled = false },
+  --       },
+  --       filesystem = {
+  --         async_directory_scan = 'never',
+  --       },
+  --     }
+  --     vim.keymap.set('n', '_', '<cmd>Neotree source=filesystem reveal=true position=current <CR>', { desc = 'Open neotree' })
+  --   end,
+  -- },
+  {
+    'backdround/global-note.nvim',
+    config = function()
+      local get_project_name = function()
+        local result = vim
+          .system({
+            'git',
+            'rev-parse',
+            '--show-toplevel',
+          }, {
+            text = true,
+          })
+          :wait()
+
+        if result.stderr ~= '' then
+          vim.notify(result.stderr, vim.log.levels.WARN)
+          return nil
+        end
+
+        local project_directory = result.stdout:gsub('\n', '')
+
+        local project_name = vim.fs.basename(project_directory)
+        if project_name == nil then
+          vim.notify('Unable to get the project name', vim.log.levels.WARN)
+          return nil
+        end
+
+        return project_name
+      end
+
+      local get_git_branch = function()
+        local result = vim
+          .system({
+            'git',
+            'symbolic-ref',
+            '--short',
+            'HEAD',
+          }, {
+            text = true,
+          })
+          :wait()
+
+        if result.stderr ~= '' then
+          vim.notify(result.stderr, vim.log.levels.WARN)
+          return nil
+        end
+
+        return result.stdout:gsub('\n', '')
+      end
+
+      local global_note = require 'global-note'
+      global_note.setup {
+        additional_presets = {
+          git_branch_local = {
+            command_name = 'GitBranchNote',
+
+            directory = function()
+              return vim.fn.stdpath 'data' .. '/global-note/' .. get_project_name()
+            end,
+
+            filename = function()
+              local git_branch = get_git_branch()
+              if git_branch == nil then
+                return nil
+              end
+              return get_git_branch():gsub('[^%w-]', '-') .. '.md'
+            end,
+
+            title = get_git_branch,
+          },
+          project_local = {
+            command_name = 'ProjectNote',
+
+            filename = function()
+              return get_project_name() .. '.md'
+            end,
+
+            title = 'Project note',
+          },
+        },
+      }
+    end,
+    keys = {
+      {
+        '<leader>nb',
+        function()
+          local global_note = require 'global-note'
+          global_note.toggle_note 'git_branch_local'
+        end,
+        desc = 'Toggle [N]otes [B]ranch',
+      },
+      {
+        '<leader>np',
+        function()
+          local global_note = require 'global-note'
+          global_note.toggle_note 'project_local'
+        end,
+        desc = 'Toggle [N]otes [P]roject',
+      },
     },
   },
 }

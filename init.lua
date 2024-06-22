@@ -1137,6 +1137,7 @@ require('lazy').setup {
         -- is found.
         javascript = { { 'biome' } },
         typescript = { { 'biome' } },
+        json = { { 'biome' } },
         typescriptreact = { { 'biome' } },
         go = { 'gofmt', 'goimports' },
         proto = { 'buf' },
@@ -1295,34 +1296,36 @@ require('lazy').setup {
   -- Highlight todo, notes, etc in comments
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
-  { -- Collection of various small independent plugins/modules
-    'echasnovski/mini.nvim',
-    config = function()
-      -- Better Around/Inside textobjects
-      --
-      -- Examples:
-      --  - va)  - [V]isually select [A]round [)]paren
-      --  - yinq - [Y]ank [I]nside [N]ext [']quote
-      --  - ci'  - [C]hange [I]nside [']quote
-      -- require('mini.ai').setup { n_lines = 500 }
-
-      -- require('mini.hues').setup { background = '#002734', foreground = '#c0c8cc' }
-      -- Add/delete/replace surroundings (brackets, quotes, etc.)
-      --
-      -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
-      -- - sd'   - [S]urround [D]elete [']quotes
-      -- - sr)'  - [S]urround [R]eplace [)] [']
-      -- require('mini.surround').setup()
-
-      -- ... and there is more!
-      --  Check out: https://github.com/echasnovski/mini.nvim
-    end,
-  },
+  -- { -- Collection of various small independent plugins/modules
+  --   'echasnovski/mini.nvim',
+  --   config = function()
+  --     -- Better Around/Inside textobjects
+  --     --
+  --     -- Examples:
+  --     --  - va)  - [V]isually select [A]round [)]paren
+  --     --  - yinq - [Y]ank [I]nside [N]ext [']quote
+  --     --  - ci'  - [C]hange [I]nside [']quote
+  --     -- require('mini.ai').setup { n_lines = 500 }
+  --
+  --     -- require('mini.hues').setup { background = '#002734', foreground = '#c0c8cc' }
+  --     -- Add/delete/replace surroundings (brackets, quotes, etc.)
+  --     --
+  --     -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
+  --     -- - sd'   - [S]urround [D]elete [']quotes
+  --     -- - sr)'  - [S]urround [R]eplace [)] [']
+  --     -- require('mini.surround').setup()
+  --
+  --     -- ... and there is more!
+  --     --  Check out: https://github.com/echasnovski/mini.nvim
+  --   end,
+  -- },
 
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
-    dependencies = {},
+    dependencies = {
+      'nvim-treesitter/nvim-treesitter-textobjects',
+    },
     config = function()
       -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
 
@@ -1333,6 +1336,64 @@ require('lazy').setup {
         auto_install = true,
         highlight = { enable = true },
         indent = { enable = true },
+        incremental_selection = {
+          enable = true,
+          keymaps = {
+            init_selection = '<c-space>',
+            node_incremental = '<c-space>',
+            scope_incremental = '<c-s>',
+            node_decremental = '<c-backspace>',
+          },
+        },
+        textobjects = {
+          select = {
+            enable = true,
+            lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
+            keymaps = {
+              -- You can use the capture groups defined in textobjects.scm
+              ['aa'] = '@parameter.outer',
+              ['ia'] = '@parameter.inner',
+              ['af'] = '@function.outer',
+              ['if'] = '@function.inner',
+              ['ac'] = '@class.outer',
+              ['ic'] = '@class.inner',
+              ['ii'] = '@conditional.inner',
+              ['ai'] = '@conditional.outer',
+              ['il'] = '@loop.inner',
+              ['al'] = '@loop.outer',
+              ['at'] = '@comment.outer',
+            },
+          },
+          move = {
+            enable = true,
+            set_jumps = true, -- whether to set jumps in the jumplist
+            goto_next_start = {
+              [']f'] = '@function.outer',
+              [']]'] = '@class.outer',
+            },
+            goto_next_end = {
+              [']F'] = '@function.outer',
+              [']['] = '@class.outer',
+            },
+            goto_previous_start = {
+              ['[f'] = '@function.outer',
+              ['[['] = '@class.outer',
+            },
+            goto_previous_end = {
+              ['[F'] = '@function.outer',
+              ['[]'] = '@class.outer',
+            },
+          },
+          swap = {
+            enable = true,
+            swap_next = {
+              ['<leader>a'] = '@parameter.inner',
+            },
+            swap_previous = {
+              ['<leader>A'] = '@parameter.inner',
+            },
+          },
+        },
       }
 
       -- There are additional nvim-treesitter modules that you can use to interact
@@ -2341,8 +2402,17 @@ require('lazy').setup {
     end,
   },
   {
-    'quolpr/quicktest.nvim',
-    opts = {},
+    dir = '~/projects/quolpr/quicktest.nvim',
+    config = function()
+      local qt = require 'quicktest'
+
+      qt.setup {
+        adapters = {
+          require 'quicktest.adapters.golang',
+          require 'quicktest.adapters.vitest',
+        },
+      }
+    end,
     dependencies = {
       'nvim-lua/plenary.nvim',
       'MunifTanjim/nui.nvim',
@@ -2353,11 +2423,8 @@ require('lazy').setup {
         '<leader>tr',
         function()
           local qt = require 'quicktest'
-          -- current_win_mode return currently opened panel, split or popup
+
           qt.run_line()
-          -- You can force open split or popup like this:
-          -- qt().run_current('split')
-          -- qt().run_current('popup')
         end,
         desc = '[T]est [R]un',
       },

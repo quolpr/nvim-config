@@ -24,8 +24,6 @@ vim.opt.number = true
 --  Experiment for yourself to see if you like it!
 vim.opt.relativenumber = true
 
-vim.opt.showtabline = 0
-
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
 
@@ -1550,6 +1548,12 @@ require('lazy').setup {
         red      = '#ec5f67',
       }
 
+      vim.cmd 'highlight! HarpoonInactive guibg=NONE guifg=#63698c'
+      vim.cmd 'highlight! HarpoonActive guibg=NONE guifg=white'
+      vim.cmd 'highlight! HarpoonNumberActive guibg=NONE guifg=#7aa2f7'
+      vim.cmd 'highlight! HarpoonNumberInactive guibg=NONE guifg=#7aa2f7'
+      vim.cmd 'highlight! TabLineFill guibg=NONE guifg=white'
+
       local conditions = {
         buffer_not_empty = function()
           return vim.fn.empty(vim.fn.expand '%:t') ~= 1
@@ -1564,19 +1568,82 @@ require('lazy').setup {
         end,
       }
 
+      function Harpoon_files()
+        -- Function to truncate the last directory and filename using Neovim's API
+        local function truncate_last_dir_and_filename(file_path)
+          -- Get the directory containing the file
+          local dir = vim.fn.fnamemodify(file_path, ':h')
+          -- Extract the last directory name
+          local last_dir = vim.fn.fnamemodify(dir, ':t')
+          -- Get the filename
+          local filename = vim.fn.fnamemodify(file_path, ':t')
+          -- Extract the extension from the filename
+          local base, ext = string.match(filename, '(.-)%.([^%.]+)$')
+
+          -- Truncate the last directory name and the base of the filename to the first 4 characters
+          if #last_dir > 4 then
+            last_dir = string.sub(last_dir, 1, 4)
+          end
+          if #base > 4 then
+            base = string.sub(base, 1, 4)
+          end
+
+          if last_dir == '.' then
+            local truncated_path = base .. '.' .. ext
+            return truncated_path
+          else
+            local truncated_path = last_dir .. '/' .. base .. '.' .. ext
+            return truncated_path
+          end
+        end
+
+        -- Function to get the last directory and filename using Vim's API
+        local function get_last_dir_and_filename(file_path)
+          -- Get the directory containing the file
+          local dir = vim.fn.fnamemodify(file_path, ':h')
+          -- Get the last part of the directory (last directory name)
+          local last_dir = vim.fn.fnamemodify(dir, ':t')
+          -- Get the file name
+          local filename = vim.fn.fnamemodify(file_path, ':t')
+
+          if last_dir == '.' then
+            return filename
+          else
+            return last_dir .. '/' .. filename
+          end
+        end
+
+        local harpoon = require 'harpoon'
+        local contents = {}
+        local marks_length = harpoon:list():length()
+        local current_file_path = vim.fn.fnamemodify(vim.fn.expand '%:p', ':.')
+        for index = 1, marks_length do
+          local harpoon_file_path = harpoon:list():get(index).value
+          local file_name = harpoon_file_path == '' and '(empty)' or truncate_last_dir_and_filename(harpoon_file_path)
+
+          if current_file_path == harpoon_file_path then
+            contents[index] = string.format('%%#HarpoonNumberActive# %s. %%#HarpoonActive#%s ', index, file_name)
+          else
+            contents[index] = string.format('%%#HarpoonNumberInactive# %s. %%#HarpoonInactive#%s ', index, file_name)
+          end
+        end
+
+        return table.concat(contents)
+      end
+
       -- Config
       local config = {
         options = {
           -- Disable sections and component separators
           component_separators = '',
           section_separators = '',
-          theme = {
-            -- We are going to use lualine_c an lualine_x as left and
-            -- right section. Both are highlighted by c theme .  So we
-            -- are just setting default looks o statusline
-            normal = { c = { fg = colors.fg, bg = colors.bg } },
-            inactive = { c = { fg = colors.fg, bg = colors.bg } },
-          },
+          -- theme = {
+          --   -- We are going to use lualine_c an lualine_x as left and
+          --   -- right section. Both are highlighted by c theme .  So we
+          --   -- are just setting default looks o statusline
+          --   -- normal = { c = { fg = colors.fg, bg = colors.bg } },
+          --   -- inactive = { c = { fg = colors.fg, bg = colors.bg } },
+          -- },
         },
         sections = {
           -- these are to remove the defaults
@@ -1596,6 +1663,11 @@ require('lazy').setup {
           lualine_z = {},
           lualine_c = { 'filename' },
           lualine_x = {},
+        },
+        tabline = {
+          lualine_a = {
+            { Harpoon_files },
+          },
         },
       }
 
@@ -2064,6 +2136,7 @@ require('lazy').setup {
       },
       settings = {
         save_on_toggle = true,
+        tabline = true,
       },
     },
     keys = function()
@@ -2084,6 +2157,16 @@ require('lazy').setup {
           desc = 'Harpoon Quick Menu',
         },
       }
+
+      for i = 1, 9 do
+        table.insert(keys, {
+          '<leader>' .. i,
+          function()
+            require('harpoon'):list():select(i)
+          end,
+          desc = 'Harpoon to File ' .. i,
+        })
+      end
 
       return keys
     end,
@@ -2193,13 +2276,6 @@ require('lazy').setup {
     end,
 
     keys = {
-      {
-        '<leader>td',
-        function()
-          require('neotest').run.run { suite = false, strategy = 'dap' }
-        end,
-        desc = '[T]est [D]ebug',
-      },
       {
         '<leader>db',
         function()
@@ -2410,6 +2486,7 @@ require('lazy').setup {
         adapters = {
           require 'quicktest.adapters.golang',
           require 'quicktest.adapters.vitest',
+          require 'quicktest.adapters.elixir',
         },
       }
     end,
@@ -2436,6 +2513,24 @@ require('lazy').setup {
           qt.run_file()
         end,
         desc = '[T]est [R]un file',
+      },
+      {
+        '<leader>td',
+        function()
+          local qt = require 'quicktest'
+
+          qt.run_dir()
+        end,
+        desc = '[T]est Run [D]ir',
+      },
+      {
+        '<leader>ta',
+        function()
+          local qt = require 'quicktest'
+
+          qt.run_all()
+        end,
+        desc = '[T]est Run [A]ll',
       },
       {
         '<leader>tp',

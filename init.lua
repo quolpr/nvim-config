@@ -85,14 +85,14 @@ vim.opt.scrolloff = 5
 
 -- BEGIN MY KEYMAPS
 vim.keymap.set('n', 'vv', '<C-w>v', { desc = 'Split window vertically' })
-vim.keymap.set('n', '<leader>s', '<cmd> update <CR>', { desc = 'Write file' })
+vim.keymap.set('n', '<leader>s', '<cmd> update <CR>', { desc = '[S]ave file' })
 
 -- -- Delete all buffers except current
 -- vim.keymap.set('n', '<leader>bd', '<cmd>%bd|e#<cr>', { desc = 'Close all buffers but the current one' }) -- https://stackoverflow.com/a/42071865/516188
 
 -- copy/paste from computer buffer
-vim.keymap.set({ 'n', 'v' }, '<leader>y', [["+y]])
-vim.keymap.set('n', '<leader>p', [["+p]])
+vim.keymap.set({ 'n', 'v' }, '<leader>y', [["+y]], { desc = '[Y]ank from computer' })
+vim.keymap.set('n', '<leader>p', [["+p]], { desc = '[P]aste from computer' })
 
 -- Disable macro cause I don't use it + breaks cmp
 vim.keymap.set('n', 'q', '<Nop>')
@@ -113,8 +113,8 @@ vim.keymap.set('n', '<leader>pe', function()
 end, { desc = '[P]rofile [S]tart' })
 
 -- When you delete/paste don't rewrite last register
-vim.keymap.set('x', '<leader>p', [["_dP]])
-vim.keymap.set({ 'n', 'v' }, '<leader>d', [["_d]])
+vim.keymap.set('x', '<leader>p', [["_dP]], { desc = '[P]aste without register overwriting' })
+vim.keymap.set({ 'n', 'v' }, '<leader>d', [["_d]], { desc = '[D]elete without register overwriting' })
 
 vim.keymap.set('n', 'T', ':tabnext <CR>', { desc = '[T]ab [N]ext' })
 -- vim.keymap.set('n', 'Tc', ':tabclose <CR>', { desc = '[T]ab [C]lose' })
@@ -123,10 +123,10 @@ vim.keymap.set('n', 'T', ':tabnext <CR>', { desc = '[T]ab [N]ext' })
 --   require('conform').format()
 -- end, { desc = 'Format file' })
 
-vim.keymap.set('n', '<leader>cf', function()
-  vim.cmd 'EslintFixAll'
-end, { desc = 'Fix file' })
-
+-- vim.keymap.set('n', '<leader>cf', function()
+--   vim.cmd 'EslintFixAll'
+-- end, { desc = 'Fix file' })
+--
 -- Keep cursor in center
 -- vim.keymap.set('n', '<C-d>', '<C-d>zz')
 -- vim.keymap.set('n', '<C-u>', '<C-u>zz')
@@ -258,37 +258,37 @@ vim.g.loaded_matchparen = 1
 
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup {
-  {
-    'stevearc/aerial.nvim',
-    opts = {},
-    -- Optional dependencies
-    dependencies = {
-      'nvim-treesitter/nvim-treesitter',
-      'nvim-tree/nvim-web-devicons',
-    },
-    config = function()
-      require('aerial').setup {
-        float = {
-          relative = 'win',
-          min_height = { 20, 0.5 },
-          override = function(conf, source_winid)
-            conf.width = 80
-            conf.col = conf.col - (80 - 25) / 2
-            -- This is the config that will be passed to nvim_open_win.
-            -- Change values here to customize the layout
-            return conf
-          end,
-        },
-      }
-    end,
-    keys = {
-      {
-        '<leader>a',
-        '<cmd>AerialToggle float<CR>',
-        desc = '[A]erial',
-      },
-    },
-  },
+  -- {
+  --   'stevearc/aerial.nvim',
+  --   opts = {},
+  --   -- Optional dependencies
+  --   dependencies = {
+  --     'nvim-treesitter/nvim-treesitter',
+  --     'nvim-tree/nvim-web-devicons',
+  --   },
+  --   config = function()
+  --     require('aerial').setup {
+  --       float = {
+  --         relative = 'win',
+  --         min_height = { 20, 0.5 },
+  --         override = function(conf, source_winid)
+  --           conf.width = 80
+  --           conf.col = conf.col - (80 - 25) / 2
+  --           -- This is the config that will be passed to nvim_open_win.
+  --           -- Change values here to customize the layout
+  --           return conf
+  --         end,
+  --       },
+  --     }
+  --   end,
+  --   keys = {
+  --     {
+  --       '<leader>a',
+  --       '<cmd>AerialToggle float<CR>',
+  --       desc = '[A]erial',
+  --     },
+  --   },
+  -- },
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
   -- {
   --   'Wansmer/langmapper.nvim',
@@ -441,9 +441,14 @@ require('lazy').setup {
 
       -- Document existing key chains
       require('which-key').register {
+        ['<leader>q'] = { name = '[Q]uit Persistence', _ = 'which_key_ignore' },
+        ['<leader>t'] = { name = '[T]est', _ = 'which_key_ignore' },
+        ['<leader>g'] = { name = '[G]it', _ = 'which_key_ignore' },
+        ['<leader>n'] = { name = '[N]otes', _ = 'which_key_ignore' },
         ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
         ['<leader>h'] = { name = 'Git [H]unk', _ = 'which_key_ignore' },
         ['<leader>f'] = { name = '[F]ind', _ = 'which_key_ignore' },
+        ['<leader>a'] = { name = 'Ch[a]tGPT', _ = 'which_key_ignore' },
       }
     end,
   },
@@ -458,7 +463,16 @@ require('lazy').setup {
   {
     'ibhagwan/fzf-lua',
     -- optional for icon support
-    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    dependencies = {
+      'nvim-tree/nvim-web-devicons',
+
+      {
+        'ThePrimeagen/git-worktree.nvim',
+        config = function()
+          require('git-worktree').setup {}
+        end,
+      },
+    },
     config = function()
       -- calling `setup` is optional for customization
       require('fzf-lua').setup {
@@ -484,13 +498,16 @@ require('lazy').setup {
         fzf.git_files { show_untracked = true, formatter = 'path.filename_first' }
       end, { desc = '[F]ind [F]iles' })
 
+      vim.keymap.set('n', '<leader>fw', function()
+        fzf.grep_cword { formatter = 'path.filename_first' }
+      end, { desc = '[F]ind current [W]ord' })
       vim.keymap.set('v', '<leader>fw', function()
         fzf.grep_visual { formatter = 'path.filename_first' }
       end, { desc = '[F]ind current [W]ord' })
 
-      vim.keymap.set('n', '<leader>fw', function()
-        fzf.grep_cword { formatter = 'path.filename_first' }
-      end, { desc = '[F]ind current [W]ord' })
+      vim.keymap.set('n', '<leader>ft', function()
+        require('fzf-worktree').git_worktrees()
+      end, { desc = '[F]ind working [T]ree' })
 
       vim.keymap.set('n', '<leader>fg', function()
         fzf.live_grep { formatter = 'path.filename_first' }
@@ -499,13 +516,15 @@ require('lazy').setup {
       vim.keymap.set('n', '<leader>fr', fzf.resume, { desc = '[F]ind [R]esume' })
 
       -- In current buffer
-      vim.keymap.set('n', '<leader>fd', function()
-        fzf.diagnostics_document { formatter = 'path.filename_first' }
-      end, { desc = '[F]ind [D]iagnostic' })
-      -- In all buffers
-      vim.keymap.set('n', '<leader>fD', function()
-        fzf.diagnostics_workspace { formatter = 'path.filename_first' }
-      end, { desc = '[F]ind [D]iagnostic' })
+      -- Use code -> diagnostics
+      -- vim.keymap.set('n', '<leader>fd', function()
+      --   fzf.diagnostics_document { formatter = 'path.filename_first' }
+      -- end, { desc = '[F]ind [D]iagnostic' })
+      --
+      -- -- In all buffers
+      -- vim.keymap.set('n', '<leader>fD', function()
+      --   fzf.diagnostics_workspace { formatter = 'path.filename_first' }
+      -- end, { desc = '[F]ind [D]iagnostic' })
 
       vim.keymap.set('n', '<leader>fo', function()
         fzf.git_status { formatter = 'path.filename_first' }
@@ -513,7 +532,7 @@ require('lazy').setup {
 
       vim.keymap.set('n', '<leader><leader>', function()
         fzf.lsp_live_workspace_symbols { formatter = 'path.filename_first' }
-      end, { desc = '[F]ind by git [S]tatus' })
+      end, { desc = 'Find workspace symbols' })
     end,
   },
 
@@ -817,6 +836,8 @@ require('lazy').setup {
       vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
         callback = function(event)
+          local client = vim.lsp.get_client_by_id(event.data.client_id)
+
           -- NOTE: Remember that lua is a real programming language, and as such it is possible
           -- to define small helper and utility functions so you don't have to repeat yourself
           -- many times.
@@ -906,7 +927,6 @@ require('lazy').setup {
           --  See `:help K` for why this keymap
           map('K', vim.lsp.buf.hover, 'Hover Documentation')
 
-          local client = vim.lsp.get_client_by_id(event.data.client_id)
           if client and client.name ~= 'elixirls' then
             client.server_capabilities.documentFormattingProvider = false
             client.server_capabilities.documentRangeFormattingProvider = false
@@ -1050,6 +1070,7 @@ require('lazy').setup {
             tsserver = { useSyntaxServer = 'never' },
           },
         },
+        cspell = {},
         sqlls = {},
         eslint = {},
         biome = {},
@@ -1096,6 +1117,12 @@ require('lazy').setup {
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
+      local configs = require 'lspconfig.configs'
+      configs['cspell'] = require 'cspell-lsp'
+      local lspServer = {}
+      lspServer.capabilities = vim.tbl_deep_extend('force', {}, capabilities)
+      require('lspconfig')['cspell'].setup(lspServer)
+
       require('mason-lspconfig').setup {
         handlers = {
           function(server_name)
@@ -1116,16 +1143,15 @@ require('lazy').setup {
     lazy = false,
     opts = {
       notify_on_error = false,
-      -- format_after_save = {
-      --   lsp_fallback = true,
-      --   timeout_ms = 5000,
-      --   async = false,
-      -- },
-      format_on_save = {
-        timeout_ms = 2000,
+      format_after_save = {
         lsp_fallback = true,
-        async = false,
+        timeout_ms = 5000,
       },
+      -- format_on_save = {
+      --   timeout_ms = 2000,
+      --   lsp_fallback = true,
+      --   async = true,
+      -- },
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
@@ -1133,10 +1159,10 @@ require('lazy').setup {
         --
         -- You can use a sub-list to tell conform to run *until* a formatter
         -- is found.
-        javascript = { { 'biome' } },
-        typescript = { { 'biome' } },
+        -- javascript = { { 'biome' } },
+        -- typescript = { { 'biome' } },
         json = { { 'biome' } },
-        typescriptreact = { { 'biome' } },
+        -- typescriptreact = { { 'biome' } },
         go = { 'gofmt', 'goimports' },
         proto = { 'buf' },
       },
@@ -1339,8 +1365,9 @@ require('lazy').setup {
           keymaps = {
             init_selection = '<c-space>',
             node_incremental = '<c-space>',
-            scope_incremental = '<c-s>',
-            node_decremental = '<c-backspace>',
+
+            node_decremental = '<bs>',
+            -- -- scope_incremental = '<c-S>',
           },
         },
         textobjects = {
@@ -1349,8 +1376,9 @@ require('lazy').setup {
             lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
             keymaps = {
               -- You can use the capture groups defined in textobjects.scm
-              ['aa'] = '@parameter.outer',
+              -- a = means argument
               ['ia'] = '@parameter.inner',
+              ['aa'] = '@parameter.outer',
               ['af'] = '@function.outer',
               ['if'] = '@function.inner',
               ['ac'] = '@class.outer',
@@ -1382,15 +1410,15 @@ require('lazy').setup {
               ['[]'] = '@class.outer',
             },
           },
-          swap = {
-            enable = true,
-            swap_next = {
-              ['<leader>a'] = '@parameter.inner',
-            },
-            swap_previous = {
-              ['<leader>A'] = '@parameter.inner',
-            },
-          },
+          -- swap = {
+          --   enable = true,
+          --   swap_next = {
+          --     ['<leader>a'] = '@parameter.inner',
+          --   },
+          --   swap_previous = {
+          --     ['<leader>A'] = '@parameter.inner',
+          --   },
+          -- },
         },
       }
 
@@ -1796,14 +1824,15 @@ require('lazy').setup {
       'lambdalisue/fern-renderer-nerdfont.vim',
       'lambdalisue/fern-hijack.vim',
     },
+    lazy = false,
 
     config = function()
       vim.g['fern#renderer'] = 'nerdfont'
 
       -- TODO: port it to lua
       vim.cmd [[
-        nmap - :Fern . -reveal=% -wait <CR>
-        nmap _ :Fern %:h -wait <CR>
+        nmap <silent> - :Fern . -reveal=% -wait <CR>
+        nmap <silent> _ :Fern %:h -wait <CR>
         
 
         function! s:init_fern() abort
@@ -2038,16 +2067,16 @@ require('lazy').setup {
   -- },
 
   -- Show tooltip on args while typing
-  {
-    'ray-x/lsp_signature.nvim',
-    event = 'VeryLazy',
-    opts = {
-      always_trigger = true,
-    },
-    config = function(_, opts)
-      require('lsp_signature').setup(opts)
-    end,
-  },
+  -- {
+  --   'ray-x/lsp_signature.nvim',
+  --   event = 'VeryLazy',
+  --   opts = {
+  --     always_trigger = true,
+  --   },
+  --   config = function(_, opts)
+  --     require('lsp_signature').setup(opts)
+  --   end,
+  -- },
 
   -- Illuminate parentheses
   {
@@ -2146,7 +2175,7 @@ require('lazy').setup {
           function()
             require('harpoon'):list():add()
           end,
-          desc = 'Harpoon File',
+          desc = '[H]arpoon File',
         },
         {
           '<leader>fh',
@@ -2154,7 +2183,7 @@ require('lazy').setup {
             local harpoon = require 'harpoon'
             harpoon.ui:toggle_quick_menu(harpoon:list())
           end,
-          desc = 'Harpoon Quick Menu',
+          desc = '[F]ind [H]arpoon',
         },
       }
 
@@ -2173,18 +2202,18 @@ require('lazy').setup {
   },
 
   -- Close all active buffers except current
-  {
-    'Asheq/close-buffers.vim',
-    keys = {
-      {
-        '<leader>bd',
-        function()
-          vim.cmd 'Bdelete hidden'
-        end,
-        desc = '[B]uffer [D]elete',
-      },
-    },
-  },
+  -- {
+  --   'Asheq/close-buffers.vim',
+  --   keys = {
+  --     {
+  --       '<leader>bd',
+  --       function()
+  --         vim.cmd 'Bdelete hidden'
+  --       end,
+  --       desc = '[B]uffer [D]elete',
+  --     },
+  --   },
+  -- },
   -- Kep propotions of window size
   {
     'kwkarlwang/bufresize.nvim',
@@ -2192,216 +2221,218 @@ require('lazy').setup {
       require('bufresize').setup()
     end,
   },
-  {
-    'mfussenegger/nvim-dap',
-    dependencies = {
-      -- Creates a beautiful debugger UI
-      'rcarriga/nvim-dap-ui',
-      'theHamsta/nvim-dap-virtual-text',
-
-      -- Required dependency for nvim-dap-ui
-      'nvim-neotest/nvim-nio',
-
-      -- Installs the debug adapters for you
-      'williamboman/mason.nvim',
-      'jay-babu/mason-nvim-dap.nvim',
-
-      -- Add your own debuggers here
-      'leoluz/nvim-dap-go',
-      'quolpr/neotest',
-    },
-    config = function()
-      local dap = require 'dap'
-      local dapui = require 'dapui'
-
-      require('nvim-dap-virtual-text').setup {}
-
-      require('mason-nvim-dap').setup {
-        -- Makes a best effort to setup the various debuggers with
-        -- reasonable debug configurations
-        automatic_installation = true,
-
-        -- You can provide additional configuration to the handlers,
-        -- see mason-nvim-dap README for more information
-        handlers = {},
-
-        -- You'll need to check that you have the required things installed
-        -- online, please don't ask me how to install them :)
-        ensure_installed = {
-          -- Update this to ensure that you have the debuggers for the langs you want
-          'delve',
-        },
-      }
-
-      -- Dap UI setup
-      -- For more information, see |:help nvim-dap-ui|
-      ---@diagnostic disable-next-line: missing-fields
-      dapui.setup {
-        -- Set icons to characters that are more likely to work in every terminal.
-        --    Feel free to remove or use ones that you like more! :)
-        --    Don't feel like these are good choices.
-        icons = { expanded = '▾', collapsed = '▸', current_frame = '*' },
-        ---@diagnostic disable-next-line: missing-fields
-        controls = {
-          ---@diagnostic disable-next-line: missing-fields
-          icons = {
-            pause = '⏸',
-            play = '▶',
-            step_into = '⏎',
-            step_over = '⏭',
-            step_out = '⏮',
-            step_back = 'b',
-            run_last = '▶▶',
-            terminate = '⏹',
-            disconnect = '⏏',
-          },
-        },
-      }
-
-      -- Toggle to see last session result. Without this, you can't see session output in case of unhandled exception.
-      vim.keymap.set('n', '<F7>', dapui.toggle, { desc = 'Debug: See last session result.' })
-
-      dap.listeners.after.event_initialized['dapui_config'] = dapui.open
-      dap.listeners.before.event_terminated['dapui_config'] = dapui.close
-      dap.listeners.before.event_exited['dapui_config'] = dapui.close
-
-      -- Install golang specific config
-      require('dap-go').setup {
-        delve = {
-          -- On Windows delve must be run attached or it crashes.
-          -- See https://github.com/leoluz/nvim-dap-go/blob/main/README.md#configuring
-          detached = vim.fn.has 'win32' == 0,
-        },
-      }
-    end,
-
-    keys = {
-      {
-        '<leader>db',
-        function()
-          require('dap').toggle_breakpoint()
-        end,
-        desc = 'toggle [d]ebug [b]reakpoint',
-      },
-      {
-        '<leader>dB',
-        function()
-          require('dap').set_breakpoint(vim.fn.input 'Breakpoint condition: ')
-        end,
-        desc = '[d]ebug [B]reakpoint',
-      },
-      {
-        '<leader>dc',
-        function()
-          require('dap').continue()
-        end,
-        desc = '[d]ebug [c]ontinue (start here)',
-      },
-      {
-        '<leader>dC',
-        function()
-          require('dap').run_to_cursor()
-        end,
-        desc = '[d]ebug [C]ursor',
-      },
-      {
-        '<leader>dg',
-        function()
-          require('dap').goto_()
-        end,
-        desc = '[d]ebug [g]o to line',
-      },
-      {
-        '<leader>do',
-        function()
-          require('dap').step_over()
-        end,
-        desc = '[d]ebug step [o]ver',
-      },
-      {
-        '<leader>dO',
-        function()
-          require('dap').step_out()
-        end,
-        desc = '[d]ebug step [O]ut',
-      },
-      {
-        '<leader>di',
-        function()
-          require('dap').step_into()
-        end,
-        desc = '[d]ebug [i]nto',
-      },
-      {
-        '<leader>dj',
-        function()
-          require('dap').down()
-        end,
-        desc = '[d]ebug [j]ump down',
-      },
-      {
-        '<leader>dk',
-        function()
-          require('dap').up()
-        end,
-        desc = '[d]ebug [k]ump up',
-      },
-      {
-        '<leader>dl',
-        function()
-          require('dap').run_last()
-        end,
-        desc = '[d]ebug [l]ast',
-      },
-      {
-        '<leader>dp',
-        function()
-          require('dap').pause()
-        end,
-        desc = '[d]ebug [p]ause',
-      },
-      {
-        '<leader>dr',
-        function()
-          require('dap').repl.toggle()
-        end,
-        desc = '[d]ebug [r]epl',
-      },
-      {
-        '<leader>dR',
-        function()
-          require('dap').clear_breakpoints()
-        end,
-        desc = '[d]ebug [R]emove breakpoints',
-      },
-      {
-        '<leader>ds',
-        function()
-          require('dap').session()
-        end,
-        desc = '[d]ebug [s]ession',
-      },
-      {
-        '<leader>dt',
-        function()
-          require('dap').terminate()
-        end,
-        desc = '[d]ebug [t]erminate',
-      },
-      {
-        '<leader>dw',
-        function()
-          require('dap.ui.widgets').hover()
-        end,
-        desc = '[d]ebug [w]idgets',
-      },
-    },
-  },
+  -- {
+  --   'mfussenegger/nvim-dap',
+  --   dependencies = {
+  --     -- Creates a beautiful debugger UI
+  --     'rcarriga/nvim-dap-ui',
+  --     'theHamsta/nvim-dap-virtual-text',
+  --
+  --     -- Required dependency for nvim-dap-ui
+  --     'nvim-neotest/nvim-nio',
+  --
+  --     -- Installs the debug adapters for you
+  --     'williamboman/mason.nvim',
+  --     'jay-babu/mason-nvim-dap.nvim',
+  --
+  --     -- Add your own debuggers here
+  --     'leoluz/nvim-dap-go',
+  --     'quolpr/neotest',
+  --   },
+  --   config = function()
+  --     local dap = require 'dap'
+  --     local dapui = require 'dapui'
+  --
+  --     require('nvim-dap-virtual-text').setup {}
+  --
+  --     require('mason-nvim-dap').setup {
+  --       -- Makes a best effort to setup the various debuggers with
+  --       -- reasonable debug configurations
+  --       automatic_installation = true,
+  --
+  --       -- You can provide additional configuration to the handlers,
+  --       -- see mason-nvim-dap README for more information
+  --       handlers = {},
+  --
+  --       -- You'll need to check that you have the required things installed
+  --       -- online, please don't ask me how to install them :)
+  --       ensure_installed = {
+  --         -- Update this to ensure that you have the debuggers for the langs you want
+  --         'delve',
+  --       },
+  --     }
+  --
+  --     -- Dap UI setup
+  --     -- For more information, see |:help nvim-dap-ui|
+  --     ---@diagnostic disable-next-line: missing-fields
+  --     dapui.setup {
+  --       -- Set icons to characters that are more likely to work in every terminal.
+  --       --    Feel free to remove or use ones that you like more! :)
+  --       --    Don't feel like these are good choices.
+  --       icons = { expanded = '▾', collapsed = '▸', current_frame = '*' },
+  --       ---@diagnostic disable-next-line: missing-fields
+  --       controls = {
+  --         ---@diagnostic disable-next-line: missing-fields
+  --         icons = {
+  --           pause = '⏸',
+  --           play = '▶',
+  --           step_into = '⏎',
+  --           step_over = '⏭',
+  --           step_out = '⏮',
+  --           step_back = 'b',
+  --           run_last = '▶▶',
+  --           terminate = '⏹',
+  --           disconnect = '⏏',
+  --         },
+  --       },
+  --     }
+  --
+  --     -- Toggle to see last session result. Without this, you can't see session output in case of unhandled exception.
+  --     vim.keymap.set('n', '<F7>', dapui.toggle, { desc = 'Debug: See last session result.' })
+  --
+  --     dap.listeners.after.event_initialized['dapui_config'] = dapui.open
+  --     dap.listeners.before.event_terminated['dapui_config'] = dapui.close
+  --     dap.listeners.before.event_exited['dapui_config'] = dapui.close
+  --
+  --     -- Install golang specific config
+  --     require('dap-go').setup {
+  --       delve = {
+  --         -- On Windows delve must be run attached or it crashes.
+  --         -- See https://github.com/leoluz/nvim-dap-go/blob/main/README.md#configuring
+  --         detached = vim.fn.has 'win32' == 0,
+  --       },
+  --     }
+  --   end,
+  --
+  --   keys = {
+  --     {
+  --       '<leader>db',
+  --       function()
+  --         require('dap').toggle_breakpoint()
+  --       end,
+  --       desc = 'toggle [d]ebug [b]reakpoint',
+  --     },
+  --     {
+  --       '<leader>dB',
+  --       function()
+  --         require('dap').set_breakpoint(vim.fn.input 'Breakpoint condition: ')
+  --       end,
+  --       desc = '[d]ebug [B]reakpoint',
+  --     },
+  --     {
+  --       '<leader>dc',
+  --       function()
+  --         require('dap').continue()
+  --       end,
+  --       desc = '[d]ebug [c]ontinue (start here)',
+  --     },
+  --     {
+  --       '<leader>dC',
+  --       function()
+  --         require('dap').run_to_cursor()
+  --       end,
+  --       desc = '[d]ebug [C]ursor',
+  --     },
+  --     {
+  --       '<leader>dg',
+  --       function()
+  --         require('dap').goto_()
+  --       end,
+  --       desc = '[d]ebug [g]o to line',
+  --     },
+  --     {
+  --       '<leader>do',
+  --       function()
+  --         require('dap').step_over()
+  --       end,
+  --       desc = '[d]ebug step [o]ver',
+  --     },
+  --     {
+  --       '<leader>dO',
+  --       function()
+  --         require('dap').step_out()
+  --       end,
+  --       desc = '[d]ebug step [O]ut',
+  --     },
+  --     {
+  --       '<leader>di',
+  --       function()
+  --         require('dap').step_into()
+  --       end,
+  --       desc = '[d]ebug [i]nto',
+  --     },
+  --     {
+  --       '<leader>dj',
+  --       function()
+  --         require('dap').down()
+  --       end,
+  --       desc = '[d]ebug [j]ump down',
+  --     },
+  --     {
+  --       '<leader>dk',
+  --       function()
+  --         require('dap').up()
+  --       end,
+  --       desc = '[d]ebug [k]ump up',
+  --     },
+  --     {
+  --       '<leader>dl',
+  --       function()
+  --         require('dap').run_last()
+  --       end,
+  --       desc = '[d]ebug [l]ast',
+  --     },
+  --     {
+  --       '<leader>dp',
+  --       function()
+  --         require('dap').pause()
+  --       end,
+  --       desc = '[d]ebug [p]ause',
+  --     },
+  --     {
+  --       '<leader>dr',
+  --       function()
+  --         require('dap').repl.toggle()
+  --       end,
+  --       desc = '[d]ebug [r]epl',
+  --     },
+  --     {
+  --       '<leader>dR',
+  --       function()
+  --         require('dap').clear_breakpoints()
+  --       end,
+  --       desc = '[d]ebug [R]emove breakpoints',
+  --     },
+  --     {
+  --       '<leader>ds',
+  --       function()
+  --         require('dap').session()
+  --       end,
+  --       desc = '[d]ebug [s]ession',
+  --     },
+  --     {
+  --       '<leader>dt',
+  --       function()
+  --         require('dap').terminate()
+  --       end,
+  --       desc = '[d]ebug [t]erminate',
+  --     },
+  --     {
+  --       '<leader>dw',
+  --       function()
+  --         require('dap.ui.widgets').hover()
+  --       end,
+  --       desc = '[d]ebug [w]idgets',
+  --     },
+  --   },
+  -- },
   --  Copilot on steroids
   {
     'supermaven-inc/supermaven-nvim',
     config = function()
       require('supermaven-nvim').setup {
+
+        ignore_filetypes = { markdown = true },
         keymaps = {
           accept_suggestion = '<C-u>',
         },
@@ -2457,12 +2488,12 @@ require('lazy').setup {
     keys = {
       {
         '<leader>cD',
-        '<cmd>Trouble diagnostics toggle<cr>',
+        '<cmd>Trouble diagnostics toggle filter.severity=vim.diagnostic.severity.ERROR<cr>',
         desc = '[C]ode [D]iagnostics',
       },
       {
         '<leader>cd',
-        '<cmd>Trouble diagnostics toggle filter.buf=0<cr>',
+        '<cmd>Trouble diagnostics toggle filter.buf=0 filter.severity=vim.diagnostic.severity.ERROR<cr>',
         desc = '[C]ode [d]iagnostics of current buffer',
       },
     },
@@ -2478,13 +2509,17 @@ require('lazy').setup {
     end,
   },
   {
-    dir = '~/projects/quolpr/quicktest.nvim',
+    'quolpr/quicktest.nvim',
     config = function()
       local qt = require 'quicktest'
 
       qt.setup {
         adapters = {
-          require 'quicktest.adapters.golang',
+          require 'quicktest.adapters.golang' {
+            additional_args = function()
+              return { '-race', '-count=1' }
+            end,
+          },
           require 'quicktest.adapters.vitest',
           require 'quicktest.adapters.elixir',
         },
@@ -2625,6 +2660,71 @@ require('lazy').setup {
     end,
     priority = 1000,
   },
+  -- {
+  --   'folke/noice.nvim',
+  --   event = 'VeryLazy',
+  --   dependencies = {
+  --     -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
+  --     'MunifTanjim/nui.nvim',
+  --     -- OPTIONAL:
+  --     --   `nvim-notify` is only needed, if you want to use the notification view.
+  --     --   If not available, we use `mini` as the fallback
+  --     'rcarriga/nvim-notify',
+  --   },
+  --   config = function()
+  --     require('notify').setup {
+  --       stages = 'static',
+  --     }
+  --
+  --     require('noice').setup {
+  --       lsp = {
+  --         -- override markdown rendering so that **cmp** and other plugins use **Treesitter**
+  --         override = {
+  --           ['vim.lsp.util.convert_input_to_markdown_lines'] = true,
+  --           ['vim.lsp.util.stylize_markdown'] = true,
+  --           ['cmp.entry.get_documentation'] = true, -- requires hrsh7th/nvim-cmp
+  --         },
+  --       },
+  --       lsp = {
+  --         progress = {
+  --           enabled = false,
+  --         },
+  --       },
+  --       -- you can enable a preset for easier configuration
+  --       presets = {
+  --         bottom_search = true, -- use a classic bottom cmdline for search
+  --         command_palette = true, -- position the cmdline and popupmenu together
+  --         long_message_to_split = true, -- long messages will be sent to a split
+  --         inc_rename = false, -- enables an input dialog for inc-rename.nvim
+  --         lsp_doc_border = false, -- add a border to hover docs and signature help
+  --       },
+  --       routes = {
+  --         {
+  --           filter = {
+  --             event = 'notify',
+  --             find = 'nohlsearch',
+  --           },
+  --           opts = { skip = true },
+  --         },
+  --         {
+  --           filter = {
+  --             event = 'msg_show',
+  --             find = 'yanked',
+  --           },
+  --           opts = { skip = true },
+  --         },
+  --         {
+  --           filter = {
+  --             event = 'msg_show',
+  --             find = 'written',
+  --           },
+  --           opts = { skip = true },
+  --         },
+  --       },
+  --     }
+  --   end,
+  -- },
+
   {
     -- Horrible performance on highlight, so use matchparen.nvim
     'andymass/vim-matchup',
@@ -2661,33 +2761,34 @@ require('lazy').setup {
   --   config = true,
   -- },
 
-  {
-    'nvimtools/none-ls.nvim',
-    dependencies = {
-      'davidmh/cspell.nvim',
-    },
-    config = function()
-      local config = {
-        --- @return string|nil The path of the json file
-        find_json = function()
-          return (vim.fn.stdpath 'config') .. '/cspell.json'
-        end,
-      }
-
-      local cspell = require 'cspell'
-      require('null-ls').setup {
-        sources = {
-          cspell.diagnostics.with {
-            config = config,
-            diagnostics_postprocess = function(diagnostic)
-              diagnostic.severity = vim.diagnostic.severity['WARN']
-            end,
-          },
-          cspell.code_actions.with { config = config },
-        },
-      }
-    end,
-  },
+  -- {
+  --   'nvimtools/none-ls.nvim',
+  --   dependencies = {
+  --     'davidmh/cspell.nvim',
+  --   },
+  --   config = function()
+  --     local config = {
+  --       --- @return string|nil The path of the json file
+  --       find_json = function()
+  --         return (vim.fn.stdpath 'config') .. '/cspell.json'
+  --       end,
+  --     }
+  --
+  --     local cspell = require 'cspell'
+  --     require('null-ls').setup {
+  --       debounce = 1000,
+  --       sources = {
+  --         cspell.diagnostics.with {
+  --           config = config,
+  --           diagnostics_postprocess = function(diagnostic)
+  --             diagnostic.severity = vim.diagnostic.severity['WARN']
+  --           end,
+  --         },
+  --         cspell.code_actions.with { config = config },
+  --       },
+  --     }
+  --   end,
+  -- },
   {
     'kdheepak/lazygit.nvim',
     cmd = {
@@ -2834,6 +2935,379 @@ require('lazy').setup {
       },
     },
   },
+  -- {
+  --   dir = './plugins/pls-cspell',
+  --   lazy = false,
+  --   config = function()
+  --     require('pls-cspell').setup {}
+  --   end,
+  -- },
+  {
+    dir = '~/projects/quolpr/parrot.nvim',
+    lazy = false,
+    config = function()
+      require('parrot').setup {
+        hooks = {
+          Complete = function(prt, params)
+            local template = [[
+        I have the following code from {{filename}}:
+
+        ```{{filetype}}
+        {{filecontent}}
+        ```
+
+        And I want to work on part of the code at line_start={{linestart}}, line_end={{lineend}}:
+        ```{{filetype}}
+        {{selection}}
+        ```
+
+        Please finish the code above carefully and logically.
+        Respond just with the snippet of code that should be inserted."
+        ]]
+            local agent = prt.get_command_agent()
+            prt.Prompt(params, prt.ui.Target.append, nil, agent.model, template, agent.system_prompt, agent.provider)
+          end,
+          Explain = function(prt, params)
+            local template = [[
+        Your task is to take the code snippet from {{filename}} and explain it.
+        Break down the code's functionality, purpose, and key components.
+        The goal is to help the reader understand what the code does and how it works.
+
+        Here is the full code:
+        ```{{filetype}}
+        {{filecontent}}
+        ```
+
+        And I need to explain the code at line_start={{linestart}}, line_end={{lineend}}:
+        ```{{filetype}}
+        {{selection}}
+        ```
+
+        Use the markdown format with codeblocks and inline code.
+        Explanation of the code above:
+        ]]
+            local agent = prt.get_chat_agent()
+            prt.logger.info('Explaining selection with agent: ' .. agent.name)
+            prt.Prompt(params, prt.ui.Target.new, nil, agent.model, template, agent.system_prompt, agent.provider)
+          end,
+          FixBugs = function(prt, params)
+            local template = [[
+        You are an expert in {{filetype}}.
+        Fix bugs in the below code from {{filename}} carefully and logically:
+        Your task is to analyze the provided {{filetype}} code snippet, identify
+        any bugs or errors present, and provide a corrected version of the code
+        that resolves these issues. Explain the problems you found in the
+        original code and how your fixes address them. The corrected code should
+        be functional, efficient, and adhere to best practices in
+        {{filetype}} programming.
+
+        Here is the full code:
+        ```{{filetype}}
+        {{filecontent}}
+        ```
+
+        And I want to work on part of the code at line_start={{linestart}}, line_end={{lineend}}:
+        ```{{filetype}}
+        {{selection}}
+        ```
+
+        Fixed code:
+        ]]
+            local agent = prt.get_command_agent()
+            prt.logger.info('Fixing bugs in selection with agent: ' .. agent.name)
+            prt.Prompt(params, prt.ui.Target.new, nil, agent.model, template, agent.system_prompt, agent.provider)
+          end,
+          Optimize = function(prt, params)
+            local template = [[
+        You are an expert in {{filetype}}.
+        Your task is to analyze the provided {{filetype}} code snippet and
+        suggest improvements to optimize its performance. Identify areas
+        where the code can be made more efficient, faster, or less
+        resource-intensive. Provide specific suggestions for optimization,
+        along with explanations of how these changes can enhance the code's
+        performance. The optimized code should maintain the same functionality
+        as the original code while demonstrating improved efficiency.
+
+        Here is the full code:
+        ```{{filetype}}
+        {{filecontent}}
+        ```
+
+        And I want to work on part of the code at line_start={{linestart}}, line_end={{lineend}}:
+        ```{{filetype}}
+        {{selection}}
+        ```
+
+        Optimized code:
+        ]]
+            local agent = prt.get_command_agent()
+            prt.logger.info('Optimizing selection with agent: ' .. agent.name)
+            prt.Prompt(params, prt.ui.Target.new, nil, agent.model, template, agent.system_prompt, agent.provider)
+          end,
+          UnitTests = function(prt, params)
+            local template = [[
+        I have the following code from {{filename}}:
+
+        ```{{filetype}}
+        {{filecontent}}
+        ```
+
+        And I want to work on part of the code at line_start={{linestart}}, line_end={{lineend}}:
+        ```{{filetype}}
+        {{selection}}
+        ```
+
+        Please respond by writing table driven unit tests for the code above.
+        ]]
+            local agent = prt.get_command_agent()
+            prt.logger.info('Creating unit tests for selection with agent: ' .. agent.name)
+            prt.Prompt(params, prt.ui.Target.enew, nil, agent.model, template, agent.system_prompt, agent.provider)
+          end,
+          ProofReader = function(prt, params)
+            local chat_system_prompt = [[
+        I want you to act as a proofreader. I will provide you with texts and
+        I would like you to review them for any spelling, grammar, or
+        punctuation errors. Once you have finished reviewing the text,
+        provide me with any necessary corrections or suggestions to improve the
+        text. Highlight the corrections with markdown bold or italics style.
+        ]]
+            local agent = prt.get_chat_agent()
+            prt.logger.info('Proofreading selection with agent: ' .. agent.name)
+            prt.cmd.ChatNew(params, agent.model, chat_system_prompt)
+          end,
+          Debug = function(prt, params)
+            local template = [[
+        I want you to act as {{filetype}} expert.
+        Review the following code, carefully examine it, and report potential
+        bugs and edge cases alongside solutions to resolve them.
+        Keep your explanation short and to the point:
+
+        Full file:
+        ```{{filetype}}
+        {{filecontent}}
+        ```
+
+        And I want to work on part of the code at line_start={{linestart}}, line_end={{lineend}}:
+        ```{{filetype}}
+        {{selection}}
+        ```
+        ]]
+            local agent = prt.get_chat_agent()
+            prt.logger.info('Debugging selection with agent: ' .. agent.name)
+            prt.Prompt(params, prt.ui.Target.enew, nil, agent.model, template, agent.system_prompt, agent.provider)
+          end,
+        },
+        template_selection = [[
+I have the following content from {{filename}}:
+
+```{{filetype}}
+{{filecontent}}
+```
+
+And I want to work on part of the code at line_start={{linestart}}, line_end={{lineend}}:
+
+```{{filetype}}
+{{selection}}
+```
+
+{{command}}
+]],
+        template_rewrite = [[
+I have the following content from {{filename}}:
+
+```{{filetype}}
+{{filecontent}}
+```
+
+And I want modify this part of the code at line_start={{linestart}}, line_end={{lineend}}:
+
+```{{filetype}}
+{{selection}}
+```
+
+Do this:{{command}}
+
+Respond exclusively with the snippet that should replace the selection above.
+DO NOT RESPOND WITH ANY TYPE OF COMMENTS, JUST THE CODE!!!
+]],
+        template_append = [[
+I have the following content from {{filename}}:
+
+```{{filetype}}
+{{filecontent}}
+```
+
+And I want modify this part of the code at line_start={{linestart}}, line_end={{lineend}}:
+
+```{{filetype}}
+{{selection}}
+```
+
+Do this:{{command}}
+
+Respond exclusively with the snippet that should be appended after the selection above.
+DO NOT RESPOND WITH ANY TYPE OF COMMENTS, JUST THE CODE!!!
+DO NOT REPEAT ANY CODE FROM ABOVE!!!
+]],
+        template_prepend = [[
+I have the following content from {{filename}}:
+
+```{{filetype}}
+{{filecontent}}
+```
+
+And I want modify this part of the code at line_start={{linestart}}, line_end={{lineend}}:
+
+```{{filetype}}
+{{selection}}
+```
+
+Do this:{{command}}
+
+Respond exclusively with the snippet that should be prepended before the selection above.
+DO NOT RESPOND WITH ANY TYPE OF COMMENTS, JUST THE CODE!!!
+DO NOT REPEAT ANY CODE FROM ABOVE!!!
+]],
+        providers = {
+          openai = {
+            api_key = 'sk-proj-HgRzNaw1bVrqxckA0xA5T3BlbkFJOmcxQqjHyit0qqeyBOOJ',
+          },
+        },
+        toggle_target = 'popup',
+        curl_params = { '--socks5-hostname', '91.108.241.124:34390' },
+      }
+
+      -- or setup with your own config (see Install > Configuration in Readme)
+      -- require("gp").setup(config)
+
+      -- shortcuts might be setup here (see Usage > Shortcuts in Readme)
+
+      -- local function keymapOptions(desc)
+      --   return {
+      --     noremap = true,
+      --     silent = true,
+      --     nowait = true,
+      --     desc = 'GPT prompt ' .. desc,
+      --   }
+      -- end
+
+      -- Chat commands
+      -- vim.keymap.set({ 'n', 'i' }, '<leader>at', '<cmd>GpChatToggle popup<cr>', keymapOptions 'Ch[a]tGPT [T]oggle')
+      -- vim.keymap.set({ 'n', 'i' }, '<leader>at', '<cmd>GpChatToggle popup<cr>', keymapOptions 'Ch[a]tGPT [T]oggle')
+    end,
+    keys = {
+      {
+        '<leader>at',
+        function()
+          return ':PrtChatToggle popup<cr>'
+        end,
+        desc = 'Ch[a]tGPT [T]oggle',
+        expr = true,
+      },
+      {
+        '<leader>av',
+        function()
+          return ':PrtChatToggle vsplit<cr>'
+        end,
+        desc = 'Ch[a]tGPT open [V]-split',
+        expr = true,
+      },
+      {
+        '<leader>an',
+        function()
+          return ':PrtChatNew popup<cr>'
+        end,
+        desc = 'Ch[a]tGPT [N]ew',
+        expr = true,
+      },
+      {
+        '<leader>an',
+        function()
+          return ":<C-u>'<,'>PrtChatNew popup<cr>"
+        end,
+        desc = 'Ch[a]tGPT [N]ew',
+        expr = true,
+        mode = { 'v' },
+      },
+      {
+        '<leader>fa',
+        function()
+          return ':PrtChatFinder<cr>'
+        end,
+        desc = '[F]ind Ch[a]t',
+        expr = true,
+      },
+      {
+        '<leader>ai',
+        function()
+          return ":<C-u>'<,'>PrtImplement<cr>"
+        end,
+        desc = 'Ch[a]tGPT [I]implement',
+        mode = { 'v' },
+        expr = true,
+      },
+      {
+        '<leader>ap',
+        function()
+          return ":<C-u>'<,'>PrtPrepend<cr>"
+        end,
+        desc = 'Ch[a]tGPT [P]repend',
+        mode = { 'v' },
+        expr = true,
+      },
+      {
+        '<leader>aa',
+        function()
+          return ":<C-u>'<,'>PrtAppend<cr>"
+        end,
+        desc = 'Ch[a]tGPT [A]ppend',
+        mode = { 'v' },
+        expr = true,
+      },
+      {
+        '<leader>ar',
+        function()
+          return ":<C-u>'<,'>PrtRewrite<cr>"
+        end,
+        desc = 'Ch[a]tGPT [R]ewrite',
+        mode = { 'v' },
+        expr = true,
+      },
+      {
+        '<leader>am',
+        function()
+          return ":<C-u>'<,'>PrtChatPaste popup<cr>"
+        end,
+        desc = 'Ch[a]tGPT [M]ove to chat',
+        mode = { 'v' },
+        expr = true,
+      },
+    },
+  },
+
+  -- {
+  --   'jinh0/eyeliner.nvim',
+  --   config = function()
+  --     require('eyeliner').setup {
+  --       highlight_on_key = true, -- show highlights only after keypress
+  --       dim = false, -- dim all other characters if set to true (recommended!)
+  --     }
+  --   end,
+  -- },
+  -- {
+  --   'folke/flash.nvim',
+  --   event = 'VeryLazy',
+  --   ---@type Flash.Config
+  --   opts = {},
+  --   -- stylua: ignore
+  --   keys = {
+  --     { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
+  --     { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+  --     { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
+  --     { "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
+  --     { "<c-s>", mode = { "c" }, function() require("flash").toggle() end, desc = "Toggle Flash Search" },
+  --   },
+  -- },
 }
 
 -- The line beneath this is called `modeline`. See `:help modeline`

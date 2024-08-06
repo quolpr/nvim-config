@@ -315,17 +315,6 @@ require('lazy').setup {
   --  This is equivalent to:
   --    require('Comment').setup({})
 
-  -- Using builtin comment
-  -- {
-  --   'numToStr/Comment.nvim',
-  --   dependencies = { 'JoosepAlviste/nvim-ts-context-commentstring' },
-  --   config = function()
-  --     require('Comment').setup {
-  --       pre_hook = require('ts_context_commentstring.integrations.comment_nvim').create_pre_hook(),
-  --     }
-  --   end,
-  -- },
-
   {
     'JoosepAlviste/nvim-ts-context-commentstring',
     config = function()
@@ -1233,7 +1222,7 @@ require('lazy').setup {
       },
     },
   },
-  { 'Bilal2453/luvit-meta', lazy = true }, -- optional `vim.uv` typings
+  -- { 'Bilal2453/luvit-meta', lazy = true }, -- optional `vim.uv` typings
   { -- Autocompletion
     'hrsh7th/nvim-cmp',
     event = 'InsertEnter',
@@ -2123,16 +2112,16 @@ require('lazy').setup {
   -- },
 
   -- Show tooltip on args while typing
-  -- {
-  --   'ray-x/lsp_signature.nvim',
-  --   event = 'VeryLazy',
-  --   opts = {
-  --     always_trigger = true,
-  --   },
-  --   config = function(_, opts)
-  --     require('lsp_signature').setup(opts)
-  --   end,
-  -- },
+  {
+    'ray-x/lsp_signature.nvim',
+    event = 'VeryLazy',
+    opts = {
+      always_trigger = true,
+    },
+    config = function(_, opts)
+      require('lsp_signature').setup(opts)
+    end,
+  },
 
   -- Illuminate parentheses
   {
@@ -2800,14 +2789,14 @@ require('lazy').setup {
       ]]
     end,
   },
-  {
-    -- faster matchparen
-    -- During profiling I noticeed that matchparen is the slow scroll, so that's why I use nvim version
-    'monkoose/matchparen.nvim',
-    config = function()
-      require('matchparen').setup {}
-    end,
-  },
+  -- {
+  --   -- faster matchparen
+  --   -- During profiling I noticeed that matchparen is the slow scroll, so that's why I use nvim version
+  --   'monkoose/matchparen.nvim',
+  --   config = function()
+  --     require('matchparen').setup {}
+  --   end,
+  -- },
   -- {
   --   'luckasRanarison/clear-action.nvim',
   --   config = function()
@@ -2827,34 +2816,6 @@ require('lazy').setup {
   --   config = true,
   -- },
 
-  -- {
-  --   'nvimtools/none-ls.nvim',
-  --   dependencies = {
-  --     'davidmh/cspell.nvim',
-  --   },
-  --   config = function()
-  --     local config = {
-  --       --- @return string|nil The path of the json file
-  --       find_json = function()
-  --         return (vim.fn.stdpath 'config') .. '/cspell.json'
-  --       end,
-  --     }
-  --
-  --     local cspell = require 'cspell'
-  --     require('null-ls').setup {
-  --       debounce = 1000,
-  --       sources = {
-  --         cspell.diagnostics.with {
-  --           config = config,
-  --           diagnostics_postprocess = function(diagnostic)
-  --             diagnostic.severity = vim.diagnostic.severity['WARN']
-  --           end,
-  --         },
-  --         cspell.code_actions.with { config = config },
-  --       },
-  --     }
-  --   end,
-  -- },
   -- {
   --   'kdheepak/lazygit.nvim',
   --   cmd = {

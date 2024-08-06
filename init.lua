@@ -1,5 +1,7 @@
 --Last commit review: 5aeddfdd5d0308506ec63b0e4f8de33e2a39355fer
 
+-- vim.lsp.set_log_level 'debug'
+
 -- vim.opt.spell = true
 -- vim.opt.spelllang = 'en_us,ru'
 --
@@ -154,6 +156,9 @@ end, { desc = 'Go to previous diagnostic [W]arn message' })
 vim.keymap.set('n', ']w', function()
   vim.diagnostic.goto_next { severity = { min = vim.diagnostic.severity.WARN } }
 end, { desc = 'Go to next diagnostic [W]arn message' })
+vim.keymap.set('n', ']i', function()
+  vim.diagnostic.goto_next { severity = { min = vim.diagnostic.severity.INFO } }
+end, { desc = 'Go to next diagnostic [I]info message' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -258,37 +263,37 @@ vim.g.loaded_matchparen = 1
 
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup {
-  -- {
-  --   'stevearc/aerial.nvim',
-  --   opts = {},
-  --   -- Optional dependencies
-  --   dependencies = {
-  --     'nvim-treesitter/nvim-treesitter',
-  --     'nvim-tree/nvim-web-devicons',
-  --   },
-  --   config = function()
-  --     require('aerial').setup {
-  --       float = {
-  --         relative = 'win',
-  --         min_height = { 20, 0.5 },
-  --         override = function(conf, source_winid)
-  --           conf.width = 80
-  --           conf.col = conf.col - (80 - 25) / 2
-  --           -- This is the config that will be passed to nvim_open_win.
-  --           -- Change values here to customize the layout
-  --           return conf
-  --         end,
-  --       },
-  --     }
-  --   end,
-  --   keys = {
-  --     {
-  --       '<leader>a',
-  --       '<cmd>AerialToggle float<CR>',
-  --       desc = '[A]erial',
-  --     },
-  --   },
-  -- },
+  {
+    'stevearc/aerial.nvim',
+    opts = {},
+    -- Optional dependencies
+    dependencies = {
+      'nvim-treesitter/nvim-treesitter',
+      'nvim-tree/nvim-web-devicons',
+    },
+    config = function()
+      require('aerial').setup {
+        float = {
+          relative = 'win',
+          min_height = { 20, 0.5 },
+          override = function(conf, source_winid)
+            conf.width = 80
+            conf.col = conf.col - (80 - 25) / 2
+            -- This is the config that will be passed to nvim_open_win.
+            -- Change values here to customize the layout
+            return conf
+          end,
+        },
+      }
+    end,
+    keys = {
+      {
+        '<leader>A',
+        '<cmd>AerialToggle float<CR>',
+        desc = '[A]erial',
+      },
+    },
+  },
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
   -- {
   --   'Wansmer/langmapper.nvim',
@@ -495,7 +500,7 @@ require('lazy').setup {
       local fzf = require 'fzf-lua'
 
       vim.keymap.set('n', '<leader>ff', function()
-        fzf.git_files { show_untracked = true, formatter = 'path.filename_first' }
+        fzf.files { formatter = 'path.filename_first' }
       end, { desc = '[F]ind [F]iles' })
 
       vim.keymap.set('n', '<leader>fw', function()
@@ -838,6 +843,10 @@ require('lazy').setup {
         callback = function(event)
           local client = vim.lsp.get_client_by_id(event.data.client_id)
 
+          -- client.handlers['textDocument/publishDiagnostics'] = function(err, result, ctx, config)
+          --   print(vim.inspect(err), vim.inspect(result), vim.inspect(ctx), vim.inspect(config))
+          -- end
+
           -- NOTE: Remember that lua is a real programming language, and as such it is possible
           -- to define small helper and utility functions so you don't have to repeat yourself
           -- many times.
@@ -916,12 +925,58 @@ require('lazy').setup {
           -- Rename the variable under your cursor
           --  Most Language Servers support renaming across files, etc.
           map('<leader>cc', vim.lsp.buf.rename, '[C]ode [C]hange')
-          -- map('<leader>ca', require('clear-action').code_action, '[C]ode [A]ction')
-          vmap('<leader>ca', require('fzf-lua').lsp_code_actions, '[C]ode [A]ction')
 
+          -- https://github.com/neovim/neovim/issues/29500
+          local function get_diagnostic_at_cursor()
+            local cur_buf = vim.api.nvim_get_current_buf()
+            local line, col = unpack(vim.api.nvim_win_get_cursor(0))
+            local entries = vim.diagnostic.get(cur_buf, { lnum = line - 1 })
+            local res = {}
+            for _, v in pairs(entries) do
+              if v.col <= col and v.end_col >= col then
+                table.insert(res, {
+                  code = v.code,
+                  message = v.message,
+                  range = {
+                    ['start'] = {
+                      character = vim.lsp.util.character_offset(cur_buf, v.lnum, v.col, 'utf-16'),
+                      line = v.lnum,
+                    },
+                    ['end'] = {
+                      character = vim.lsp.util.character_offset(cur_buf, v.end_lnum, v.end_col, 'utf-16'),
+                      line = v.end_lnum,
+                    },
+                  },
+                  severity = v.severity,
+                  source = v.source or nil,
+                })
+              end
+            end
+            return res
+          end
           -- Execute a code action, usually your cursor needs to be on top of an error
           -- or a suggestion from your LSP for this to activate.
-          map('<leader>ca', require('fzf-lua').lsp_code_actions, '[C]ode [A]ction')
+          map('<leader>ca', function()
+            require('fzf-lua').lsp_code_actions {
+              -- vim.lsp.buf.code_action {
+              -- once = get_diagnostic_at_cursor(),
+              context = {
+                diagnostics = get_diagnostic_at_cursor(),
+              },
+              filter = function(action)
+                if string.find(action.title, 'to user settings') then
+                  return false
+                end
+
+                return true
+              end,
+              -- query='!tousersettings '
+            }
+          end, '[C]ode [A]ction')
+
+          -- vmap('<leader>ca', function()
+          --   require('fzf-lua').lsp_code_actions {}
+          -- end, '[C]ode [A]ction')
 
           -- Opens a popup that displays documentation about the word under your cursor
           --  See `:help K` for why this keymap
@@ -1070,7 +1125,6 @@ require('lazy').setup {
             tsserver = { useSyntaxServer = 'never' },
           },
         },
-        cspell = {},
         sqlls = {},
         eslint = {},
         biome = {},
@@ -1118,10 +1172,10 @@ require('lazy').setup {
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       local configs = require 'lspconfig.configs'
-      configs['cspell'] = require 'cspell-lsp'
+      configs['cSpell'] = require 'cspell-lsp'
       local lspServer = {}
       lspServer.capabilities = vim.tbl_deep_extend('force', {}, capabilities)
-      require('lspconfig')['cspell'].setup(lspServer)
+      require('lspconfig')['cSpell'].setup(lspServer)
 
       require('mason-lspconfig').setup {
         handlers = {
@@ -1161,7 +1215,7 @@ require('lazy').setup {
         -- is found.
         -- javascript = { { 'biome' } },
         -- typescript = { { 'biome' } },
-        json = { { 'biome' } },
+        -- json = { { 'biome' } },
         -- typescriptreact = { { 'biome' } },
         go = { 'gofmt', 'goimports' },
         proto = { 'buf' },
@@ -1453,29 +1507,30 @@ require('lazy').setup {
   -- My additional plugins:
 
   'mg979/vim-visual-multi',
-  -- {
-  --   'NeogitOrg/neogit',
-  --   dependencies = {
-  --     'nvim-lua/plenary.nvim', -- required
-  --     -- Only one of these is needed, not both.
-  --     'nvim-telescope/telescope.nvim', -- optional
-  --     'ibhagwan/fzf-lua', -- optional
-  --   },
-  --   config = function()
-  --     local neogit = require 'neogit'
-  --     neogit.setup {}
-  --   end,
-  --   keys = {
-  --     {
-  --       '<leader>go',
-  --       function()
-  --         local neogit = require 'neogit'
-  --         neogit.open { kind = 'tab' }
-  --       end,
-  --       desc = '[G]it [O]pen',
-  --     },
-  --   },
-  -- },
+  -- 'tpope/vim-fugitive',
+  {
+    'NeogitOrg/neogit',
+    dependencies = {
+      'nvim-lua/plenary.nvim', -- required
+      -- Only one of these is needed, not both.
+      'nvim-telescope/telescope.nvim', -- optional
+      'ibhagwan/fzf-lua', -- optional
+    },
+    config = function()
+      local neogit = require 'neogit'
+      neogit.setup {}
+    end,
+    keys = {
+      {
+        '<leader>go',
+        function()
+          local neogit = require 'neogit'
+          neogit.open { kind = 'split' }
+        end,
+        desc = '[G]it [O]pen',
+      },
+    },
+  },
   {
     'sindrets/diffview.nvim',
     dependencies = {
@@ -2509,20 +2564,30 @@ require('lazy').setup {
     end,
   },
   {
-    'quolpr/quicktest.nvim',
+    -- 'quolpr/quicktest.nvim',
+    dir = '~/projects/quolpr/quicktest.nvim',
     config = function()
       local qt = require 'quicktest'
 
       qt.setup {
         adapters = {
           require 'quicktest.adapters.golang' {
-            additional_args = function()
-              return { '-race', '-count=1' }
+            args = function(bufnt, args)
+              vim.list_extend(args, { '-count=1' })
+              return args
             end,
           },
           require 'quicktest.adapters.vitest',
+          --   -- bin = function(path)
+          --   --   print(path)
+          --   --   return 'vitest'
+          --   -- end,
+          -- },
           require 'quicktest.adapters.elixir',
+          require 'quicktest.adapters.dart',
+          -- require 'quicktest.adapters.playwright',
         },
+        default_win_mode = 'split',
       }
     end,
     dependencies = {
@@ -2532,22 +2597,22 @@ require('lazy').setup {
     },
     keys = {
       {
-        '<leader>tr',
+        '<leader>tl',
         function()
           local qt = require 'quicktest'
 
-          qt.run_line()
+          qt.run_line('auto', 'auto', { additional_args = { '-count=5' } })
         end,
-        desc = '[T]est [R]un',
+        desc = '[T]est Run [L]ine',
       },
       {
-        '<leader>tR',
+        '<leader>tf',
         function()
           local qt = require 'quicktest'
 
           qt.run_file()
         end,
-        desc = '[T]est [R]un file',
+        desc = '[T]est Run [F]ile',
       },
       {
         '<leader>td',
@@ -2581,18 +2646,18 @@ require('lazy').setup {
         function()
           local qt = require 'quicktest'
 
-          qt.toggle_win 'popup'
+          qt.toggle_win 'split'
         end,
-        desc = '[T]est [T]oggle popup window',
+        desc = '[T]est [T]oggle Window',
       },
       {
-        '<leader>ts',
+        '<leader>tc',
         function()
           local qt = require 'quicktest'
 
-          qt.toggle_win 'split'
+          qt.cancel_current_run()
         end,
-        desc = '[T]est Toggle [S]plit window',
+        desc = '[T]est [C]ancel run',
       },
     },
   },
@@ -2789,25 +2854,25 @@ require('lazy').setup {
   --     }
   --   end,
   -- },
-  {
-    'kdheepak/lazygit.nvim',
-    cmd = {
-      'LazyGit',
-      'LazyGitConfig',
-      'LazyGitCurrentFile',
-      'LazyGitFilter',
-      'LazyGitFilterCurrentFile',
-    },
-    -- optional for floating window border decoration
-    dependencies = {
-      'nvim-lua/plenary.nvim',
-    },
-    -- setting the keybinding for LazyGit with 'keys' is recommended in
-    -- order to load the plugin when the command is run for the first time
-    keys = {
-      { '<leader>go', '<cmd>LazyGit<cr>', desc = '[G]it [O]pen' },
-    },
-  },
+  -- {
+  --   'kdheepak/lazygit.nvim',
+  --   cmd = {
+  --     'LazyGit',
+  --     'LazyGitConfig',
+  --     'LazyGitCurrentFile',
+  --     'LazyGitFilter',
+  --     'LazyGitFilterCurrentFile',
+  --   },
+  --   -- optional for floating window border decoration
+  --   dependencies = {
+  --     'nvim-lua/plenary.nvim',
+  --   },
+  --   -- setting the keybinding for LazyGit with 'keys' is recommended in
+  --   -- order to load the plugin when the command is run for the first time
+  --   keys = {
+  --     { '<leader>go', '<cmd>LazyGit<cr>', desc = '[G]it [O]pen' },
+  --   },
+  -- },
   -- {
   --   'nvim-neo-tree/neo-tree.nvim',
   --   branch = 'v3.x',

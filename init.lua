@@ -459,13 +459,6 @@ require('lazy').setup {
     -- optional for icon support
     dependencies = {
       'nvim-tree/nvim-web-devicons',
-
-      {
-        'ThePrimeagen/git-worktree.nvim',
-        config = function()
-          require('git-worktree').setup {}
-        end,
-      },
     },
     config = function()
       -- calling `setup` is optional for customization
@@ -484,6 +477,13 @@ require('lazy').setup {
             cmd = 'git ls-files --others --exclude-standard --cached',
           },
         },
+        winopts = {
+          preview = {
+            horizontal = 'right:50%',
+          },
+          width = 0.90,
+          height = 0.95,
+        },
       }
 
       local fzf = require 'fzf-lua'
@@ -498,10 +498,6 @@ require('lazy').setup {
       vim.keymap.set('v', '<leader>fw', function()
         fzf.grep_visual { formatter = 'path.filename_first' }
       end, { desc = '[F]ind current [W]ord' })
-
-      vim.keymap.set('n', '<leader>ft', function()
-        require('fzf-worktree').git_worktrees()
-      end, { desc = '[F]ind working [T]ree' })
 
       vim.keymap.set('n', '<leader>fg', function()
         fzf.live_grep { formatter = 'path.filename_first' }
@@ -1180,7 +1176,16 @@ require('lazy').setup {
       }
     end,
   },
+  { -- Autoformat
+    dir = '~/.config/nvim/plugins/history',
+    config = function()
+      local history = require 'history'
 
+      vim.keymap.set('n', '<leader>fh', function()
+        history()
+      end, { desc = '[F]ind [H]istory' })
+    end,
+  },
   { -- Autoformat
     'stevearc/conform.nvim',
     lazy = false,
@@ -1202,10 +1207,10 @@ require('lazy').setup {
         --
         -- You can use a sub-list to tell conform to run *until* a formatter
         -- is found.
-        -- javascript = { { 'biome' } },
-        -- typescript = { { 'biome' } },
+        javascript = { { 'biome' } },
+        typescript = { { 'biome' } },
         -- json = { { 'biome' } },
-        -- typescriptreact = { { 'biome' } },
+        typescriptreact = { { 'biome' } },
         go = { 'gofmt', 'goimports' },
         proto = { 'buf' },
       },
@@ -1222,7 +1227,7 @@ require('lazy').setup {
       },
     },
   },
-  -- { 'Bilal2453/luvit-meta', lazy = true }, -- optional `vim.uv` typings
+  { 'Bilal2453/luvit-meta', lazy = true }, -- optional `vim.uv` typings
   { -- Autocompletion
     'hrsh7th/nvim-cmp',
     event = 'InsertEnter',
@@ -1499,7 +1504,8 @@ require('lazy').setup {
   'mg979/vim-visual-multi',
   -- 'tpope/vim-fugitive',
   {
-    'NeogitOrg/neogit',
+    -- 'NeogitOrg/neogit',
+    dir = '~/projects/quolpr/neogit',
     dependencies = {
       'nvim-lua/plenary.nvim', -- required
       -- Only one of these is needed, not both.
@@ -1515,7 +1521,7 @@ require('lazy').setup {
         '<leader>go',
         function()
           local neogit = require 'neogit'
-          neogit.open { kind = 'split' }
+          neogit.open { kind = 'split_above_all' }
         end,
         desc = '[G]it [O]pen',
       },
@@ -2223,12 +2229,12 @@ require('lazy').setup {
           desc = '[H]arpoon File',
         },
         {
-          '<leader>fh',
+          '<leader>eh',
           function()
             local harpoon = require 'harpoon'
             harpoon.ui:toggle_quick_menu(harpoon:list())
           end,
-          desc = '[F]ind [H]arpoon',
+          desc = '[E]dit [H]arpoon',
         },
       }
 
@@ -3336,6 +3342,127 @@ DO NOT REPEAT ANY CODE FROM ABOVE!!!
   --   },
   -- },
 }
+
+local function file_exists(path)
+  local stat = vim.loop.fs_stat(path)
+  return (stat and stat.type) or false
+end
+
+local function is_cwd_in_file_path(file_path)
+  local cwd = vim.fn.getcwd()
+  -- Ensure both paths end with a slash for consistent comparison
+  cwd = cwd .. (cwd:sub(-1) == '/' and '' or '/')
+  file_path = file_path .. (file_path:sub(-1) == '/' and '' or '/')
+  -- Check if the cwd is a prefix of the file path
+  return file_path:sub(1, #cwd) == cwd
+end
+
+function jumps()
+  local core = require 'fzf-lua.core'
+  local config = require 'fzf-lua.config'
+
+  local jumps_res = vim.fn.execute 'jumps'
+  local jumps = vim.split(jumps_res, '\n')
+
+  local in_list = {}
+  local entries = {}
+  for i = #jumps - 1, 3, -1 do
+    local _, _, _, text = jumps[i]:match '(%d+)%s+(%d+)%s+(%d+)%s+(.*)'
+
+    if not in_list[text] and file_exists(text) and is_cwd_in_file_path(vim.fn.fnamemodify(text, ':p')) then
+      table.insert(entries, text)
+      in_list[text] = true
+    end
+  end
+
+  if #entries == 0 then
+    vim.notify 'No jumps found'
+    return
+  end
+
+  require('fzf-lua').fzf_exec(entries, {
+    actions = {
+      ['default'] = require('fzf-lua').actions.file_edit,
+    },
+  })
+end
+
+-- local function run()
+--   local path = vim.fn.stdpath 'data' .. '/buffer_paths.log'
+--
+--   local function write_path_async()
+--     local current_path = vim.api.nvim_buf_get_name(0)
+--     if current_path == '' then
+--       return
+--     end
+--     if not (file_exists(current_path) and is_cwd_in_file_path(vim.fn.fnamemodify(current_path, ':p'))) then
+--       return
+--     end
+--
+--     vim.loop.fs_open(path, 'a+', 438, function(err_open, fd)
+--       if err_open or not fd then
+--         return
+--       end
+--
+--       vim.loop.fs_fstat(fd, function(err_fstat, stat)
+--         if err_fstat or not stat then
+--           vim.notify('Failed to get fstat of file: ' .. err_fstat)
+--           vim.loop.fs_close(fd)
+--           return
+--         end
+--
+--         -- Ограничение файла 20 строками
+--         local max_lines = 20
+--         local lines_to_keep = max_lines - 1
+--
+--         if stat.size > 0 then
+--           vim.loop.fs_read(fd, stat.size, 0, function(err_read, data)
+--             if err_read then
+--               vim.notify('Failed to read file: ' .. err_read)
+--               vim.loop.fs_close(fd)
+--               return
+--             end
+--
+--             data = data or ''
+--
+--             local lines = vim.split(data, '\n', { plain = true, trimempty = true })
+--             if #lines > lines_to_keep then
+--               data = table.concat(vim.list_slice(lines, #lines - lines_to_keep), '\n') .. '\n'
+--             else
+--               data = data .. '\n'
+--             end
+--
+--             -- Запись текущего пути
+--             vim.loop.fs_write(fd, data .. current_path .. '\n', 0, function(err)
+--               if err then
+--                 vim.notify('Failed to write to file: ' .. err)
+--               end
+--
+--               vim.loop.fs_close(fd)
+--             end)
+--           end)
+--         else
+--           vim.loop.fs_write(fd, current_path .. '\n', 0, function(err)
+--             if err then
+--               vim.notify('Failed to write to file: ' .. err)
+--             end
+--
+--             vim.loop.fs_close(fd)
+--           end)
+--         end
+--       end)
+--     end)
+--   end
+--
+--   vim.api.nvim_create_autocmd('BufEnter', {
+--     pattern = '*',
+--     callback = write_path_async,
+--   })
+-- end
+--
+-- run()
+
+-- jumps()
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

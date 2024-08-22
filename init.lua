@@ -3209,11 +3209,10 @@ DO NOT REPEAT ANY CODE FROM ABOVE!!!
 ]],
         providers = {
           openai = {
-            api_key = 'sk-proj-HgRzNaw1bVrqxckA0xA5T3BlbkFJOmcxQqjHyit0qqeyBOOJ',
+            api_key = '',
           },
         },
         toggle_target = 'popup',
-        curl_params = { '--socks5-hostname', '91.108.241.124:34390' },
       }
 
       -- or setup with your own config (see Install > Configuration in Readme)

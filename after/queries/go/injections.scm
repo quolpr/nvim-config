@@ -9,13 +9,13 @@
   (argument_list
     (interpreted_string_literal) @sql))
   (#any-of? @_field "Exec" "GetContext" "ExecContext" "SelectContext" "In"
-				            "RebindNamed" "Rebind" "Query" "QueryRow" "QueryRowxContext" "NamedExec" "MustExec" "Get" "Queryx")
+				            "RebindNamed" "Rebind" "Query" "QueryRow" "QueryRowxContext" "NamedExec" "MustExec" "Get" "Queryx" "Raw")
   (#offset! @sql 0 1 0 -1))
 
 ; still buggy for nvim 0.10
 ((call_expression
   (selector_expression
-    field: (field_identifier) @_field (#any-of? @_field "Exec" "GetContext" "ExecContext" "SelectContext" "In" "RebindNamed" "Rebind" "Query" "QueryRow" "QueryRowxContext" "NamedExec" "MustExec" "Get" "Queryx"))
+    field: (field_identifier) @_field (#any-of? @_field "Exec" "GetContext" "ExecContext" "SelectContext" "In" "RebindNamed" "Rebind" "Query" "QueryRow" "QueryRowxContext" "NamedExec" "MustExec" "Get" "Queryx" "Raw"))
   (argument_list
     (interpreted_string_literal) @injection.content))
   (#offset! @injection.content 0 1 0 -1)

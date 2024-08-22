@@ -469,9 +469,9 @@ require('lazy').setup {
             symbol_style = 2,
           },
         },
-        files = {
-          formatter = 'path.filename_first',
-        },
+        -- files = {
+        --   formatter = 'path.filename_first',
+        -- },
         git = {
           files = {
             cmd = 'git ls-files --others --exclude-standard --cached',
@@ -489,18 +489,22 @@ require('lazy').setup {
       local fzf = require 'fzf-lua'
 
       vim.keymap.set('n', '<leader>ff', function()
-        fzf.files { formatter = 'path.filename_first' }
+        -- fzf.files { formatter = 'path.filename_first' }
+        fzf.files()
       end, { desc = '[F]ind [F]iles' })
 
       vim.keymap.set('n', '<leader>fw', function()
-        fzf.grep_cword { formatter = 'path.filename_first' }
+        -- fzf.grep_cword { formatter = 'path.filename_first' }
+        fzf.grep_cword()
       end, { desc = '[F]ind current [W]ord' })
       vim.keymap.set('v', '<leader>fw', function()
-        fzf.grep_visual { formatter = 'path.filename_first' }
+        -- fzf.grep_visual { formatter = 'path.filename_first' }
+        fzf.grep_visual()
       end, { desc = '[F]ind current [W]ord' })
 
       vim.keymap.set('n', '<leader>fg', function()
-        fzf.live_grep { formatter = 'path.filename_first' }
+        -- fzf.live_grep { formatter = 'path.filename_first' }
+        fzf.live_grep()
       end, { desc = '[F]ind by [G]rep' })
 
       vim.keymap.set('n', '<leader>fr', fzf.resume, { desc = '[F]ind [R]esume' })
@@ -517,11 +521,13 @@ require('lazy').setup {
       -- end, { desc = '[F]ind [D]iagnostic' })
 
       vim.keymap.set('n', '<leader>fo', function()
-        fzf.git_status { formatter = 'path.filename_first' }
+        -- fzf.git_status { formatter = 'path.filename_first' }
+        fzf.git_status()
       end, { desc = '[F]ind by git status' })
 
       vim.keymap.set('n', '<leader><leader>', function()
-        fzf.lsp_live_workspace_symbols { formatter = 'path.filename_first' }
+        -- fzf.lsp_live_workspace_symbols { formatter = 'path.filename_first' }
+        fzf.lsp_live_workspace_symbols()
       end, { desc = 'Find workspace symbols' })
     end,
   },
@@ -1305,7 +1311,7 @@ require('lazy').setup {
           -- Accept ([y]es) the completion.
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
-          ['<C-y>'] = cmp.mapping.confirm { select = false },
+          ['<Tab>'] = cmp.mapping.confirm { select = false },
 
           -- Manually trigger a completion from nvim-cmp.
           --  Generally you don't need this, because nvim-cmp will display
@@ -1883,7 +1889,7 @@ require('lazy').setup {
       -- TODO: port it to lua
       vim.cmd [[
         nmap <silent> - :Fern . -reveal=% -wait <CR>
-        nmap <silent> _ :Fern %:h -wait <CR>
+        nmap <silent> _ :Fern %:p:h -wait -reveal=% <CR>
         
 
         function! s:init_fern() abort

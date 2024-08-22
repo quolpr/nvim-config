@@ -120,7 +120,6 @@ vim.api.nvim_create_autocmd('BufEnter', {
   callback = write_path_async,
 })
 
-local config = require 'fzf-lua.config'
 local function history()
   local cwd = vim.fn.getcwd()
   local log_fd = open_fd(cwd)

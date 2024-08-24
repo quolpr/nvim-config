@@ -73,7 +73,7 @@ end
 
 return {
   default_config = {
-    cmd = { 'node', '/Users/quolpr/projects/quolpr/vscode-spell-checker/packages/_server/dist/main.mjs', '--stdio' },
+    cmd = { 'node', vim.fn.expand '$HOME/.config/nvim/bin/main.cjs', '--stdio' },
     filetypes = { '*' },
     root_dir = util.root_pattern '.git',
     single_file_support = true,
@@ -83,7 +83,7 @@ return {
         -- logFile = '/Users/quolpr/debug2.log',
         enabled = true,
         trustedWorkspace = true,
-        import = { '/Users/quolpr/.config/nvim/cspell.json' },
+        import = { '~/.config/nvim/cspell.json' },
         checkOnlyEnabledFileTypes = false,
         doNotUseCustomDecorationForScheme = true,
         useCustomDecorations = false,

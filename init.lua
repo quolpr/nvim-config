@@ -99,21 +99,6 @@ vim.keymap.set('n', '<leader>p', [["+p]], { desc = '[P]aste from computer' })
 -- Disable macro cause I don't use it + breaks cmp
 vim.keymap.set('n', 'q', '<Nop>')
 
-vim.keymap.set('n', '<leader>ps', function()
-  vim.cmd [[
-    profile start profile.log
-    profile func *
-    profile file *
-  ]]
-  vim.notify('Profile started', 'info')
-end, { desc = '[P]rofile [S]tart' })
-vim.keymap.set('n', '<leader>pe', function()
-  vim.cmd [[
-    profile pause
-    noautocmd qall!
-  ]]
-end, { desc = '[P]rofile [S]tart' })
-
 -- When you delete/paste don't rewrite last register
 vim.keymap.set('x', '<leader>p', [["_dP]], { desc = '[P]aste without register overwriting' })
 vim.keymap.set({ 'n', 'v' }, '<leader>d', [["_d]], { desc = '[D]elete without register overwriting' })
@@ -182,30 +167,6 @@ vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left wind
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
-
-local function lspSymbol(name, icon)
-  local hl = 'DiagnosticSign' .. name
-  vim.fn.sign_define(hl, { text = icon, numhl = hl, texthl = hl })
-end
-
-lspSymbol('Error', '󰅙')
-lspSymbol('Info', '󰋼')
-lspSymbol('Hint', '󰌵')
-lspSymbol('Warn', '')
-
--- [[ Basic Autocommands ]]
---  See `:help lua-guide-autocommands`
-
--- Highlight when yanking (copying) text
---  Try it with `yap` in normal mode
---  See `:help vim.highlight.on_yank()`
-vim.api.nvim_create_autocmd('TextYankPost', {
-  desc = 'Highlight when yanking (copying) text',
-  group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
-  callback = function()
-    vim.highlight.on_yank()
-  end,
-})
 
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info

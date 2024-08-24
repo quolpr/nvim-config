@@ -1,3 +1,19 @@
+vim.keymap.set('n', '<leader>ps', function()
+  vim.cmd [[
+    profile start profile.log
+    profile func *
+    profile file *
+  ]]
+  vim.notify('Profile started', 'info')
+end, { desc = '[P]rofile [S]tart' })
+
+vim.keymap.set('n', '<leader>pe', function()
+  vim.cmd [[
+    profile pause
+    noautocmd qall!
+  ]]
+end, { desc = '[P]rofile [S]tart' })
+
 return {
   {
     'stevearc/profile.nvim',

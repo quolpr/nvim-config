@@ -104,12 +104,12 @@ return {
             require('fzf-lua').lsp_typedefs { formatter = 'path.filename_first' }
           end, 'Type [D]efinition')
 
-          map('gc', function()
-            require('fzf-lua').lsp_outgoing_calls { formatter = 'path.filename_first' }
-          end, '[G]oto outgoing [C]alls')
-          map('gC', function()
-            require('fzf-lua').lsp_incoming_calls { formatter = 'path.filename_first' }
-          end, '[G]oto incoming [C]alls')
+          -- map('gc', function()
+          --   require('fzf-lua').lsp_outgoing_calls { formatter = 'path.filename_first' }
+          -- end, '[G]oto outgoing [C]alls')
+          -- map('gC', function()
+          --   require('fzf-lua').lsp_incoming_calls { formatter = 'path.filename_first' }
+          -- end, '[G]oto incoming [C]alls')
 
           -- https://github.com/neovim/neovim/issues/29500
           local function get_diagnostic_at_cursor()

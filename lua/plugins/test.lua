@@ -39,7 +39,7 @@ return {
 
           qt.run_line('auto', 'auto', { additional_args = { '-count=5' } })
         end,
-        desc = '[T]est Run [L]ine',
+        desc = 'Test Run Line',
       },
       {
         '<leader>tf',
@@ -48,7 +48,7 @@ return {
 
           qt.run_file()
         end,
-        desc = '[T]est Run [F]ile',
+        desc = 'Test Run File',
       },
       {
         '<leader>td',
@@ -57,7 +57,7 @@ return {
 
           qt.run_dir()
         end,
-        desc = '[T]est Run [D]ir',
+        desc = 'Test Run Dir',
       },
       {
         '<leader>ta',
@@ -66,7 +66,7 @@ return {
 
           qt.run_all()
         end,
-        desc = '[T]est Run [A]ll',
+        desc = 'Test Run All',
       },
       {
         '<leader>tp',
@@ -75,7 +75,7 @@ return {
 
           qt.run_previous()
         end,
-        desc = '[T]est Run [P]revious',
+        desc = 'Test Run Previous',
       },
       {
         '<leader>tt',
@@ -84,7 +84,7 @@ return {
 
           qt.toggle_win 'split'
         end,
-        desc = '[T]est [T]oggle Window',
+        desc = 'Test Toggle Window',
       },
       {
         '<leader>tc',
@@ -93,7 +93,7 @@ return {
 
           qt.cancel_current_run()
         end,
-        desc = '[T]est [C]ancel run',
+        desc = 'Test Cancel run',
       },
     },
   },

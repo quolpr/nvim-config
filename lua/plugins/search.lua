@@ -36,39 +36,39 @@ return {
       vim.keymap.set('n', '<leader>ff', function()
         -- fzf.files { formatter = 'path.filename_first' }
         fzf.files()
-      end, { desc = '[F]ind [F]iles' })
+      end, { desc = 'Find Files' })
 
       vim.keymap.set('n', '<leader>fw', function()
         -- fzf.grep_cword { formatter = 'path.filename_first' }
         fzf.grep_cword()
-      end, { desc = '[F]ind current [W]ord' })
+      end, { desc = 'Find current Word' })
       vim.keymap.set('v', '<leader>fw', function()
         -- fzf.grep_visual { formatter = 'path.filename_first' }
         fzf.grep_visual()
-      end, { desc = '[F]ind current [W]ord' })
+      end, { desc = 'Find current Word' })
 
       vim.keymap.set('n', '<leader>fg', function()
         -- fzf.live_grep { formatter = 'path.filename_first' }
         fzf.live_grep()
-      end, { desc = '[F]ind by [G]rep' })
+      end, { desc = 'Find by Grep' })
 
-      vim.keymap.set('n', '<leader>fr', fzf.resume, { desc = '[F]ind [R]esume' })
+      vim.keymap.set('n', '<leader>fr', fzf.resume, { desc = 'Find Resume' })
 
       -- In current buffer
       -- Use code -> diagnostics
       -- vim.keymap.set('n', '<leader>fd', function()
       --   fzf.diagnostics_document { formatter = 'path.filename_first' }
-      -- end, { desc = '[F]ind [D]iagnostic' })
+      -- end, { desc = 'Find Diagnostic' })
       --
       -- -- In all buffers
       -- vim.keymap.set('n', '<leader>fD', function()
       --   fzf.diagnostics_workspace { formatter = 'path.filename_first' }
-      -- end, { desc = '[F]ind [D]iagnostic' })
+      -- end, { desc = 'Find Diagnostic' })
 
       vim.keymap.set('n', '<leader>fo', function()
         -- fzf.git_status { formatter = 'path.filename_first' }
         fzf.git_status()
-      end, { desc = '[F]ind by git status' })
+      end, { desc = 'Find by git status' })
 
       vim.keymap.set('n', '<leader><leader>', function()
         -- fzf.lsp_live_workspace_symbols { formatter = 'path.filename_first' }
@@ -84,32 +84,32 @@ return {
 
           map('gd', function()
             require('fzf-lua').lsp_definitions { formatter = 'path.filename_first' }
-          end, '[G]oto [D]efinition')
+          end, 'Goto Definition')
 
           -- Find references for the word under your cursor.
           map('gr', function()
             require('fzf-lua').lsp_references { formatter = 'path.filename_first' }
-          end, '[G]oto [R]eferences')
+          end, 'Goto References')
 
           -- Jump to the implementation of the word under your cursor.
           --  Useful when your language has ways of declaring types without an actual implementation.
           map('gi', function()
             require('fzf-lua').lsp_implementations { formatter = 'path.filename_first' }
-          end, '[G]oto [I]mplementation')
+          end, 'Goto Implementation')
 
           -- Jump to the type of the word under your cursor.
           --  Useful when you're not sure what type a variable is and you want to see
           --  the definition of its *type*, not where it was *defined*.
           map('gD', function()
             require('fzf-lua').lsp_typedefs { formatter = 'path.filename_first' }
-          end, 'Type [D]efinition')
+          end, 'Type Definition')
 
           -- map('gc', function()
           --   require('fzf-lua').lsp_outgoing_calls { formatter = 'path.filename_first' }
-          -- end, '[G]oto outgoing [C]alls')
+          -- end, 'Goto outgoing Calls')
           -- map('gC', function()
           --   require('fzf-lua').lsp_incoming_calls { formatter = 'path.filename_first' }
-          -- end, '[G]oto incoming [C]alls')
+          -- end, 'Goto incoming Calls')
 
           -- https://github.com/neovim/neovim/issues/29500
           local function get_diagnostic_at_cursor()
@@ -157,7 +157,7 @@ return {
               end,
               -- query='!tousersettings '
             }
-          end, '[C]ode [A]ction')
+          end, 'Code Action')
         end,
       })
     end,
@@ -169,7 +169,7 @@ return {
 
       vim.keymap.set('n', '<leader>fh', function()
         history()
-      end, { desc = '[F]ind [H]istory' })
+      end, { desc = 'Find History' })
     end,
   },
   {
@@ -180,7 +180,7 @@ return {
         function()
           require('spectre').open()
         end,
-        desc = '[F]ind and Replace in [P]roject',
+        desc = 'Find and Replace in Project',
       },
     },
     {
@@ -202,7 +202,7 @@ return {
             function()
               require('harpoon'):list():add()
             end,
-            desc = '[H]arpoon File',
+            desc = 'Harpoon File',
           },
           {
             '<leader>eh',
@@ -210,7 +210,7 @@ return {
               local harpoon = require 'harpoon'
               harpoon.ui:toggle_quick_menu(harpoon:list())
             end,
-            desc = '[E]dit [H]arpoon',
+            desc = 'Edit Harpoon',
           },
         }
 
@@ -396,32 +396,32 @@ return {
   --
   --     -- vim.keymap.set('n', '<leader>ff', function()
   --     --   builtin.git_files { show_untracked = true }
-  --     -- end, { desc = '[F]ind [F]iles' })
+  --     -- end, { desc = 'Find Files' })
   --
   --     vim.keymap.set('v', '<leader>fw', function()
   --       local text = getVisualSelection()
   --       builtin.grep_string { search = text }
-  --     end, { desc = '[F]ind current [W]ord' })
+  --     end, { desc = 'Find current Word' })
   --
-  --     vim.keymap.set('n', '<leader>fw', builtin.grep_string, { desc = '[F]ind current [W]ord' })
-  --     vim.keymap.set('n', '<leader>fg', builtin.live_grep, { desc = '[F]ind by [G]rep' })
-  --     vim.keymap.set('n', '<leader>fr', builtin.resume, { desc = '[F]ind [R]esume' })
+  --     vim.keymap.set('n', '<leader>fw', builtin.grep_string, { desc = 'Find current Word' })
+  --     vim.keymap.set('n', '<leader>fg', builtin.live_grep, { desc = 'Find by Grep' })
+  --     vim.keymap.set('n', '<leader>fr', builtin.resume, { desc = 'Find Resume' })
   --
   --     -- In current buffer
   --     vim.keymap.set('n', '<leader>fd', function()
   --       builtin.diagnostics { bufnr = 0 }
-  --     end, { desc = '[F]ind [D]iagnostic' })
+  --     end, { desc = 'Find Diagnostic' })
   --     -- In all buffers
   --     vim.keymap.set('n', '<leader>fD', function()
   --       builtin.diagnostics { bufnr = nil }
-  --     end, { desc = '[F]ind [D]iagnostic' })
+  --     end, { desc = 'Find Diagnostic' })
   --
   --     vim.keymap.set('n', '<leader>fs', function()
   --       builtin.lsp_document_symbols { fname_width = 60, symbol_width = 60 }
-  --     end, { desc = '[F]ind [S]ymbols' })
-  --     vim.keymap.set('n', '<leader>fS', builtin.lsp_dynamic_workspace_symbols, { desc = '[F]ind [S]ymbols' })
-  --     -- vim.keymap.set('n', '<leader>fh', builtin.search_history, { desc = '[F]ind [H]istory' })
-  --     -- vim.keymap.set('n', '<leader><leader>', builtin.git_status, { desc = '[F]ind by git [S]tatus' })
+  --     end, { desc = 'Find Symbols' })
+  --     vim.keymap.set('n', '<leader>fS', builtin.lsp_dynamic_workspace_symbols, { desc = 'Find Symbols' })
+  --     -- vim.keymap.set('n', '<leader>fh', builtin.search_history, { desc = 'Find History' })
+  --     -- vim.keymap.set('n', '<leader><leader>', builtin.git_status, { desc = 'Find by git Status' })
   --
   --     vim.keymap.set('n', '<leader>ff', function()
   --       require('telescope').extensions.smart_open.smart_open {
@@ -430,27 +430,27 @@ return {
   --       -- require('telescope').extensions.frecency.frecency {
   --       --   workspace = 'CWD',
   --       -- }
-  --     end, { desc = '[F]ind [F]iles' })
+  --     end, { desc = 'Find Files' })
   --
   --     vim.keymap.set('n', '<leader>fo', function()
   --       builtin.git_status()
-  --     end, { desc = '[F]ind by git status' })
+  --     end, { desc = 'Find by git status' })
   --
   --     vim.keymap.set('n', '<leader><leader>', function()
   --       builtin.lsp_dynamic_workspace_symbols()
-  --     end, { desc = '[F]ind by git [S]tatus' })
+  --     end, { desc = 'Find by git Status' })
   --
   --     -- vim.keymap.set('n', '<leader>fm', function()
   --     --   builtin.marks { mark_type = 'local' }
-  --     -- end, { desc = '[F]ind [M]arks' })
+  --     -- end, { desc = 'Find Marks' })
   --     -- vim.keymap.set('n', '<leader>fm', function()
   --     --   require('telescope').extensions.harpoon.marks()
-  --     -- end, { desc = '[F]ind [M]arks' })
+  --     -- end, { desc = 'Find Marks' })
   --
   --     -- Shortcut for searching your neovim configuration files
   --     -- vim.keymap.set('n', '<leader>fn', function()
   --     --   builtin.find_files { cwd = vim.fn.stdpath 'config' }
-  --     -- end, { desc = '[S]earch [N]eovim files' })
+  --     -- end, { desc = 'Search Neovim files' })
   --   end,
   -- },
 }

@@ -87,24 +87,24 @@ vim.opt.scrolloff = 5
 
 -- BEGIN MY KEYMAPS
 vim.keymap.set('n', 'vv', '<C-w>v', { desc = 'Split window vertically' })
-vim.keymap.set('n', '<leader>s', '<cmd> update <CR>', { desc = '[S]ave file' })
+vim.keymap.set('n', '<leader>s', '<cmd> update <CR>', { desc = 'Save file' })
 
 -- -- Delete all buffers except current
 -- vim.keymap.set('n', '<leader>bd', '<cmd>%bd|e#<cr>', { desc = 'Close all buffers but the current one' }) -- https://stackoverflow.com/a/42071865/516188
 
 -- copy/paste from computer buffer
-vim.keymap.set({ 'n', 'v' }, '<leader>y', [["+y]], { desc = '[Y]ank from computer' })
-vim.keymap.set('n', '<leader>p', [["+p]], { desc = '[P]aste from computer' })
+vim.keymap.set({ 'n', 'v' }, '<leader>y', [["+y]], { desc = 'Yank from computer' })
+vim.keymap.set('n', '<leader>p', [["+p]], { desc = 'Paste from computer' })
 
 -- Disable macro cause I don't use it + breaks cmp
 vim.keymap.set('n', 'q', '<Nop>')
 
 -- When you delete/paste don't rewrite last register
-vim.keymap.set('x', '<leader>p', [["_dP]], { desc = '[P]aste without register overwriting' })
-vim.keymap.set({ 'n', 'v' }, '<leader>d', [["_d]], { desc = '[D]elete without register overwriting' })
+vim.keymap.set('x', '<leader>p', [["_dP]], { desc = 'Paste without register overwriting' })
+vim.keymap.set({ 'n', 'v' }, '<leader>d', [["_d]], { desc = 'Delete without register overwriting' })
 
-vim.keymap.set('n', 'T', ':tabnext <CR>', { desc = '[T]ab [N]ext' })
--- vim.keymap.set('n', 'Tc', ':tabclose <CR>', { desc = '[T]ab [C]lose' })
+vim.keymap.set('n', 'T', ':tabnext <CR>', { desc = 'Tab Next' })
+-- vim.keymap.set('n', 'Tc', ':tabclose <CR>', { desc = 'Tab Close' })
 
 -- vim.keymap.set('n', '<leader>fm', function()
 --   require('conform').format()
@@ -130,20 +130,20 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 -- Diagnostic keymaps
 vim.keymap.set('n', '[e', function()
   vim.diagnostic.goto_prev { severity = { min = vim.diagnostic.severity.ERROR } }
-end, { desc = 'Go to previous diagnostic [E]rror message' })
+end, { desc = 'Go to previous diagnostic Error message' })
 vim.keymap.set('n', ']e', function()
   vim.diagnostic.goto_next { severity = { min = vim.diagnostic.severity.ERROR } }
-end, { desc = 'Go to next diagnostic [E]rror message' })
+end, { desc = 'Go to next diagnostic Error message' })
 
 vim.keymap.set('n', '[w', function()
   vim.diagnostic.goto_prev { severity = { min = vim.diagnostic.severity.WARN } }
-end, { desc = 'Go to previous diagnostic [W]arn message' })
+end, { desc = 'Go to previous diagnostic Warn message' })
 vim.keymap.set('n', ']w', function()
   vim.diagnostic.goto_next { severity = { min = vim.diagnostic.severity.WARN } }
-end, { desc = 'Go to next diagnostic [W]arn message' })
+end, { desc = 'Go to next diagnostic Warn message' })
 vim.keymap.set('n', ']i', function()
   vim.diagnostic.goto_next { severity = { min = vim.diagnostic.severity.INFO } }
-end, { desc = 'Go to next diagnostic [I]info message' })
+end, { desc = 'Go to next diagnostic Iinfo message' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -200,13 +200,13 @@ end
 vim.keymap.set('v', '<leader>r', function()
   local selection = getVisualSelection()
   vim.cmd('call feedkeys(":%s/' .. escape(selection) .. '/")')
-end, { noremap = true, silent = true, desc = '[R]eplace' })
+end, { noremap = true, silent = true, desc = 'Replace' })
 
 -- Map the function to a key combination in visual mode
 vim.keymap.set('n', '<leader>r', function()
   local word = vim.fn.expand '<cword>'
   vim.cmd('call feedkeys(":%s/' .. escape(word) .. '/")')
-end, { noremap = true, silent = true, desc = '[R]eplace' })
+end, { noremap = true, silent = true, desc = 'Replace' })
 
 vim.filetype.add {
   pattern = {

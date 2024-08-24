@@ -26,7 +26,7 @@ return {
       {
         '<leader>A',
         '<cmd>AerialToggle float<CR>',
-        desc = '[A]erial',
+        desc = 'Aerial',
       },
     },
   },

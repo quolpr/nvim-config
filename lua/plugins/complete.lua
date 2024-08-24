@@ -68,12 +68,12 @@ return {
         --
         -- No, but seriously. Please read `:help ins-completion`, it is really good!
         mapping = cmp.mapping.preset.insert {
-          -- Select the [n]ext item
+          -- Select the next item
           ['<C-n>'] = cmp.mapping.select_next_item(),
-          -- Select the [p]revious item
+          -- Select the previous item
           ['<C-p>'] = cmp.mapping.select_prev_item(),
 
-          -- Accept ([y]es) the completion.
+          -- Accept (yes) the completion.
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
           ['<Tab>'] = cmp.mapping.confirm { select = false },

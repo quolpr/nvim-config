@@ -78,11 +78,11 @@ return {
             vim.keymap.set('n', keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
           end
 
-          map('ds', vim.diagnostic.open_float, '[D]iagnost [S]how')
+          map('ds', vim.diagnostic.open_float, 'Diagnost Show')
 
           -- Rename the variable under your cursor
           --  Most Language Servers support renaming across files, etc.
-          map('<leader>cc', vim.lsp.buf.rename, '[C]ode [C]hange')
+          map('<leader>cc', vim.lsp.buf.rename, 'Code Change')
 
           -- Opens a popup that displays documentation about the word under your cursor
           --  See `:help K` for why this keymap
@@ -113,7 +113,7 @@ return {
           if client and client.server_capabilities.inlayHintProvider and vim.lsp.inlay_hint then
             map('<leader>th', function()
               vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled {})
-            end, '[T]oggle Inlay [H]ints')
+            end, 'Toggle Inlay Hints')
           end
         end,
       })

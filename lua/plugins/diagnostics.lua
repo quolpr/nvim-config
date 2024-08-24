@@ -49,12 +49,12 @@ return {
       {
         '<leader>cD',
         '<cmd>Trouble diagnostics toggle filter.severity=vim.diagnostic.severity.ERROR<cr>',
-        desc = '[C]ode [D]iagnostics',
+        desc = 'Code Diagnostics',
       },
       {
         '<leader>cd',
         '<cmd>Trouble diagnostics toggle filter.buf=0 filter.severity=vim.diagnostic.severity.ERROR<cr>',
-        desc = '[C]ode [d]iagnostics of current buffer',
+        desc = 'Code diagnostics of current buffer',
       },
     },
   },

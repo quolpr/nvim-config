@@ -19,7 +19,7 @@ return {
   --       function()
   --         require('dbee').toggle()
   --       end,
-  --       desc = '[D]b viwer',
+  --       desc = 'Db viwer',
   --     },
   --   },
   -- },
@@ -27,9 +27,9 @@ return {
   -- {
   --   'vim-test/vim-test',
   --   config = function()
-  --     vim.keymap.set('n', '<leader>tr', ':TestNearest -strategy=neovim_sticky<CR>', { desc = '[T]est [R]un' })
-  --     vim.keymap.set('n', '<leader>tR', ':TestFile -strategy=neovim_sticky<CR>', { desc = '[T]est [A]ll' })
-  --     vim.keymap.set('n', '<leader>tl', ':TestLast -strategy=neovim_sticky<CR>', { desc = '[T]est [L]ast' })
+  --     vim.keymap.set('n', '<leader>tr', ':TestNearest -strategy=neovim_sticky<CR>', { desc = 'Test Run' })
+  --     vim.keymap.set('n', '<leader>tR', ':TestFile -strategy=neovim_sticky<CR>', { desc = 'Test All' })
+  --     vim.keymap.set('n', '<leader>tl', ':TestLast -strategy=neovim_sticky<CR>', { desc = 'Test Last' })
   --   end,
   -- },
 
@@ -101,49 +101,49 @@ return {
   --         function()
   --           require('neotest').summary.toggle()
   --         end,
-  --         desc = '[T]est [T]oggle',
+  --         desc = 'Test Toggle',
   --       },
   --       {
   --         '<leader>tr',
   --         function()
   --           require('neotest').run.run()
   --         end,
-  --         desc = '[T]est [R]un',
+  --         desc = 'Test Run',
   --       },
   --       {
   --         '<leader>tR',
   --         function()
   --           require('neotest').run.run(vim.fn.expand '%')
   --         end,
-  --         desc = '[T]est [R]un file',
+  --         desc = 'Test Run file',
   --       },
   --       {
   --         '<leader>ts',
   --         function()
   --           require('neotest').output.open { enter = true }
   --         end,
-  --         desc = '[T]est [S]how result',
+  --         desc = 'Test Show result',
   --       },
   --       {
   --         '<leader>tS',
   --         function()
   --           require('neotest').output_panel.open()
   --         end,
-  --         desc = '[T]est [S]how all results',
+  --         desc = 'Test Show all results',
   --       },
   --       {
   --         '<leader>tl',
   --         function()
   --           require('neotest').run.run_last()
   --         end,
-  --         desc = '[T]est [L]ast',
+  --         desc = 'Test Last',
   --       },
   --       {
   --         '<leader>tp',
   --         function()
   --           require('neotest').output.open { enter = true, last_run = true }
   --         end,
-  --         desc = '[T]est [P]revious run preview',
+  --         desc = 'Test Previous run preview',
   --       },
   --     }
   --

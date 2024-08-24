@@ -260,8 +260,8 @@ return {
   --       -- end
   --
   --       -- Chat commands
-  --       -- vim.keymap.set({ 'n', 'i' }, '<leader>at', '<cmd>GpChatToggle popup<cr>', keymapOptions 'Ch[a]tGPT [T]oggle')
-  --       -- vim.keymap.set({ 'n', 'i' }, '<leader>at', '<cmd>GpChatToggle popup<cr>', keymapOptions 'Ch[a]tGPT [T]oggle')
+  --       -- vim.keymap.set({ 'n', 'i' }, '<leader>at', '<cmd>GpChatToggle popup<cr>', keymapOptions 'ChatGPT Toggle')
+  --       -- vim.keymap.set({ 'n', 'i' }, '<leader>at', '<cmd>GpChatToggle popup<cr>', keymapOptions 'ChatGPT Toggle')
   --     end,
   --     keys = {
   --       {
@@ -269,7 +269,7 @@ return {
   --         function()
   --           return ':PrtChatToggle popup<cr>'
   --         end,
-  --         desc = 'Ch[a]tGPT [T]oggle',
+  --         desc = 'ChatGPT Toggle',
   --         expr = true,
   --       },
   --       {
@@ -277,7 +277,7 @@ return {
   --         function()
   --           return ':PrtChatToggle vsplit<cr>'
   --         end,
-  --         desc = 'Ch[a]tGPT open [V]-split',
+  --         desc = 'ChatGPT open V-split',
   --         expr = true,
   --       },
   --       {
@@ -285,7 +285,7 @@ return {
   --         function()
   --           return ':PrtChatNew popup<cr>'
   --         end,
-  --         desc = 'Ch[a]tGPT [N]ew',
+  --         desc = 'ChatGPT New',
   --         expr = true,
   --       },
   --       {
@@ -293,7 +293,7 @@ return {
   --         function()
   --           return ":<C-u>'<,'>PrtChatNew popup<cr>"
   --         end,
-  --         desc = 'Ch[a]tGPT [N]ew',
+  --         desc = 'ChatGPT New',
   --         expr = true,
   --         mode = { 'v' },
   --       },
@@ -302,7 +302,7 @@ return {
   --         function()
   --           return ':PrtChatFinder<cr>'
   --         end,
-  --         desc = '[F]ind Ch[a]t',
+  --         desc = 'Find Chat',
   --         expr = true,
   --       },
   --       {
@@ -310,7 +310,7 @@ return {
   --         function()
   --           return ":<C-u>'<,'>PrtImplement<cr>"
   --         end,
-  --         desc = 'Ch[a]tGPT [I]implement',
+  --         desc = 'ChatGPT Iimplement',
   --         mode = { 'v' },
   --         expr = true,
   --       },
@@ -319,7 +319,7 @@ return {
   --         function()
   --           return ":<C-u>'<,'>PrtPrepend<cr>"
   --         end,
-  --         desc = 'Ch[a]tGPT [P]repend',
+  --         desc = 'ChatGPT Prepend',
   --         mode = { 'v' },
   --         expr = true,
   --       },
@@ -328,7 +328,7 @@ return {
   --         function()
   --           return ":<C-u>'<,'>PrtAppend<cr>"
   --         end,
-  --         desc = 'Ch[a]tGPT [A]ppend',
+  --         desc = 'ChatGPT Append',
   --         mode = { 'v' },
   --         expr = true,
   --       },
@@ -337,7 +337,7 @@ return {
   --         function()
   --           return ":<C-u>'<,'>PrtRewrite<cr>"
   --         end,
-  --         desc = 'Ch[a]tGPT [R]ewrite',
+  --         desc = 'ChatGPT Rewrite',
   --         mode = { 'v' },
   --         expr = true,
   --       },
@@ -346,7 +346,7 @@ return {
   --         function()
   --           return ":<C-u>'<,'>PrtChatPaste popup<cr>"
   --         end,
-  --         desc = 'Ch[a]tGPT [M]ove to chat',
+  --         desc = 'ChatGPT Move to chat',
   --         mode = { 'v' },
   --         expr = true,
   --       },

@@ -88,7 +88,7 @@ return {
           local global_note = require 'global-note'
           global_note.toggle_note 'git_branch_local'
         end,
-        desc = 'Toggle [N]otes [B]ranch',
+        desc = 'Toggle Notes Branch',
       },
       {
         '<leader>np',
@@ -96,7 +96,7 @@ return {
           local global_note = require 'global-note'
           global_note.toggle_note 'project_local'
         end,
-        desc = 'Toggle [N]otes [P]roject',
+        desc = 'Toggle Notes Project',
       },
     },
   },

@@ -19,7 +19,7 @@ return {
           local neogit = require 'neogit'
           neogit.open { kind = 'split_above_all' }
         end,
-        desc = '[G]it [O]pen',
+        desc = 'Git Open',
       },
     },
   },
@@ -34,14 +34,14 @@ return {
         function()
           vim.cmd 'DiffviewFileHistory %'
         end,
-        desc = '[G]it file [h]istory',
+        desc = 'Git file history',
       },
       {
         '<leader>gH',
         function()
           vim.cmd 'DiffviewFileHistory'
         end,
-        desc = '[G]it [H]istory',
+        desc = 'Git history',
       },
     },
   },
@@ -56,7 +56,7 @@ return {
         function()
           vim.cmd 'BlameToggle'
         end,
-        desc = '[G]it [B]lame',
+        desc = 'Git Blame',
       },
     },
   },
@@ -150,7 +150,7 @@ return {
   --   },
   --   config = function()
   --     require('gitlinker').setup()
-  --     -- gy = [g]it [y]ank
+  --     -- gy = git yank
   --   end,
   -- },
 
@@ -197,7 +197,7 @@ return {
   --   -- setting the keybinding for LazyGit with 'keys' is recommended in
   --   -- order to load the plugin when the command is run for the first time
   --   keys = {
-  --     { '<leader>go', '<cmd>LazyGit<cr>', desc = '[G]it [O]pen' },
+  --     { '<leader>go', '<cmd>LazyGit<cr>', desc = 'Git Open' },
   --   },
   -- },
 }

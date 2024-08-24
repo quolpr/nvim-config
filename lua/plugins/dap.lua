@@ -87,119 +87,119 @@ return {
       function()
         require('dap').toggle_breakpoint()
       end,
-      desc = 'toggle [d]ebug [b]reakpoint',
+      desc = 'toggle debug breakpoint',
     },
     {
       '<leader>dB',
       function()
         require('dap').set_breakpoint(vim.fn.input 'Breakpoint condition: ')
       end,
-      desc = '[d]ebug [B]reakpoint',
+      desc = 'debug Breakpoint',
     },
     {
       '<leader>dc',
       function()
         require('dap').continue()
       end,
-      desc = '[d]ebug [c]ontinue (start here)',
+      desc = 'debug continue (start here)',
     },
     {
       '<leader>dC',
       function()
         require('dap').run_to_cursor()
       end,
-      desc = '[d]ebug [C]ursor',
+      desc = 'debug Cursor',
     },
     {
       '<leader>dg',
       function()
         require('dap').goto_()
       end,
-      desc = '[d]ebug [g]o to line',
+      desc = 'debug go to line',
     },
     {
       '<leader>do',
       function()
         require('dap').step_over()
       end,
-      desc = '[d]ebug step [o]ver',
+      desc = 'debug step over',
     },
     {
       '<leader>dO',
       function()
         require('dap').step_out()
       end,
-      desc = '[d]ebug step [O]ut',
+      desc = 'debug step Out',
     },
     {
       '<leader>di',
       function()
         require('dap').step_into()
       end,
-      desc = '[d]ebug [i]nto',
+      desc = 'debug into',
     },
     {
       '<leader>dj',
       function()
         require('dap').down()
       end,
-      desc = '[d]ebug [j]ump down',
+      desc = 'debug jump down',
     },
     {
       '<leader>dk',
       function()
         require('dap').up()
       end,
-      desc = '[d]ebug [k]ump up',
+      desc = 'debug kump up',
     },
     {
       '<leader>dl',
       function()
         require('dap').run_last()
       end,
-      desc = '[d]ebug [l]ast',
+      desc = 'debug last',
     },
     {
       '<leader>dp',
       function()
         require('dap').pause()
       end,
-      desc = '[d]ebug [p]ause',
+      desc = 'debug pause',
     },
     {
       '<leader>dr',
       function()
         require('dap').repl.toggle()
       end,
-      desc = '[d]ebug [r]epl',
+      desc = 'debug repl',
     },
     {
       '<leader>dR',
       function()
         require('dap').clear_breakpoints()
       end,
-      desc = '[d]ebug [R]emove breakpoints',
+      desc = 'debug Remove breakpoints',
     },
     {
       '<leader>ds',
       function()
         require('dap').session()
       end,
-      desc = '[d]ebug [s]ession',
+      desc = 'debug session',
     },
     {
       '<leader>dt',
       function()
         require('dap').terminate()
       end,
-      desc = '[d]ebug [t]erminate',
+      desc = 'debug terminate',
     },
     {
       '<leader>dw',
       function()
         require('dap.ui.widgets').hover()
       end,
-      desc = '[d]ebug [w]idgets',
+      desc = 'debug widgets',
     },
   },
 }

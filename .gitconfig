@@ -1,0 +1,25 @@
+# This is Git's per-user configuration file.
+[user]
+# Please adapt and uncomment the following lines:
+        name = Sergey Popov
+        email = quolpr@gmail.com
+[core]
+        editor = nvim
+   	pager = delta
+[push]
+        autoSetupRemote = true
+[pull]
+        rebase = true
+[rebase]
+        autoStash = true
+[filter "lfs"]
+        clean = git-lfs clean -- %f
+        smudge = git-lfs smudge -- %f
+        process = git-lfs filter-process
+        required = true
+
+; [url "git@gitlab.com:"]
+;         insteadOf = https://gitlab.com/
+; [url "ssh://git@gitlab.com/"]
+;     insteadOf = https://gitlab.com/
+

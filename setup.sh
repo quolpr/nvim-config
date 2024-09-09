@@ -1,6 +1,9 @@
 #!/bin/bash
 
+# brew install delta
+
 ln ./.tmux.conf ~/.tmux.conf
+ln ./.gitconfig ~/.gitconfig
 
 mkdir -p ~/.config/alacritty/
 ln ./alacritty.toml ~/.config/alacritty/alacritty.toml

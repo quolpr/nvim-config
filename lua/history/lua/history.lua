@@ -75,8 +75,8 @@ a.void(function()
     local err, stat = a.uv.fs_fstat(log_fd)
     assert(not err, err)
 
-    -- Ограничение файла 20 строками
-    local max_lines = 20
+    -- Ограничение файла 50 строками
+    local max_lines = 50
     local lines_to_keep = max_lines - 1
 
     local new_lines = { current_path }

@@ -187,7 +187,7 @@ return {
         --
 
         elixirls = {},
-        tsserver = {
+        ts_ls = {
           init_options = {
             -- This is the default which would be overwritten otherwise
             hostInfo = 'neovim',

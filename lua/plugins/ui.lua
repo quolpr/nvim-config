@@ -23,6 +23,7 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 })
 
 return {
+  { 'danilamihailov/beacon.nvim' },
   {
     -- Set lualine as statusline
     'nvim-lualine/lualine.nvim',
@@ -80,13 +81,13 @@ return {
           -- Extract the extension from the filename
           local base, ext = string.match(filename, '(.-)%.([^%.]+)$')
 
-          -- Truncate the last directory name and the base of the filename to the first 4 characters
-          if #last_dir > 4 then
-            last_dir = string.sub(last_dir, 1, 4)
-          end
-          if #base > 4 then
-            base = string.sub(base, 1, 4)
-          end
+          -- -- Truncate the last directory name and the base of the filename to the first 4 characters
+          -- if #last_dir > 4 then
+          --   last_dir = string.sub(last_dir, 1, 4)
+          -- end
+          -- if #base > 4 then
+          --   base = string.sub(base, 1, 4)
+          -- end
 
           if last_dir == '.' then
             local truncated_path = base .. '.' .. ext

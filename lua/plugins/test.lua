@@ -24,6 +24,7 @@ return {
           -- require 'quicktest.adapters.playwright',
         },
         default_win_mode = 'split',
+        use_experimental_colorizer = true,
       }
     end,
     dependencies = {

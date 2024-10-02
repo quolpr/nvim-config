@@ -10,8 +10,10 @@ ln ./alacritty.toml ~/.config/alacritty/alacritty.toml
 
 git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 
-mkdir -p ~/.local/bin/tmux-sessionizer
+mkdir -p ~/.local/bin
 ln ./tmux-sessionizer ~/.local/bin/tmux-sessionizer
+ln ./tmux-nvim ~/.local/bin/tmux-nvim
+ln ./tmux-zettel ~/.local/bin/tmux-zettel
 
 npm i -g @cspell/cspell-bundled-dicts @cspell/dict-ru_ru/cspell-ext.json @cspell/dict-golang/cspell-ext.json @cspell/dict-software-terms/cspell-ext.json
 

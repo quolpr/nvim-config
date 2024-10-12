@@ -22,7 +22,7 @@ return {
         -- is found.
         javascript = { { 'biome' } },
         typescript = { { 'biome' } },
-        -- json = { { 'biome' } },
+        json = { { 'prettierd' } },
         typescriptreact = { { 'biome' } },
         go = { 'gofmt', 'goimports' },
         proto = { 'buf' },

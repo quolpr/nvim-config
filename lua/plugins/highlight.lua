@@ -3,12 +3,11 @@ return {
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
   -- Illuminate parentheses
   {
-    'RRethy/vim-illuminate',
+    'rrethy/vim-illuminate',
     config = function()
       require('illuminate').configure {
         providers = {
           'lsp',
-          'treesitter',
         },
       }
     end,

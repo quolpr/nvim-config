@@ -15,7 +15,7 @@ ln ./tmux-sessionizer ~/.local/bin/tmux-sessionizer
 ln ./tmux-nvim ~/.local/bin/tmux-nvim
 ln ./tmux-zettel ~/.local/bin/tmux-zettel
 
-npm i -g @cspell/cspell-bundled-dicts @cspell/dict-ru_ru/cspell-ext.json @cspell/dict-golang/cspell-ext.json @cspell/dict-software-terms/cspell-ext.json
+npm i -g @cspell/cspell-bundled-dicts @cspell/dict-ru_ru @cspell/dict-golang @cspell/dict-software-terms
 
 # Don't forget to install tmux plugins with prefix + I
 # if command -v curl >/dev/null 2>&1; then

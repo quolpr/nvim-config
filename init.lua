@@ -97,7 +97,7 @@ vim.keymap.set({ 'n', 'v' }, '<leader>y', [["+y]], { desc = 'Yank from computer'
 vim.keymap.set('n', '<leader>p', [["+p]], { desc = 'Paste from computer' })
 
 -- Disable macro cause I don't use it + breaks cmp
-vim.keymap.set('n', 'q', '<Nop>')
+-- vim.keymap.set('n', 'q', '<Nop>')
 
 -- When you delete/paste don't rewrite last register
 vim.keymap.set('x', '<leader>p', [["_dP]], { desc = 'Paste without register overwriting' })
@@ -252,7 +252,7 @@ require('lazy').setup {
   require 'plugins.lsp',
   require 'plugins.lua-dev',
   require 'plugins.notes',
-  -- require 'plugins.profile',
+  require 'plugins.profile',
   require 'plugins.search',
   require 'plugins.test',
   require 'plugins.theme',

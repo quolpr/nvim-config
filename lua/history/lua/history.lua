@@ -122,8 +122,8 @@ vim.api.nvim_create_autocmd('BufEnter', {
 
 local function history()
   local cwd = vim.fn.getcwd()
-  local log_fd = open_fd(cwd)
   a.void(function()
+    local log_fd = open_fd(cwd)
     local err, stat = a.uv.fs_fstat(log_fd)
     assert(not err, err)
 

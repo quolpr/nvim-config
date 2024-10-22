@@ -122,33 +122,33 @@ vim.api.nvim_create_autocmd('BufEnter', {
 
 local function history()
   local cwd = vim.fn.getcwd()
+  local current_buffer = vim.api.nvim_buf_get_name(0) -- Get current buffer name
+
   a.void(function()
     local log_fd = open_fd(cwd)
     local err, stat = a.uv.fs_fstat(log_fd)
     assert(not err, err)
-
     local err, data = a.uv.fs_read(log_fd, stat.size, 0)
     assert(not err, err)
-
     local lines = vim.split(data, '\n', { plain = true, trimempty = true })
 
-    -- Remove the cwd from each line
+    -- Remove the cwd from each line and filter out current buffer
     local relative_lines = {}
     for i, line in ipairs(lines) do
-      -- Ensure to add a '/' to the end of cwd to avoid partial match removals
-      local pattern = '^' .. vim.pesc(cwd) .. '/'
-      local res = line:gsub(pattern, '')
-
-      table.insert(relative_lines, res)
+      -- Skip if this is the current buffer
+      if line ~= current_buffer then
+        -- Ensure to add a '/' to the end of cwd to avoid partial match removals
+        local pattern = '^' .. vim.pesc(cwd) .. '/'
+        local res = line:gsub(pattern, '')
+        table.insert(relative_lines, res)
+      end
     end
 
     u.scheduler()
-
     require('fzf-lua').fzf_exec(relative_lines, {
       actions = require('fzf-lua').defaults.actions.files,
       previewer = 'builtin',
     })
   end)()
 end
-
 return history

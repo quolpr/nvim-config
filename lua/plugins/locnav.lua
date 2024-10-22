@@ -39,14 +39,14 @@ return {
       }
     end,
   },
-  {
-    'andymass/vim-matchup',
-    setup = function()
-      vim.cmd [[
-        let g:matchup_matchparen_enabled = 0
-      ]]
-    end,
-  },
+  -- {
+  --   'andymass/vim-matchup',
+  --   setup = function()
+  --     vim.cmd [[
+  --       let g:matchup_matchparen_enabled = 0
+  --     ]]
+  --   end,
+  -- },
   -- Show labels on f/F jumps
   -- {
   --   'unblevable/quick-scope',

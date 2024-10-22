@@ -1,0 +1,103 @@
+#!/bin/bash
+
+# Function to count non-empty lines in a file
+count_lines() {
+    local file="$1"
+    sed '/^\s*$/d' "$file" | wc -l
+}
+
+# Function to check if a file should be ignored based on .gitignore rules
+should_ignore() {
+    local file="$1"
+    local ignore_file="$2"
+    
+    # Always ignore .git folder
+    [[ "$file" == ".git" || "$file" == ".git"/* ]] && return 0
+
+    if [[ ! -f "$ignore_file" ]]; then
+        return 1 # Don't ignore if .gitignore doesn't exist
+    fi
+
+    # Check if the file matches any pattern in .gitignore
+    while IFS= read -r pattern; do
+        [[ -z "$pattern" || "${pattern:0:1}" == "#" ]] && continue # Skip empty lines and comments
+        if [[ "$file" == $pattern || "$file" == */$pattern || "$file" == $pattern/* ]]; then
+            return 0 # Should ignore
+        fi
+    done < "$ignore_file"
+
+    return 1 # Don't ignore
+}
+
+# Function to explore directory recursively
+explore_directory() {
+    local dir="$1"
+    local ignore_file="$dir/.gitignore"
+    local total_lines=0
+
+    # Temporary file to store results
+    local temp_file=$(mktemp)
+
+    # Loop through all files recursively
+    while IFS= read -r -d '' entry; do
+        local rel_path="${entry#$dir/}"
+        
+        if should_ignore "$rel_path" "$ignore_file"; then
+            continue
+        fi
+
+        if [[ -f "$entry" ]]; then
+            case "${entry##*.}" in
+                py|js|java|c|cpp|html|css|go|lua|toml|json|sh)  # Add or remove file extensions as needed
+                    lines=$(count_lines "$entry")
+                    top_level_dir=$(echo "$rel_path" | cut -d'/' -f1)
+                    echo "${lines}|${top_level_dir}" >> "$temp_file"
+                    ((total_lines += lines))
+                    ;;
+            esac
+        fi
+    done < <(find "$dir" -type f -print0)
+
+    # Sum up totals for top-level entries
+    sort "$temp_file" | awk -F'|' '{a[$2]+=$1} END{for (i in a) print a[i]"|"i}' | sort -t'|' -k1,1nr -k2 > "${temp_file}.sorted"
+
+    # Find the maximum width of the LOC column and path column
+    local max_loc_width=3  # Minimum width for "LOC" header
+    local max_path_width=4  # Minimum width for "Path" header
+    while IFS='|' read -r lines path; do
+        loc_width=${#lines}
+        path_width=${#path}
+        (( loc_width > max_loc_width )) && max_loc_width=$loc_width
+        (( path_width > max_path_width )) && max_path_width=$path_width
+    done < "${temp_file}.sorted"
+
+    # Print header
+    printf "%-${max_loc_width}s | %-${max_path_width}s\n" "LOC" "Path"
+    printf "%$((max_loc_width))s-+-%${max_path_width}s\n" | tr ' ' '-'
+
+    # Print results
+    while IFS='|' read -r lines path; do
+        printf "%${max_loc_width}s | %-${max_path_width}s\n" "${lines}" "${path}"
+    done < "${temp_file}.sorted"
+
+    # Print total
+    printf "%$((max_loc_width))s-+-%${max_path_width}s\n" | tr ' ' '-'
+    printf "%${max_loc_width}s | %-${max_path_width}s\n" "${total_lines}" "Total"
+
+    # Clean up
+    rm "$temp_file" "${temp_file}.sorted"
+}
+
+# Main script
+if [[ $# -eq 0 ]]; then
+    echo "Usage: $0 <directory>"
+    exit 1
+fi
+
+if [[ ! -d "$1" ]]; then
+    echo "Error: $1 is not a valid directory."
+    exit 1
+fi
+
+cd "$1" || exit 1
+explore_directory "."

@@ -30,7 +30,6 @@ return {
     dependencies = {
       'nvim-lua/plenary.nvim',
       'MunifTanjim/nui.nvim',
-      'm00qek/baleia.nvim',
     },
     keys = {
       {

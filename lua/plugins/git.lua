@@ -5,7 +5,7 @@ return {
     dependencies = {
       'nvim-lua/plenary.nvim', -- required
       -- Only one of these is needed, not both.
-      'nvim-telescope/telescope.nvim', -- optional
+      -- 'nvim-telescope/telescope.nvim', -- optional
       'ibhagwan/fzf-lua', -- optional
     },
     config = function()

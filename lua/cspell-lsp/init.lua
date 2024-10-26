@@ -5,29 +5,163 @@ local function decode_uri(uri)
   return string.gsub(uri, 'file://', '')
 end
 
+-- JSON Formatter implementation
+local JsonFormatter = {}
+
+function JsonFormatter:escape_chars(str)
+  return str:gsub('[\\"\a\b\f\n\r\t\v]', {
+    ['\\'] = '\\\\',
+    ['"'] = '\\"',
+    ['\a'] = '\\a',
+    ['\b'] = '\\b',
+    ['\f'] = '\\f',
+    ['\n'] = '\\n',
+    ['\r'] = '\\r',
+    ['\t'] = '\\t',
+    ['\v'] = '\\v',
+  })
+end
+
+function JsonFormatter:format_string(value)
+  local result = self.escape_special_chars and self:escape_chars(value) or value
+  self:emit(([["%s"]]):format(result), true)
+end
+
+function JsonFormatter:format_table(value, add_indent)
+  local tbl_count = vim.tbl_count(value)
+  self:emit('{\n', add_indent)
+  self.indent = self.indent + 2
+  local prev_indent = self.indent
+  local i = 1
+  for k, v in self.pairs_by_keys(value, self.compare[self.indent / 2] or self.default_compare) do
+    self:emit(('"%s": '):format(self.escape_special_chars and self:escape_chars(k) or k), true)
+    if type(v) == 'string' then
+      self.indent = 0
+    end
+    self:format_value(v)
+    self.indent = prev_indent
+    if i == tbl_count then
+      self:emit '\n'
+    else
+      self:emit ',\n'
+    end
+    i = i + 1
+  end
+  self.indent = self.indent - 2
+  self:emit('}', true)
+end
+
+function JsonFormatter:format_array(value)
+  local array_count = #value
+  self:emit '[\n'
+  self.indent = self.indent + 2
+  for i, item in ipairs(value) do
+    self:format_value(item, true)
+    if i == array_count then
+      self:emit '\n'
+    else
+      self:emit ',\n'
+    end
+  end
+  self.indent = self.indent - 2
+  self:emit(']', true)
+end
+
+function JsonFormatter:emit(value, add_indent)
+  if add_indent then
+    self.out[#self.out + 1] = (' '):rep(self.indent)
+  end
+  self.out[#self.out + 1] = value
+end
+
+function JsonFormatter:format_value(value, add_indent)
+  if value == nil then
+    self:emit 'null'
+  end
+  local _type = type(value)
+  if _type == 'string' then
+    self:format_string(value)
+  elseif _type == 'number' then
+    self:emit(tostring(value), add_indent)
+  elseif _type == 'boolean' then
+    self:emit(value == true and 'true' or 'false', add_indent)
+  elseif _type == 'table' then
+    local count = vim.tbl_count(value)
+    if count == 0 then
+      self:emit '{}'
+    elseif #value > 0 then
+      self:format_array(value)
+    else
+      self:format_table(value, add_indent)
+    end
+  end
+end
+
+function JsonFormatter:pretty_print(data, keys_orders, escape_special_chars)
+  self.compare = {}
+  if keys_orders then
+    for indentation_level, keys_order in pairs(keys_orders) do
+      local order = {}
+      for i, key in ipairs(keys_order) do
+        order[key] = i
+      end
+      local max_pos = #keys_order + 1
+      self.compare[indentation_level] = function(a, b)
+        return (order[a] or max_pos) - (order[b] or max_pos) < 0
+      end
+    end
+  end
+  self.default_compare = function(a, b)
+    return a:lower() < b:lower()
+  end
+  self.escape_special_chars = escape_special_chars
+  self.indent = 0
+  self.out = {}
+  self:format_value(data, false)
+  return table.concat(self.out)
+end
+
+-- Helper for sorting pairs by keys
+JsonFormatter.pairs_by_keys = function(tbl, compare)
+  local keys = {}
+  for key, _ in pairs(tbl) do
+    table.insert(keys, key)
+  end
+  compare = compare or function(a, b)
+    return a:lower() < b:lower()
+  end
+  table.sort(keys, compare)
+  local i = 0
+  return function()
+    i = i + 1
+    if keys[i] then
+      return keys[i], tbl[keys[i]]
+    end
+  end
+end
+
 -- Function to read and parse JSON from a file
 local function read_json_file(path)
   local file = io.open(path, 'r')
-  print('file-path', path)
   if not file then
     error('Failed to open file: ' .. path)
   end
   local data = file:read '*a'
   file:close()
 
-  -- Parse JSON data into Lua table
   local decoded = vim.json.decode(data)
   return decoded
 end
 
--- Function to write JSON data to a file
+-- Function to write formatted JSON data to a file
 local function write_json_file(path, table)
-  local encoded = vim.json.encode(table)
+  local formatted = JsonFormatter:pretty_print(table, nil, true)
+
   local file = io.open(path, 'w')
   if not file then
     error('Failed to open file for writing: ' .. path)
   end
-  file:write(encoded)
+  file:write(formatted)
   file:close()
 end
 
@@ -70,20 +204,24 @@ local function get_buf_lines(bufnr)
   f:close()
   return lines
 end
+-- Get the directory of the current Lua file
+local current_script_path = debug.getinfo(1).source:match '@?(.*/)'
 
 return {
   default_config = {
-    cmd = { 'node', vim.fn.expand '$HOME/.config/nvim/bin/main.cjs', '--stdio' },
+    cmd = {
+      'bash',
+      '-c',
+      'cd ~ && NODE_PATH=$(npm root -g) node ' .. current_script_path .. 'main.cjs --stdio',
+    },
     filetypes = { '*' },
     root_dir = util.root_pattern '.git',
     single_file_support = true,
     settings = {
       cSpell = {
-        -- logLevel = 'Debug',
-        -- logFile = '/Users/quolpr/debug2.log',
         enabled = true,
         trustedWorkspace = true,
-        import = { '~/.config/nvim/cspell.json' },
+        import = { vim.fn.stdpath 'config' .. '/cspell.json' },
         checkOnlyEnabledFileTypes = false,
         doNotUseCustomDecorationForScheme = true,
         useCustomDecorations = false,
@@ -118,18 +256,14 @@ return {
 
         local lines = vim.api.nvim_buf_get_lines(scope.bufnr, start_line, end_line + 1, false)
 
-        -- Adjust the line based on the provided start and end characters
         local start_line_content = lines[1]
         local end_line_content = lines[#lines]
 
-        -- Slice the start and end lines based on character positions
         local before_range = start_line_content:sub(1, start_ch)
         local after_range = end_line_content:sub(end_ch + 1)
 
-        -- Replace the range with the given new text
         lines[1] = before_range .. new_text .. after_range
 
-        -- Remove intermediate lines if necessary
         if #lines > 1 then
           for i = 2, #lines do
             lines[i] = nil
@@ -138,18 +272,14 @@ return {
 
         vim.api.nvim_buf_set_lines(scope.bufnr, start_line, start_line + 1, false, lines)
       end
+
       vim.lsp.commands['cSpell.addWordsToConfigFileFromServer'] = function(command)
-        print(vim.inspect(command))
         local words = command.arguments[1]
         local json_file_uri = command.arguments[3].uri
         local json_file_path = decode_uri(json_file_uri)
 
-        -- Read the existing JSON data
         local json_data = read_json_file(json_file_path)
-
         vim.list_extend(json_data.words, words)
-
-        -- Write the updated JSON back to the file
         write_json_file(json_file_path, json_data)
       end
 
@@ -163,6 +293,6 @@ return {
     end,
   },
   docs = {
-    description = [[]],
+    description = [[LSP configuration using NODE_PATH for global package resolution and relative paths]],
   },
 }

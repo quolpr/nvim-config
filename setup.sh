@@ -4,6 +4,7 @@
 
 ln ./.tmux.conf ~/.tmux.conf
 ln ./.gitconfig ~/.gitconfig
+ln ./.wezterm.lua ~/.wezterm.lua
 
 mkdir -p ~/.config/alacritty/
 ln ./alacritty.toml ~/.config/alacritty/alacritty.toml

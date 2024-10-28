@@ -178,7 +178,7 @@ return {
 
         ignore_filetypes = { markdown = true },
         keymaps = {
-          accept_suggestion = '<C-u>',
+          accept_suggestion = '<Tab>',
         },
       }
     end,

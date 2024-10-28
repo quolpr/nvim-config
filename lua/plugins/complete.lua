@@ -18,9 +18,13 @@ return {
       keymap = {
         show = '<C-space>',
         hide = '<C-e>',
-        accept = '<Tab>',
+
+        accept = '<CR>',
         select_prev = { '<C-p>' },
         select_next = { '<C-n>' },
+
+        snippet_forward = '<CR>',
+        snippet_backward = '<S-CR>',
       },
       highlight = {
         -- sets the fallback highlight groups to nvim-cmp's highlight groups

@@ -147,6 +147,7 @@
     "breakindent",
     "Neovim",
     "unnamedplus",
-    "signcolumn"
+    "signcolumn",
+    "rowid"
   ]
 }

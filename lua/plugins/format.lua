@@ -24,7 +24,7 @@ return {
         typescript = { 'biome' },
         json = { { 'prettierd' } },
         typescriptreact = { 'biome' },
-        go = { 'gofmt', 'goimports' },
+        go = { 'gofumpt', 'goimports' },
         proto = { 'buf' },
       },
     },

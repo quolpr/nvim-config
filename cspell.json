@@ -148,6 +148,7 @@
     "Neovim",
     "unnamedplus",
     "signcolumn",
-    "rowid"
+    "rowid",
+    "Wrapf"
   ]
 }

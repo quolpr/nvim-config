@@ -19,7 +19,7 @@ return {
         show = '<C-space>',
         hide = '<C-e>',
 
-        accept = '<CR>',
+        accept = '<tab>',
         select_prev = { '<C-p>' },
         select_next = { '<C-n>' },
 

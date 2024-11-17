@@ -1,4 +1,18 @@
 return {
+  {
+    'gbprod/yanky.nvim',
+    config = function()
+      require('yanky').setup {}
+
+      vim.keymap.set({ 'n', 'x' }, 'p', '<Plug>(YankyPutAfter)')
+      vim.keymap.set({ 'n', 'x' }, 'P', '<Plug>(YankyPutBefore)')
+      vim.keymap.set({ 'n', 'x' }, 'gp', '<Plug>(YankyGPutAfter)')
+      vim.keymap.set({ 'n', 'x' }, 'gP', '<Plug>(YankyGPutBefore)')
+
+      vim.keymap.set('n', '<c-p>', '<Plug>(YankyPreviousEntry)')
+      vim.keymap.set('n', '<c-n>', '<Plug>(YankyNextEntry)')
+    end,
+  },
   { -- LSP Configuration & Plugins
     'neovim/nvim-lspconfig',
     dependencies = {
@@ -12,7 +26,13 @@ return {
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
       { 'j-hui/fidget.nvim', opts = {} },
     },
-    config = function()
+    config = function(_, opts)
+      local lspconfig = require 'lspconfig'
+      for server, config in pairs(opts.servers or {}) do
+        config.capabilities = require('blink.cmp').get_lsp_capabilities(config.capabilities)
+        lspconfig[server].setup(config)
+      end
+
       -- For autoformat conform.nvim is used
       -- local format_is_enabled = true
 
@@ -200,7 +220,7 @@ return {
         sqlls = {},
         eslint = {},
         biome = {},
-        bufls = {},
+        buf = {},
         -- yamlls = {},
         --
         vacuum = {},

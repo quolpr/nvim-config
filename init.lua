@@ -237,6 +237,7 @@ require('lazy').setup {
       vim.api.nvim_set_keymap('n', '<leader>qr', [[<cmd>lua require("persistence").load({ last = true })<cr>]], { desc = 'Restore persistance' })
     end,
   },
+  { 'meznaric/key-analyzer.nvim', opts = {} },
 
   require 'plugins.ai',
   require 'plugins.complete',

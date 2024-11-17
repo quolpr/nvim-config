@@ -23,7 +23,7 @@ return {
     end,
   },
   -- Multi cursor
-  'mg979/vim-visual-multi',
+  -- 'mg979/vim-visual-multi',
   -- Improved . repeat
   'tpope/vim-repeat',
   -- Disable feature for big files

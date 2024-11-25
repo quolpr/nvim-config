@@ -149,6 +149,8 @@
     "unnamedplus",
     "signcolumn",
     "rowid",
-    "Wrapf"
+    "Wrapf",
+    "nums",
+    "strs"
   ]
 }

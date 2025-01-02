@@ -113,22 +113,25 @@ return {
             client.server_capabilities.documentRangeFormattingProvider = false
           end
 
-          if client and client.name == 'gopls' then
-            if not client.server_capabilities.semanticTokensProvider then
-              local semantic = client.config.capabilities.textDocument.semanticTokens
-
-              if semantic then
-                client.server_capabilities.semanticTokensProvider = {
-                  full = true,
-                  legend = {
-                    tokenTypes = semantic.tokenTypes,
-                    tokenModifiers = semantic.tokenModifiers,
-                  },
-                  range = true,
-                }
-              end
-            end
-          end
+          -- not needed more, fixed in https://go-review.googlesource.com/c/tools/+/462215
+          -- if client and client.name == 'gopls' then
+          --   print('client.server_capabilities.semanticTokensProvider', client.server_capabilities.semanticTokensProvider)
+          --   if not client.server_capabilities.semanticTokensProvider then
+          --     local semantic = client.config.capabilities.textDocument.semanticTokens
+          --
+          --     if semantic then
+          --       print('semantic', semantic)
+          --       client.server_capabilities.semanticTokensProvider = {
+          --         full = true,
+          --         legend = {
+          --           tokenTypes = semantic.tokenTypes,
+          --           tokenModifiers = semantic.tokenModifiers,
+          --         },
+          --         range = true,
+          --       }
+          --     end
+          --   end
+          -- end
 
           if client and client.server_capabilities.inlayHintProvider and vim.lsp.inlay_hint then
             map('<leader>th', function()
@@ -281,17 +284,6 @@ return {
           end,
         },
       }
-    end,
-  },
-  -- Show tooltip on args while typing
-  {
-    'ray-x/lsp_signature.nvim',
-    event = 'VeryLazy',
-    opts = {
-      always_trigger = true,
-    },
-    config = function(_, opts)
-      require('lsp_signature').setup(opts)
     end,
   },
 }

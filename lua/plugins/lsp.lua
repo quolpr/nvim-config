@@ -108,10 +108,10 @@ return {
           --  See `:help K` for why this keymap
           map('K', vim.lsp.buf.hover, 'Hover Documentation')
 
-          if client and client.name ~= 'elixirls' then
-            client.server_capabilities.documentFormattingProvider = false
-            client.server_capabilities.documentRangeFormattingProvider = false
-          end
+          -- if client and client.name ~= 'elixirls' and client.name ~= 'gopls'  then
+          --   client.server_capabilities.documentFormattingProvider = false
+          --   client.server_capabilities.documentRangeFormattingProvider = false
+          -- end
 
           -- not needed more, fixed in https://go-review.googlesource.com/c/tools/+/462215
           -- if client and client.name == 'gopls' then

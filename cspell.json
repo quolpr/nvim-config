@@ -151,6 +151,10 @@
     "rowid",
     "Wrapf",
     "nums",
-    "strs"
+    "strs",
+    "convertable",
+    "unsafedata",
+    "gochecknoglobals",
+    "scns"
   ]
 }

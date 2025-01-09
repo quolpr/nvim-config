@@ -222,6 +222,27 @@ vim.opt.langmap =
 -- vim.g.loaded_matchparen = 1
 -- vim.g.loaded_matchit = 1
 
+-- vim.o.clipboard = "unnamedplus"
+
+local function paste()
+  return {
+    vim.fn.split(vim.fn.getreg '', '\n'),
+    vim.fn.getregtype '',
+  }
+end
+
+vim.g.clipboard = {
+  name = 'OSC 52',
+  copy = {
+    ['+'] = require('vim.ui.clipboard.osc52').copy '+',
+    ['*'] = require('vim.ui.clipboard.osc52').copy '*',
+  },
+  paste = {
+    ['+'] = paste,
+    ['*'] = paste,
+  },
+}
+
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup {
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically

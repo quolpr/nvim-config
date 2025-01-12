@@ -22,6 +22,8 @@ ln ./explore-code ~/.local/bin/explore-code
 
 npm i -g @cspell/cspell-bundled-dicts @cspell/dict-ru_ru @cspell/dict-golang @cspell/dict-software-terms
 
+# Helm-ls will use yaml-language-server to provide additional capabilities, if it is installed.
+npm install --global yaml-language-server
 # Don't forget to install tmux plugins with prefix + I
 # if command -v curl >/dev/null 2>&1; then
 #   sh -c "$(curl -fsSL https://raw.githubusercontent.com/romkatv/zsh4humans/v5/install)"

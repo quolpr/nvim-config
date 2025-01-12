@@ -226,6 +226,7 @@ return {
         -- eslint = {},
         biome = {},
         -- buf = {},
+        helm_ls = {},
         -- yamlls = {},
         --
         vacuum = {},

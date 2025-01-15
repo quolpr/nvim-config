@@ -284,7 +284,7 @@ require('lazy').setup {
   require 'plugins.highlight',
   require 'plugins.locnav',
   require 'plugins.lsp',
-  -- require 'plugins.lua-dev',
+  require 'plugins.lua-dev',
   require 'plugins.notes',
   -- require 'plugins.profile',
   require 'plugins.search',

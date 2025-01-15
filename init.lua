@@ -8,7 +8,7 @@
 
 vim.opt.termguicolors = true
 vim.opt.termsync = false
-vim.opt.colorcolumn = '100'
+vim.opt.colorcolumn = '80'
 
 -- Set <space> as the leader key
 -- See `:help mapleader`

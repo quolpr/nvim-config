@@ -1,0 +1,31 @@
+/** taken for https://github.com/MrOtherGuy/firefox-csshacks/issues/413 */
+
+@media (-moz-bool-pref: "sidebar.verticalTabs") {
+  #sidebar-main {
+    visibility: collapse;
+  }
+}
+@media not (-moz-bool-pref: "sidebar.verticalTabs") {
+  #TabsToolbar {
+    visibility: collapse;
+  }
+  :root[sizemode="fullscreen"] #nav-bar > .titlebar-buttonbox-container {
+    display: flex !important;
+  }
+  :root[tabsintitlebar] #toolbar-menubar:not([autohide="false"]) ~ #nav-bar {
+    & > .titlebar-buttonbox-container {
+      display: flex !important;
+    }
+    :root[sizemode="normal"] & {
+      & > .titlebar-spacer {
+        display: flex !important;
+      }
+    }
+    :root[sizemode="maximized"] & {
+      & > .titlebar-spacer[type="post-tabs"] {
+        display: flex !important;
+      }
+    }
+  }
+}
+

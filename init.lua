@@ -225,24 +225,24 @@ vim.opt.langmap =
 
 -- vim.o.clipboard = "unnamedplus"
 
-local function paste()
-  return {
-    vim.fn.split(vim.fn.getreg '', '\n'),
-    vim.fn.getregtype '',
-  }
-end
-
-vim.g.clipboard = {
-  name = 'OSC 52',
-  copy = {
-    ['+'] = require('vim.ui.clipboard.osc52').copy '+',
-    ['*'] = require('vim.ui.clipboard.osc52').copy '*',
-  },
-  paste = {
-    ['+'] = paste,
-    ['*'] = paste,
-  },
-}
+-- local function paste()
+--   return {
+--     vim.fn.split(vim.fn.getreg '', '\n'),
+--     vim.fn.getregtype '',
+--   }
+-- end
+--
+-- vim.g.clipboard = {
+--   name = 'OSC 52',
+--   copy = {
+--     ['+'] = require('vim.ui.clipboard.osc52').copy '+',
+--     ['*'] = require('vim.ui.clipboard.osc52').copy '*',
+--   },
+--   paste = {
+--     ['+'] = paste,
+--     ['*'] = paste,
+--   },
+-- }
 
 vim.filetype.add {
   extension = {
@@ -284,9 +284,9 @@ require('lazy').setup {
   require 'plugins.highlight',
   require 'plugins.locnav',
   require 'plugins.lsp',
-  require 'plugins.lua-dev',
+  -- require 'plugins.lua-dev',
   require 'plugins.notes',
-  require 'plugins.profile',
+  -- require 'plugins.profile',
   require 'plugins.search',
   require 'plugins.test',
   require 'plugins.theme',

@@ -2,6 +2,7 @@ return {
   {
     'quolpr/quicktest.nvim',
     -- dir = '~/projects/quolpr/quicktest.nvim',
+    lazy = true,
     config = function()
       local qt = require 'quicktest'
 
@@ -24,7 +25,7 @@ return {
           -- require 'quicktest.adapters.playwright',
         },
         default_win_mode = 'split',
-        use_experimental_colorizer = true,
+        use_builtin_colorizer = true,
       }
     end,
     dependencies = {
@@ -37,7 +38,7 @@ return {
         function()
           local qt = require 'quicktest'
 
-          qt.run_line('auto', 'auto', { additional_args = { '-count=5' } })
+          qt.run_line()
         end,
         desc = 'Test Run Line',
       },

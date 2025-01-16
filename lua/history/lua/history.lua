@@ -191,7 +191,6 @@ function HistoryPreviewer:populate_preview_buf(entry_str)
     end
 
     self:set_preview_buf(tmpbuf)
-    self.win:update_scrollbar()
   end
 end
 

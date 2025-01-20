@@ -142,7 +142,6 @@ return {
 
       local M = require 'history'
 
-      M.recent_files()
       -- Config
       local config = {
         options = {

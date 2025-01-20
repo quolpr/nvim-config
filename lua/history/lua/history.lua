@@ -37,6 +37,7 @@ local _log_fd = nil
 local _count_fd = nil
 local _opened_cwd = nil
 local _opened_branch = nil
+local _count_cache = nil
 
 -- Open both file descriptors
 local function open_fds(cwd)
@@ -64,6 +65,7 @@ local function open_fds(cwd)
   _count_fd = count_fd
   _opened_cwd = cwd
   _opened_branch = current_branch
+  _count_cache = nil
 
   return log_fd, count_fd
 end
@@ -100,6 +102,8 @@ local function read_counts(count_fd)
       end
     end
   end
+  _count_cache = counts
+
   return counts
 end
 
@@ -169,32 +173,36 @@ a.void(function()
   end
 end)()
 
-local function write_path_async()
-  local current_path = vim.api.nvim_buf_get_name(0)
-  if current_path == '' then
-    return
-  end
-  sender.send(current_path)
-end
-
 vim.api.nvim_create_autocmd('BufEnter', {
   pattern = '*',
   callback = function()
+    local current_path = vim.api.nvim_buf_get_name(0)
     local new_branch = get_git_branch()
     if _opened_branch and new_branch ~= _opened_branch then
-      -- Reset file descriptors to force reopening with new branch
-      if _log_fd then
-        a.uv.fs_close(_log_fd)
-        _log_fd = nil
+      a.void(function()
+        -- Close files in async context
+        if _log_fd then
+          a.uv.fs_close(_log_fd)
+          _log_fd = nil
+        end
+        if _count_fd then
+          a.uv.fs_close(_count_fd)
+          _count_fd = nil
+        end
+        _opened_branch = nil
+        _count_cache = nil
+
+        if current_path == '' then
+          return
+        end
+        sender.send(current_path)
+      end)()
+    else
+      if current_path == '' then
+        return
       end
-      if _count_fd then
-        a.uv.fs_close(_count_fd)
-        _count_fd = nil
-      end
-      _opened_branch = nil
+      sender.send(current_path)
     end
-    -- Trigger a refresh of the current buffer's history
-    write_path_async()
   end,
 })
 
@@ -222,7 +230,6 @@ function HistoryPreviewer:populate_preview_buf(entry_str)
       local filetype = vim.filetype.match { filename = full_path }
       if filetype then
         vim.bo[tmpbuf].filetype = filetype
-        -- vim.api.nvim_buf_set_option(tmpbuf, 'filetype', filetype)
       end
     else
       vim.api.nvim_buf_set_lines(tmpbuf, 0, -1, false, { 'File not found:', full_path })
@@ -351,24 +358,32 @@ function M.recent_files()
   -- Get current working directory and paths
   local cwd = vim.fn.getcwd()
   local paths = get_log_paths(cwd)
-  local max_files = 5 -- Show top 5 recent files
+  local max_files = 7 -- Show top 5 recent files
 
   -- Get current file for highlighting
   local current_file = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ':.')
 
   -- Read the counts file first
   local counts = {}
-  local count_file = io.open(paths.counts, 'r')
-  if count_file then
-    for line in count_file:lines() do
-      local path, count = line:match '(.+),(%d+)'
-      if path and count then
-        -- Convert to relative path for comparison
-        local relative_path = vim.fn.fnamemodify(path, ':.')
-        counts[relative_path] = tonumber(count)
-      end
+
+  if _count_cache ~= nil then
+    for path, count in pairs(_count_cache) do
+      local relative_path = vim.fn.fnamemodify(path, ':.')
+      counts[relative_path] = count
     end
-    count_file:close()
+  else
+    local count_file = io.open(paths.counts, 'r')
+    if count_file then
+      for line in count_file:lines() do
+        local path, count = line:match '(.+),(%d+)'
+        if path and count then
+          -- Convert to relative path for comparison
+          local relative_path = vim.fn.fnamemodify(path, ':.')
+          counts[relative_path] = tonumber(count)
+        end
+      end
+      count_file:close()
+    end
   end
 
   -- Read the history file and create entries table
@@ -421,9 +436,9 @@ function M.recent_files()
   for i = 1, #entries do
     local entry = entries[i]
     if entry.path == current_file then
-      contents[i] = string.format('%%#HarpoonCurrentNumber# %s. %%#HarpoonCurrent#%s %%#HarpoonCurrentNumber#[%d] ', i, entry.truncated, entry.count)
+      contents[i] = string.format('%%#HarpoonCurrentNumber# %s. %%#HarpoonCurrent#%s %%#HarpoonCount#[%d] ', i, entry.truncated, entry.count)
     else
-      contents[i] = string.format('%%#HarpoonNumberInactive# %s. %%#HarpoonInactive#%s %%#HarpoonNumberInactive#[%d] ', i, entry.truncated, entry.count)
+      contents[i] = string.format('%%#HarpoonNumberInactive# %s. %%#HarpoonInactive#%s %%#HarpoonCount#[%d] ', i, entry.truncated, entry.count)
     end
   end
 
@@ -470,12 +485,32 @@ local function select_recent_file(index)
 
   -- Select the file if index is valid
   if entries[index] then
-    vim.cmd('edit ' .. entries[index].path)
+    local target_path = entries[index].path
+    -- Get full path for buffer matching
+    local full_path = vim.fn.fnamemodify(target_path, ':p')
+
+    -- Try to find existing buffer
+    local target_buf = nil
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+      local buf_path = vim.api.nvim_buf_get_name(buf)
+      if buf_path == full_path then
+        target_buf = buf
+        break
+      end
+    end
+
+    if target_buf then
+      -- If buffer exists, switch to it
+      vim.api.nvim_win_set_buf(0, target_buf)
+    else
+      -- If buffer doesn't exist, create it
+      vim.cmd('edit ' .. target_path)
+    end
   end
 end
 
 -- Set up keymaps
-for i = 1, 5 do
+for i = 1, 7 do
   vim.keymap.set('n', '<leader>' .. i, function()
     select_recent_file(i)
   end, { desc = 'Go to Recent File ' .. i })
@@ -486,6 +521,7 @@ vim.cmd [[
   hi default HarpoonInactive guifg=#6c7086
   hi default HarpoonCurrentNumber guifg=#f9e2af gui=bold
   hi default HarpoonCurrent guifg=#f9e2af gui=bold
+  hi default HarpoonCount guifg=#45475a  " Darker color for counts
 ]]
 
 return M

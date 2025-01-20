@@ -2,26 +2,46 @@ local a = require 'plenary.async'
 local u = require 'plenary.async.util'
 local sender, receiver = a.control.channel.mpsc()
 
--- Get paths for both history and count logs
+-- Get current git branch name or pwd if no git
+local function get_git_branch()
+  -- Try to get git branch first
+  local handle = io.popen 'git rev-parse --abbrev-ref HEAD 2>/dev/null'
+  if handle then
+    local branch = handle:read '*a'
+    handle:close()
+    if branch and branch ~= '' then
+      return branch:gsub('\n', '')
+    end
+  end
+
+  -- If no git branch found, use last directory name from pwd
+  local cwd = vim.fn.getcwd()
+  return vim.fn.fnamemodify(cwd, ':t')
+end
+
 local function get_log_paths(cwd)
+  local branch = get_git_branch()
   local safe_filename = cwd:gsub('[/\\]', '_'):gsub(':', '_')
+  local safe_branch = branch:gsub('[/\\]', '_'):gsub(':', '_')
   local dir = vim.fn.stdpath 'data' .. '/history/'
   if vim.fn.isdirectory(dir) == 0 then
     vim.fn.mkdir(dir, 'p')
   end
   return {
-    history = dir .. safe_filename .. '.log',
-    counts = dir .. safe_filename .. '.counts',
+    history = dir .. safe_filename .. '_' .. safe_branch .. '.log',
+    counts = dir .. safe_filename .. '_' .. safe_branch .. '.counts',
   }
 end
 
 local _log_fd = nil
 local _count_fd = nil
 local _opened_cwd = nil
+local _opened_branch = nil
 
 -- Open both file descriptors
 local function open_fds(cwd)
-  if _log_fd and _opened_cwd == cwd then
+  local current_branch = get_git_branch()
+  if _log_fd and _opened_cwd == cwd and _opened_branch == current_branch then
     return _log_fd, _count_fd
   end
 
@@ -43,6 +63,7 @@ local function open_fds(cwd)
   _log_fd = log_fd
   _count_fd = count_fd
   _opened_cwd = cwd
+  _opened_branch = current_branch
 
   return log_fd, count_fd
 end
@@ -158,7 +179,23 @@ end
 
 vim.api.nvim_create_autocmd('BufEnter', {
   pattern = '*',
-  callback = write_path_async,
+  callback = function()
+    local new_branch = get_git_branch()
+    if _opened_branch and new_branch ~= _opened_branch then
+      -- Reset file descriptors to force reopening with new branch
+      if _log_fd then
+        a.uv.fs_close(_log_fd)
+        _log_fd = nil
+      end
+      if _count_fd then
+        a.uv.fs_close(_count_fd)
+        _count_fd = nil
+      end
+      _opened_branch = nil
+    end
+    -- Trigger a refresh of the current buffer's history
+    write_path_async()
+  end,
 })
 
 local builtin = require 'fzf-lua.previewer.builtin'
@@ -184,7 +221,8 @@ function HistoryPreviewer:populate_preview_buf(entry_str)
       -- detect and set filetype for syntax highlighting
       local filetype = vim.filetype.match { filename = full_path }
       if filetype then
-        vim.api.nvim_buf_set_option(tmpbuf, 'filetype', filetype)
+        vim.bo[tmpbuf].filetype = filetype
+        -- vim.api.nvim_buf_set_option(tmpbuf, 'filetype', filetype)
       end
     else
       vim.api.nvim_buf_set_lines(tmpbuf, 0, -1, false, { 'File not found:', full_path })
@@ -203,8 +241,10 @@ function HistoryPreviewer:gen_winopts()
   return vim.tbl_extend('force', self.winopts, new_winopts)
 end
 
+local M = {}
+
 -- Modified history function
-local function history()
+function M.history()
   local cwd = vim.fn.getcwd()
 
   local current_buffer = vim.api.nvim_buf_get_name(0)
@@ -276,4 +316,176 @@ local function history()
   end)()
 end
 
-return history
+-- Function to get recent files for status line
+function M.recent_files()
+  -- Function to truncate the last directory and filename using Neovim's API
+  local function truncate_last_dir_and_filename(file_path)
+    -- Get the directory containing the file
+    local dir = vim.fn.fnamemodify(file_path, ':h')
+    -- Extract the last directory name
+    local last_dir = vim.fn.fnamemodify(dir, ':t')
+    -- Get the filename
+    local filename = vim.fn.fnamemodify(file_path, ':t')
+
+    -- Handle files with and without extensions
+    local truncated_path
+    if string.find(filename, '%.') then
+      local base, ext = string.match(filename, '(.-)%.([^%.]+)$')
+      if last_dir == '.' then
+        truncated_path = base .. '.' .. ext
+      else
+        truncated_path = last_dir .. '/' .. base .. '.' .. ext
+      end
+    else
+      -- No extension case
+      if last_dir == '.' then
+        truncated_path = filename
+      else
+        truncated_path = last_dir .. '/' .. filename
+      end
+    end
+
+    return truncated_path
+  end
+
+  -- Get current working directory and paths
+  local cwd = vim.fn.getcwd()
+  local paths = get_log_paths(cwd)
+  local max_files = 5 -- Show top 5 recent files
+
+  -- Get current file for highlighting
+  local current_file = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ':.')
+
+  -- Read the counts file first
+  local counts = {}
+  local count_file = io.open(paths.counts, 'r')
+  if count_file then
+    for line in count_file:lines() do
+      local path, count = line:match '(.+),(%d+)'
+      if path and count then
+        -- Convert to relative path for comparison
+        local relative_path = vim.fn.fnamemodify(path, ':.')
+        counts[relative_path] = tonumber(count)
+      end
+    end
+    count_file:close()
+  end
+
+  -- Read the history file and create entries table
+  local entries = {}
+  local file = io.open(paths.history, 'r')
+  if file then
+    for line in file:lines() do
+      local relative_path = vim.fn.fnamemodify(line, ':.')
+      local count = counts[relative_path] or 0
+      table.insert(entries, {
+        path = relative_path,
+        count = count,
+        truncated = truncate_last_dir_and_filename(relative_path),
+      })
+    end
+    file:close()
+  end
+
+  -- Sort entries by count (highest first)
+  table.sort(entries, function(a, b)
+    return a.count > b.count
+  end)
+
+  for i = max_files + 1, #entries do
+    if entries[i] then
+      entries[i] = nil
+    end
+  end
+
+  -- Check if current file is in the list
+  local current_file_in_list = false
+  for _, entry in ipairs(entries) do
+    if entry.path == current_file then
+      current_file_in_list = true
+      break
+    end
+  end
+
+  -- Add current file if not in list
+  if not current_file_in_list and current_file ~= '' then
+    table.insert(entries, {
+      path = current_file,
+      count = counts[current_file] or 0,
+      truncated = truncate_last_dir_and_filename(current_file),
+    })
+  end
+
+  -- Format the output
+  local contents = {}
+  for i = 1, #entries do
+    local entry = entries[i]
+    if entry.path == current_file then
+      contents[i] = string.format('%%#HarpoonCurrentNumber# %s. %%#HarpoonCurrent#%s %%#HarpoonCurrentNumber#[%d] ', i, entry.truncated, entry.count)
+    else
+      contents[i] = string.format('%%#HarpoonNumberInactive# %s. %%#HarpoonInactive#%s %%#HarpoonNumberInactive#[%d] ', i, entry.truncated, entry.count)
+    end
+  end
+
+  return table.concat(contents)
+end
+-- Create a file selection function
+local function select_recent_file(index)
+  local cwd = vim.fn.getcwd()
+  local paths = get_log_paths(cwd)
+
+  -- Read the counts file first
+  local counts = {}
+  local count_file = io.open(paths.counts, 'r')
+  if count_file then
+    for line in count_file:lines() do
+      local path, count = line:match '(.+),(%d+)'
+      if path and count then
+        local relative_path = vim.fn.fnamemodify(path, ':.')
+        counts[relative_path] = tonumber(count)
+      end
+    end
+    count_file:close()
+  end
+
+  -- Read and sort entries
+  local entries = {}
+  local file = io.open(paths.history, 'r')
+  if file then
+    for line in file:lines() do
+      local relative_path = vim.fn.fnamemodify(line, ':.')
+      local count = counts[relative_path] or 0
+      table.insert(entries, {
+        path = relative_path,
+        count = count,
+      })
+    end
+    file:close()
+  end
+
+  -- Sort entries by count
+  table.sort(entries, function(a, b)
+    return a.count > b.count
+  end)
+
+  -- Select the file if index is valid
+  if entries[index] then
+    vim.cmd('edit ' .. entries[index].path)
+  end
+end
+
+-- Set up keymaps
+for i = 1, 5 do
+  vim.keymap.set('n', '<leader>' .. i, function()
+    select_recent_file(i)
+  end, { desc = 'Go to Recent File ' .. i })
+end
+
+vim.cmd [[
+  hi default HarpoonNumberInactive guifg=#6c7086
+  hi default HarpoonInactive guifg=#6c7086
+  hi default HarpoonCurrentNumber guifg=#f9e2af gui=bold
+  hi default HarpoonCurrent guifg=#f9e2af gui=bold
+]]
+
+return M

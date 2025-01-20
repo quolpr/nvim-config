@@ -22,6 +22,13 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
+vim.cmd [[
+  hi default HarpoonNumberActive guifg=#89b4fa gui=bold
+  hi default HarpoonActive guifg=#89b4fa gui=bold
+  hi default HarpoonNumberInactive guifg=#6c7086
+  hi default HarpoonInactive guifg=#6c7086
+]]
+
 return {
   -- Highlight cursor when it moves
   { 'danilamihailov/beacon.nvim' },
@@ -133,6 +140,9 @@ return {
         return table.concat(contents)
       end
 
+      local M = require 'history'
+
+      M.recent_files()
       -- Config
       local config = {
         options = {
@@ -168,7 +178,7 @@ return {
         },
         tabline = {
           lualine_a = {
-            { Harpoon_files },
+            { M.recent_files },
           },
         },
       }

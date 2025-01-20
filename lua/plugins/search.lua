@@ -165,10 +165,10 @@ return {
   {
     dir = '~/.config/nvim/lua/history',
     config = function()
-      local history = require 'history'
+      local M = require 'history'
 
       vim.keymap.set('n', '<leader>fh', function()
-        history()
+        M.history()
       end, { desc = 'Find History' })
     end,
   },
@@ -193,50 +193,50 @@ return {
       },
     },
   },
-  {
-    'ThePrimeagen/harpoon',
-    branch = 'harpoon2',
-    opts = {
-      menu = {
-        width = vim.api.nvim_win_get_width(0) - 4,
-      },
-      settings = {
-        save_on_toggle = true,
-        tabline = true,
-      },
-    },
-    keys = function()
-      local keys = {
-        {
-          '<leader>H',
-          function()
-            require('harpoon'):list():add()
-          end,
-          desc = 'Harpoon File',
-        },
-        {
-          '<leader>eh',
-          function()
-            local harpoon = require 'harpoon'
-            harpoon.ui:toggle_quick_menu(harpoon:list())
-          end,
-          desc = 'Edit Harpoon',
-        },
-      }
-
-      for i = 1, 9 do
-        table.insert(keys, {
-          '<leader>' .. i,
-          function()
-            require('harpoon'):list():select(i)
-          end,
-          desc = 'Harpoon to File ' .. i,
-        })
-      end
-
-      return keys
-    end,
-  },
+  -- {
+  --   'ThePrimeagen/harpoon',
+  --   branch = 'harpoon2',
+  --   opts = {
+  --     menu = {
+  --       width = vim.api.nvim_win_get_width(0) - 4,
+  --     },
+  --     settings = {
+  --       save_on_toggle = true,
+  --       tabline = true,
+  --     },
+  --   },
+  --   keys = function()
+  --     local keys = {
+  --       {
+  --         '<leader>H',
+  --         function()
+  --           require('harpoon'):list():add()
+  --         end,
+  --         desc = 'Harpoon File',
+  --       },
+  --       {
+  --         '<leader>eh',
+  --         function()
+  --           local harpoon = require 'harpoon'
+  --           harpoon.ui:toggle_quick_menu(harpoon:list())
+  --         end,
+  --         desc = 'Edit Harpoon',
+  --       },
+  --     }
+  --
+  --     for i = 1, 9 do
+  --       table.insert(keys, {
+  --         '<leader>' .. i,
+  --         function()
+  --           require('harpoon'):list():select(i)
+  --         end,
+  --         desc = 'Harpoon to File ' .. i,
+  --       })
+  --     end
+  --
+  --     return keys
+  --   end,
+  -- },
   -- { -- Fuzzy Finder (files, lsp, etc)
   --   'nvim-telescope/telescope.nvim',
   --   event = 'VimEnter',

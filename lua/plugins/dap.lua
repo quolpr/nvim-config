@@ -14,7 +14,7 @@ return {
 
     -- Add your own debuggers here
     'leoluz/nvim-dap-go',
-    'quolpr/neotest',
+    -- 'quolpr/neotest',
   },
   config = function()
     local dap = require 'dap'
@@ -150,7 +150,7 @@ return {
       function()
         require('dap').up()
       end,
-      desc = 'debug kump up',
+      desc = 'debug jump up',
     },
     {
       '<leader>dl',
@@ -193,6 +193,13 @@ return {
         require('dap').terminate()
       end,
       desc = 'debug terminate',
+    },
+    {
+      '<leader>td',
+      function()
+        require('dap-go').debug_test()
+      end,
+      desc = 'Test Debug',
     },
     {
       '<leader>dw',

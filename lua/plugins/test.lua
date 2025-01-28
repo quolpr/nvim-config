@@ -51,15 +51,15 @@ return {
         end,
         desc = 'Test Run File',
       },
-      {
-        '<leader>td',
-        function()
-          local qt = require 'quicktest'
-
-          qt.run_dir()
-        end,
-        desc = 'Test Run Dir',
-      },
+      -- {
+      --   '<leader>td',
+      --   function()
+      --     local qt = require 'quicktest'
+      --
+      --     qt.run_dir()
+      --   end,
+      --   desc = 'Test Run Dir',
+      -- },
       {
         '<leader>ta',
         function()

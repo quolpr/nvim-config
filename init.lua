@@ -102,7 +102,7 @@ vim.keymap.set('n', '<leader>p', [["+p]], { desc = 'Paste from computer' })
 
 -- When you delete/paste don't rewrite last register
 vim.keymap.set('x', '<leader>p', [["_dP]], { desc = 'Paste without register overwriting' })
-vim.keymap.set({ 'n', 'v' }, '<leader>d', [["_d]], { desc = 'Delete without register overwriting' })
+-- vim.keymap.set({ 'n', 'v' }, '<leader>d', [["_d]], { desc = 'Delete without register overwriting' })
 
 vim.keymap.set('n', 'T', ':tabnext <CR>', { desc = 'Tab Next' })
 -- vim.keymap.set('n', 'Tc', ':tabclose <CR>', { desc = 'Tab Close' })
@@ -274,7 +274,7 @@ require('lazy').setup {
 
   require 'plugins.ai',
   require 'plugins.complete',
-  -- require 'plugins.dap',
+  require 'plugins.dap',
   require 'plugins.db',
   require 'plugins.diagnostics',
   require 'plugins.edit',

@@ -23,7 +23,7 @@ return {
       vim.g['fern#renderer'] = 'nerdfont'
 
       -- TODO: port it to lua
-      vim.cmd [[
+      vim.cmd([[
         nmap <silent> - :Fern . -reveal=% -wait <CR>
         nmap <silent> _ :Fern %:p:h -wait -reveal=% <CR>
 
@@ -40,19 +40,19 @@ return {
           autocmd! *
           autocmd FileType fern call s:init_fern()
         augroup END
-      ]]
+      ]])
     end,
     keys = {
       {
         '-',
         function()
-          vim.cmd [[Fern . -reveal=% -wait <CR>]]
+          vim.cmd([[Fern . -reveal=% -wait <CR>]])
         end,
       },
       {
         '_',
         function()
-          vim.cmd [[Fern %:h -wait <CR>]]
+          vim.cmd([[Fern %:h -wait <CR>]])
         end,
       },
     },

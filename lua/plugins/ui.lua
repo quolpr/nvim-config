@@ -22,12 +22,12 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
-vim.cmd [[
+vim.cmd([[
   hi default HarpoonNumberActive guifg=#89b4fa gui=bold
   hi default HarpoonActive guifg=#89b4fa gui=bold
   hi default HarpoonNumberInactive guifg=#6c7086
   hi default HarpoonInactive guifg=#6c7086
-]]
+]])
 
 return {
   -- Highlight cursor when it moves
@@ -39,7 +39,7 @@ return {
       -- Eviline config for lualine
       -- Author: shadmansaleh
       -- Credit: glepnir
-      local lualine = require 'lualine'
+      local lualine = require('lualine')
 
       -- Color table for highlights
       -- stylua: ignore
@@ -57,21 +57,21 @@ return {
         red      = '#ec5f67',
       }
 
-      vim.cmd 'highlight! HarpoonInactive guibg=NONE guifg=#63698c'
-      vim.cmd 'highlight! HarpoonActive guibg=NONE guifg=white'
-      vim.cmd 'highlight! HarpoonNumberActive guibg=NONE guifg=#7aa2f7'
-      vim.cmd 'highlight! HarpoonNumberInactive guibg=NONE guifg=#7aa2f7'
-      vim.cmd 'highlight! TabLineFill guibg=NONE guifg=white'
+      vim.cmd('highlight! HarpoonInactive guibg=NONE guifg=#63698c')
+      vim.cmd('highlight! HarpoonActive guibg=NONE guifg=white')
+      vim.cmd('highlight! HarpoonNumberActive guibg=NONE guifg=#7aa2f7')
+      vim.cmd('highlight! HarpoonNumberInactive guibg=NONE guifg=#7aa2f7')
+      vim.cmd('highlight! TabLineFill guibg=NONE guifg=white')
 
       local conditions = {
         buffer_not_empty = function()
-          return vim.fn.empty(vim.fn.expand '%:t') ~= 1
+          return vim.fn.empty(vim.fn.expand('%:t')) ~= 1
         end,
         hide_in_width = function()
           return vim.fn.winwidth(0) > 80
         end,
         check_git_workspace = function()
-          local filepath = vim.fn.expand '%:p:h'
+          local filepath = vim.fn.expand('%:p:h')
           local gitdir = vim.fn.finddir('.git', filepath .. ';')
           return gitdir and #gitdir > 0 and #gitdir < #filepath
         end,
@@ -122,10 +122,10 @@ return {
           end
         end
 
-        local harpoon = require 'harpoon'
+        local harpoon = require('harpoon')
         local contents = {}
         local marks_length = harpoon:list():length()
-        local current_file_path = vim.fn.fnamemodify(vim.fn.expand '%:p', ':.')
+        local current_file_path = vim.fn.fnamemodify(vim.fn.expand('%:p'), ':.')
         for index = 1, marks_length do
           local harpoon_file_path = harpoon:list():get(index).value
           local file_name = harpoon_file_path == '' and '(empty)' or truncate_last_dir_and_filename(harpoon_file_path)
@@ -140,7 +140,7 @@ return {
         return table.concat(contents)
       end
 
-      local M = require 'history'
+      -- local M = require 'history'
 
       -- Config
       local config = {
@@ -176,9 +176,9 @@ return {
           lualine_x = {},
         },
         tabline = {
-          lualine_a = {
-            { M.recent_files },
-          },
+          -- lualine_a = {
+          --   { M.recent_files },
+          -- },
         },
       }
 
@@ -192,7 +192,7 @@ return {
         table.insert(config.sections.lualine_x, component)
       end
 
-      ins_left {
+      ins_left({
         -- mode component
         function()
           return ' '
@@ -224,14 +224,14 @@ return {
           return { fg = mode_color[vim.fn.mode()] }
         end,
         padding = { right = 1 },
-      }
+      })
 
-      ins_left {
+      ins_left({
         'filename',
         cond = conditions.buffer_not_empty,
-      }
+      })
 
-      ins_left {
+      ins_left({
         'diagnostics',
         sources = { 'nvim_diagnostic' },
         symbols = { error = ' ', warn = ' ', info = ' ' },
@@ -240,25 +240,25 @@ return {
           color_warn = { fg = colors.yellow },
           color_info = { fg = colors.cyan },
         },
-      }
+      })
 
       -- Insert mid section. You can make any number of sections in neovim :)
       -- for lualine it's any number greater then 2
-      ins_left {
+      ins_left({
         function()
           return '%='
         end,
-      }
+      })
 
-      ins_right { 'progress', color = { fg = colors.fg } }
-      ins_right { 'copilot', show_colors = true }
-      ins_right {
+      ins_right({ 'progress', color = { fg = colors.fg } })
+      ins_right({ 'copilot', show_colors = true })
+      ins_right({
         'branch',
         icon = '',
         color = { fg = colors.violet },
-      }
+      })
 
-      ins_right {
+      ins_right({
         'diff',
         -- Is it me or the symbol for modified us really weird
         symbols = { added = ' ', modified = '󰝤 ', removed = ' ' },
@@ -268,38 +268,38 @@ return {
           removed = { fg = colors.red },
         },
         cond = conditions.hide_in_width,
-      }
+      })
 
       -- Now don't forget to initialize lualine
       lualine.setup(config)
     end,
   },
 
-  {
-    'rcarriga/nvim-notify',
-    config = function()
-      ---@diagnostic disable-next-line: missing-fields
-      require('notify').setup {
-        stages = 'static',
-      }
-
-      vim.notify = require 'notify'
-    end,
-    priority = 1000,
-  },
+  -- {
+  --   'rcarriga/nvim-notify',
+  --   config = function()
+  --     ---@diagnostic disable-next-line: missing-fields
+  --     require('notify').setup {
+  --       stages = 'static',
+  --     }
+  --
+  --     vim.notify = require 'notify'
+  --   end,
+  --   priority = 1000,
+  -- },
   -- Better quick fix
   { 'kevinhwang91/nvim-bqf' },
-  {
-    -- Add indentation guides even on blank lines
-    'lukas-reineke/indent-blankline.nvim',
-    -- Enable `lukas-reineke/indent-blankline.nvim`
-    -- See `:help indent_blankline.txt`
-    main = 'ibl',
-    opts = {
-      scope = { enabled = false },
-      -- indent = { char = '┊' },
-    },
-  },
+  -- {
+  --   -- Add indentation guides even on blank lines
+  --   'lukas-reineke/indent-blankline.nvim',
+  --   -- Enable `lukas-reineke/indent-blankline.nvim`
+  --   -- See `:help indent_blankline.txt`
+  --   main = 'ibl',
+  --   opts = {
+  --     scope = { enabled = false },
+  --     -- indent = { char = '┊' },
+  --   },
+  -- },
   { -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
@@ -307,7 +307,7 @@ return {
       require('which-key').setup()
 
       -- Document existing key chains
-      require('which-key').add {
+      require('which-key').add({
         { '<leader>1', hidden = true },
         { '<leader>2', hidden = true },
         { '<leader>3', hidden = true },
@@ -335,7 +335,7 @@ return {
         { '<leader>q_', hidden = true },
         { '<leader>t', group = 'Test' },
         { '<leader>t_', hidden = true },
-      }
+      })
     end,
   },
   -- Kep propotions of window size

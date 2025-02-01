@@ -45,13 +45,13 @@ vim.o.wrap = true
 -- The linebreak option ensures that lines break at word boundaries instead of in the middle of words. This can make the wrapped text more readable.
 vim.o.linebreak = true
 
-vim.cmd [[
+vim.cmd([[
 autocmd FileType go setlocal tabstop=2
-]]
+]])
 
 -- Save undo history
 vim.opt.undofile = true
-vim.opt.undodir = os.getenv 'HOME' .. '/.vim/undodir'
+vim.opt.undodir = os.getenv('HOME') .. '/.vim/undodir'
 
 -- Case-insensitive searching UNLESS \C or capital in search
 vim.opt.ignorecase = true
@@ -130,20 +130,20 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[e', function()
-  vim.diagnostic.goto_prev { severity = { min = vim.diagnostic.severity.ERROR } }
+  vim.diagnostic.goto_prev({ severity = { min = vim.diagnostic.severity.ERROR } })
 end, { desc = 'Go to previous diagnostic Error message' })
 vim.keymap.set('n', ']e', function()
-  vim.diagnostic.goto_next { severity = { min = vim.diagnostic.severity.ERROR } }
+  vim.diagnostic.goto_next({ severity = { min = vim.diagnostic.severity.ERROR } })
 end, { desc = 'Go to next diagnostic Error message' })
 
 vim.keymap.set('n', '[w', function()
-  vim.diagnostic.goto_prev { severity = { min = vim.diagnostic.severity.WARN } }
+  vim.diagnostic.goto_prev({ severity = { min = vim.diagnostic.severity.WARN } })
 end, { desc = 'Go to previous diagnostic Warn message' })
 vim.keymap.set('n', ']w', function()
-  vim.diagnostic.goto_next { severity = { min = vim.diagnostic.severity.WARN } }
+  vim.diagnostic.goto_next({ severity = { min = vim.diagnostic.severity.WARN } })
 end, { desc = 'Go to next diagnostic Warn message' })
 vim.keymap.set('n', ']i', function()
-  vim.diagnostic.goto_next { severity = { min = vim.diagnostic.severity.INFO } }
+  vim.diagnostic.goto_next({ severity = { min = vim.diagnostic.severity.INFO } })
 end, { desc = 'Go to next diagnostic Iinfo message' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
@@ -171,16 +171,16 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
-local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
+local lazypath = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'
 if not vim.loop.fs_stat(lazypath) then
   local lazyrepo = 'https://github.com/folke/lazy.nvim.git'
-  vim.fn.system { 'git', 'clone', '--filter=blob:none', '--branch=stable', lazyrepo, lazypath }
+  vim.fn.system({ 'git', 'clone', '--filter=blob:none', '--branch=stable', lazyrepo, lazypath })
 end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
 local getVisualSelection = function()
-  vim.cmd 'noau normal! "vy"'
-  local text = vim.fn.getreg 'v'
+  vim.cmd('noau normal! "vy"')
+  local text = vim.fn.getreg('v')
   vim.fn.setreg('v', {})
 
   text = string.gsub(text, '\n', '')
@@ -205,17 +205,17 @@ end, { noremap = true, silent = true, desc = 'Replace' })
 
 -- Map the function to a key combination in visual mode
 vim.keymap.set('n', '<leader>r', function()
-  local word = vim.fn.expand '<cword>'
+  local word = vim.fn.expand('<cword>')
   vim.cmd('call feedkeys(":%s/' .. escape(word) .. '/")')
 end, { noremap = true, silent = true, desc = 'Replace' })
 
-vim.filetype.add {
+vim.filetype.add({
   pattern = {
     ['openapi.*%.ya?ml'] = 'yaml.openapi',
     ['openapi.*%.json'] = 'json.openapi',
     ['swagger.ya?ml'] = 'yaml.openapi',
   },
-}
+})
 
 vim.opt.langmap =
   'ФИСВУАПРШОЛДЬТЩЗЙКЫЕГМЦЧНЯ;ABCDEFGHIJKLMNOPQRSTUVWXYZ,фисвуапршолдьтщзйкыегмцчня;abcdefghijklmnopqrstuvwxyz'
@@ -244,7 +244,7 @@ vim.opt.langmap =
 --   },
 -- }
 
-vim.filetype.add {
+vim.filetype.add({
   extension = {
     gotmpl = 'gotmpl',
   },
@@ -253,10 +253,10 @@ vim.filetype.add {
     ['.*/templates/.*%.ya?ml'] = 'helm',
     ['helmfile.*%.ya?ml'] = 'helm',
   },
-}
+})
 
 -- NOTE: Here is where you install your plugins.
-require('lazy').setup {
+require('lazy').setup({
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
   'christoomey/vim-tmux-navigator',
   -- Restore closed buffers and windows
@@ -266,33 +266,46 @@ require('lazy').setup {
       -- add any custom options here
     },
     config = function()
-      require('persistence').setup {}
-      vim.api.nvim_set_keymap('n', '<leader>qr', [[<cmd>lua require("persistence").load({ last = true })<cr>]], { desc = 'Restore persistance' })
+      require('persistence').setup({})
+      vim.api.nvim_set_keymap(
+        'n',
+        '<leader>qr',
+        [[<cmd>lua require("persistence").load({ last = true })<cr>]],
+        { desc = 'Restore persistance' }
+      )
     end,
   },
   { 'meznaric/key-analyzer.nvim', opts = {} },
 
-  require 'plugins.ai',
-  require 'plugins.complete',
-  require 'plugins.dap',
-  require 'plugins.db',
-  require 'plugins.diagnostics',
-  require 'plugins.edit',
-  require 'plugins.format',
-  require 'plugins.fs',
-  require 'plugins.git',
-  require 'plugins.highlight',
-  require 'plugins.locnav',
-  require 'plugins.lsp',
-  require 'plugins.lua-dev',
-  require 'plugins.notes',
+  require('plugins.ai'),
+  require('plugins.complete'),
+  require('plugins.dap'),
+  require('plugins.db'),
+  require('plugins.diagnostics'),
+  require('plugins.edit'),
+  require('plugins.format'),
+  require('plugins.fs'),
+  require('plugins.git'),
+  require('plugins.highlight'),
+  require('plugins.locnav'),
+  require('plugins.lsp'),
+  require('plugins.lua-dev'),
   -- require 'plugins.profile',
-  require 'plugins.search',
-  require 'plugins.test',
-  require 'plugins.theme',
-  require 'plugins.treesitter',
-  require 'plugins.ui',
-}
+  -- require 'plugins.search',
+  require('plugins.test'),
+  require('plugins.theme'),
+  require('plugins.treesitter'),
+  require('plugins.ui'),
+  require('plugins.snacks'),
+  require('plugins.grug-far'),
+})
 
+vim.g.neovide_position_animation_length = 0
+vim.g.neovide_cursor_animation_length = 0.00
+vim.g.neovide_cursor_trail_size = 0
+vim.g.neovide_cursor_animate_in_insert_mode = false
+vim.g.neovide_cursor_animate_command_line = false
+vim.g.neovide_scroll_animation_far_lines = 0
+vim.g.neovide_scroll_animation_length = 0.00
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

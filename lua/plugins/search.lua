@@ -7,7 +7,7 @@ return {
     },
     config = function()
       -- calling `setup` is optional for customization
-      require('fzf-lua').setup {
+      require('fzf-lua').setup({
         nvim_freeze_workaround = 1,
         lsp = {
           symbols = {
@@ -29,9 +29,9 @@ return {
           width = 0.90,
           height = 0.95,
         },
-      }
+      })
 
-      local fzf = require 'fzf-lua'
+      local fzf = require('fzf-lua')
 
       vim.keymap.set('n', '<leader>ff', function()
         -- fzf.files { formatter = 'path.filename_first' }
@@ -83,25 +83,25 @@ return {
           end
 
           map('gd', function()
-            require('fzf-lua').lsp_definitions { formatter = 'path.filename_first' }
+            require('fzf-lua').lsp_definitions({ formatter = 'path.filename_first' })
           end, 'Goto Definition')
 
           -- Find references for the word under your cursor.
           map('gr', function()
-            require('fzf-lua').lsp_references { formatter = 'path.filename_first' }
+            require('fzf-lua').lsp_references({ formatter = 'path.filename_first' })
           end, 'Goto References')
 
           -- Jump to the implementation of the word under your cursor.
           --  Useful when your language has ways of declaring types without an actual implementation.
           map('gi', function()
-            require('fzf-lua').lsp_implementations { formatter = 'path.filename_first' }
+            require('fzf-lua').lsp_implementations({ formatter = 'path.filename_first' })
           end, 'Goto Implementation')
 
           -- Jump to the type of the word under your cursor.
           --  Useful when you're not sure what type a variable is and you want to see
           --  the definition of its *type*, not where it was *defined*.
           map('gD', function()
-            require('fzf-lua').lsp_typedefs { formatter = 'path.filename_first' }
+            require('fzf-lua').lsp_typedefs({ formatter = 'path.filename_first' })
           end, 'Type Definition')
 
           -- map('gc', function()
@@ -142,7 +142,7 @@ return {
           -- Execute a code action, usually your cursor needs to be on top of an error
           -- or a suggestion from your LSP for this to activate.
           map('<leader>ca', function()
-            require('fzf-lua').lsp_code_actions {
+            require('fzf-lua').lsp_code_actions({
               -- vim.lsp.buf.code_action {
               -- once = get_diagnostic_at_cursor(),
               context = {
@@ -156,7 +156,7 @@ return {
                 return true
               end,
               -- query='!tousersettings '
-            }
+            })
           end, 'Code Action')
         end,
       })
@@ -165,33 +165,12 @@ return {
   {
     dir = '~/.config/nvim/lua/history',
     config = function()
-      local M = require 'history'
+      local M = require('history')
 
       vim.keymap.set('n', '<leader>fh', function()
         M.history()
       end, { desc = 'Find History' })
     end,
-  },
-  {
-    'MagicDuck/grug-far.nvim',
-    opts = {},
-    keys = {
-      {
-        '<leader>fp',
-        function()
-          require('grug-far').open()
-        end,
-        desc = 'Find and Replace in Project',
-      },
-      {
-        '<leader>fp',
-        function()
-          require('grug-far').with_visual_selection()
-        end,
-        desc = 'Find and Replace in Project',
-        mode = 'v',
-      },
-    },
   },
   -- {
   --   'ThePrimeagen/harpoon',

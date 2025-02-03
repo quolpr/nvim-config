@@ -284,7 +284,7 @@ require('lazy').setup({
   require('plugins.diagnostics'),
   require('plugins.edit'),
   require('plugins.format'),
-  -- require('plugins.fs'),
+  require('plugins.fs'),
   require('plugins.git'),
   require('plugins.highlight'),
   require('plugins.locnav'),

@@ -18,7 +18,33 @@ return {
       },
     },
     input = { enabled = true },
-    picker = { enabled = true },
+    picker = {
+      enabled = true,
+      -- layout = {
+      --   layout = {
+      --     width = 0.95,
+      --     height = 0.95,
+      --   },
+      -- },
+      layouts = {
+        default = {
+          layout = {
+            box = 'horizontal',
+            width = 0.95,
+            height = 0.95,
+            {
+              box = 'vertical',
+              border = 'rounded',
+              title = '{source} {live}',
+              title_pos = 'center',
+              { win = 'input', height = 1, border = 'bottom' },
+              { win = 'list', border = 'none' },
+            },
+            { win = 'preview', border = 'rounded', width = 0.5 },
+          },
+        },
+      },
+    },
     notifier = { enabled = true },
     quickfile = { enabled = true },
     statuscolumn = {
@@ -35,22 +61,30 @@ return {
     },
     -- explorer = {
     --   replace_netrw = true,
+    --   layout = {
+    --     preset = 'sidebar',
+    --     layout = {
+    --       width = 40,
+    --       min_width = 40,
+    --       height = 0,
+    --     },
+    --   },
     -- },
   },
   keys = {
-    {
-      '-',
-      function()
-        Snacks.explorer({ layout = { preset = 'sidebar' }, auto_close = true })
-      end,
-    },
-    {
-      '<leader>.',
-      function()
-        Snacks.scratch()
-      end,
-      desc = 'Toggle Scratch Buffer',
-    },
+    -- {
+    --   '-',
+    --   function()
+    --     Snacks.explorer({ layout = { preset = 'sidebar' }, auto_close = true })
+    --   end,
+    -- },
+    -- {
+    --   '<leader>.',
+    --   function()
+    --     Snacks.scratch()
+    --   end,
+    --   desc = 'Toggle Scratch Buffer',
+    -- },
     {
       '<leader>S',
       function()
@@ -117,11 +151,11 @@ return {
     --   desc = 'Git Log',
     -- },
     {
-      '<leader>gs',
+      '<leader>.',
       function()
         Snacks.picker.git_status()
       end,
-      desc = 'Git Status',
+      desc = 'Git find Status',
     },
     -- Grep
     -- {
@@ -270,14 +304,14 @@ return {
     {
       'gd',
       function()
-        Snacks.picker.lsp_definitions()
+        Snacks.picker.lsp_definitions({ jump = { tagstack = true, reuse_win = false } })
       end,
       desc = 'Goto Definition',
     },
     {
       'gr',
       function()
-        Snacks.picker.lsp_references()
+        Snacks.picker.lsp_references({ jump = { tagstack = true, reuse_win = false } })
       end,
       nowait = true,
       desc = 'References',
@@ -285,7 +319,7 @@ return {
     {
       'gi',
       function()
-        Snacks.picker.lsp_implementations()
+        Snacks.picker.lsp_implementations({ jump = { tagstack = true, reuse_win = false } })
       end,
       desc = 'Goto Implementation',
     },

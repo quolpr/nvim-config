@@ -38,12 +38,12 @@ return {
     -- },
   },
   keys = {
-    -- {
-    --   '-',
-    --   function()
-    --     Snacks.explorer({ layout = { preset = 'ivy' }, auto_close = true })
-    --   end,
-    -- },
+    {
+      '-',
+      function()
+        Snacks.explorer({ layout = { preset = 'sidebar' }, auto_close = true })
+      end,
+    },
     {
       '<leader>.',
       function()
@@ -59,11 +59,11 @@ return {
       desc = 'Select Scratch Buffer',
     },
     {
-      '<leader>go',
+      '<leader>gl',
       function()
         Snacks.gitbrowse()
       end,
-      desc = 'Git open',
+      desc = 'Git link',
     },
     --picker
     {

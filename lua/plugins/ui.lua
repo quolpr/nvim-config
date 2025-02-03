@@ -339,10 +339,10 @@ return {
     end,
   },
   -- Kep propotions of window size
-  {
-    'kwkarlwang/bufresize.nvim',
-    config = function()
-      require('bufresize').setup()
-    end,
-  },
+  -- {
+  --   'kwkarlwang/bufresize.nvim',
+  --   config = function()
+  --     require('bufresize').setup()
+  --   end,
+  -- },
 }

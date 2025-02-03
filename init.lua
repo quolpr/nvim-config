@@ -275,7 +275,7 @@ require('lazy').setup({
       )
     end,
   },
-  { 'meznaric/key-analyzer.nvim', opts = {} },
+  -- { 'meznaric/key-analyzer.nvim', opts = {} },
 
   require('plugins.ai'),
   require('plugins.complete'),

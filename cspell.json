@@ -155,6 +155,7 @@
     "convertable",
     "unsafedata",
     "gochecknoglobals",
-    "scns"
+    "scns",
+    "stringparser"
   ]
 }

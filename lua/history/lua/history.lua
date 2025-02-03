@@ -358,7 +358,7 @@ function M.recent_files()
   -- Get current working directory and paths
   local cwd = vim.fn.getcwd()
   local paths = get_log_paths(cwd)
-  local max_files = 7 -- Show top 5 recent files
+  local max_files = 5 -- Show top 5 recent files
 
   -- Get current file for highlighting
   local current_file = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ':.')
@@ -436,14 +436,17 @@ function M.recent_files()
   for i = 1, #entries do
     local entry = entries[i]
     if entry.path == current_file then
-      contents[i] = string.format('%%#HarpoonCurrentNumber# %s. %%#HarpoonCurrent#%s %%#HarpoonCount#[%d] ', i, entry.truncated, entry.count)
+      contents[i] = string.format('%%#HarpoonCurrentNumber# %s. %%#HarpoonCurrent#%s %%#HarpoonCount#[%d] ', i,
+        entry.truncated, entry.count)
     else
-      contents[i] = string.format('%%#HarpoonNumberInactive# %s. %%#HarpoonInactive#%s %%#HarpoonCount#[%d] ', i, entry.truncated, entry.count)
+      contents[i] = string.format('%%#HarpoonNumberInactive# %s. %%#HarpoonInactive#%s %%#HarpoonCount#[%d] ', i,
+        entry.truncated, entry.count)
     end
   end
 
   return table.concat(contents)
 end
+
 -- Create a file selection function
 local function select_recent_file(index)
   local cwd = vim.fn.getcwd()

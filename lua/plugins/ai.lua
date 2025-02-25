@@ -30,7 +30,7 @@ end
 
 local function parse_sse(data, callback)
   for line in vim.gsplit(data, '\n') do
-    if line:match '^data: ' then
+    if line:match('^data: ') then
       local json_str = line:gsub('^data: ', '')
       if json_str ~= '[DONE]' then
         local decoded = decode_json(json_str)
@@ -66,7 +66,11 @@ local function stream_request(prompt, callback)
   file:close()
 
   local curl_command = string.format(
-    'curl -s -N -X POST %s ' .. "-H 'Content-Type: application/json' " .. "-H 'x-api-key: %s' " .. "-H 'anthropic-version: 2023-06-01' " .. '-d @%s',
+    'curl -s -N -X POST %s '
+      .. "-H 'Content-Type: application/json' "
+      .. "-H 'x-api-key: %s' "
+      .. "-H 'anthropic-version: 2023-06-01' "
+      .. '-d @%s',
     config.api_url,
     config.api_key,
     temp_file
@@ -90,7 +94,7 @@ end
 
 function M.claude_request()
   if config.api_key == '' then
-    api.nvim_err_writeln 'API key not set. Please set up the plugin with your API key.'
+    api.nvim_err_writeln('API key not set. Please set up the plugin with your API key.')
     return
   end
 
@@ -102,7 +106,7 @@ function M.claude_request()
   local current_filetype = api.nvim_buf_get_option(current_buf, 'filetype')
 
   -- Get user prompt
-  local prompt = fn.input 'Enter your prompt for Claude (default: Improve the code): '
+  local prompt = fn.input('Enter your prompt for Claude (default: Improve the code): ')
   if prompt == '' then
     prompt = 'Improve the code'
   end
@@ -116,7 +120,7 @@ function M.claude_request()
   )
 
   -- Create a new split buffer for the result
-  api.nvim_command 'vnew'
+  api.nvim_command('vnew')
   local result_buf = api.nvim_get_current_buf()
   api.nvim_buf_set_option(result_buf, 'buftype', current_buftype)
   api.nvim_buf_set_option(result_buf, 'filetype', current_filetype)
@@ -141,29 +145,35 @@ function M.claude_request()
     end
 
     if is_complete then
-      print 'Claude response completed. Applying diff...'
+      print('Claude response completed. Applying diff...')
 
       local diff_buf = api.nvim_get_current_buf()
       api.nvim_buf_set_option(diff_buf, 'buftype', 'nofile')
 
       -- Enable diff mode for all windows
-      api.nvim_command 'windo diffthis'
+      api.nvim_command('windo diffthis')
 
       -- Move cursor to the first window (original content)
-      api.nvim_command 'wincmd t'
+      api.nvim_command('wincmd t')
 
       -- Set up autocmd to disable diff mode when closing the diff buffer
-      api.nvim_command [[
+      api.nvim_command([[
         augroup ClaudeDiff
           autocmd!
           autocmd BufWinLeave <buffer> windo diffoff
         augroup END
-      ]]
+      ]])
     end
   end)
 
   -- Allow user to cancel the request
-  vim.api.nvim_buf_set_keymap(result_buf, 'n', 'q', string.format(':call jobstop(%d)|q<CR>', job_id), { noremap = true, silent = true })
+  vim.api.nvim_buf_set_keymap(
+    result_buf,
+    'n',
+    'q',
+    string.format(':call jobstop(%d)|q<CR>', job_id),
+    { noremap = true, silent = true }
+  )
 end
 
 vim.keymap.set('n', '<leader>C', function()
@@ -214,13 +224,13 @@ return {
   {
     'supermaven-inc/supermaven-nvim',
     config = function()
-      require('supermaven-nvim').setup {
+      require('supermaven-nvim').setup({
 
         ignore_filetypes = { markdown = true },
         keymaps = {
           accept_suggestion = '<c-u>',
         },
-      }
+      })
     end,
   },
   --   {
@@ -564,4 +574,32 @@ return {
   --       },
   --     },
   --   },
+
+  {
+    'yetone/avante.nvim',
+    event = 'VeryLazy',
+    lazy = false,
+    version = false, -- Set this to "*" to always pull the latest release version, or set it to false to update to the latest code changes.
+    opts = {
+      -- add any opts here
+      -- for example
+      provider = 'claude',
+      claude = {
+        endpoint = 'https://api.anthropic.com',
+        model = 'claude-3-7-sonnet-20250219',
+        temperature = 0,
+        max_tokens = 4096,
+        proxy = 'socks5://91.108.241.124:34390',
+      },
+    },
+    -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
+    build = 'make',
+    -- build = "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false" -- for windows
+    dependencies = {
+      'nvim-treesitter/nvim-treesitter',
+      'stevearc/dressing.nvim',
+      'nvim-lua/plenary.nvim',
+      'MunifTanjim/nui.nvim',
+    },
+  },
 }

@@ -78,13 +78,13 @@ return {
     --     Snacks.explorer({ layout = { preset = 'sidebar' }, auto_close = true })
     --   end,
     -- },
-    -- {
-    --   '<leader>.',
-    --   function()
-    --     Snacks.scratch()
-    --   end,
-    --   desc = 'Toggle Scratch Buffer',
-    -- },
+    {
+      '<leader>\\',
+      function()
+        Snacks.scratch()
+      end,
+      desc = 'Toggle Scratch Buffer',
+    },
     {
       '<leader>S',
       function()

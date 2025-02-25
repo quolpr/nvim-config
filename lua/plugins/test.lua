@@ -1,32 +1,32 @@
 return {
   {
-    'quolpr/quicktest.nvim',
-    -- dir = '~/projects/quolpr/quicktest.nvim',
+    -- 'quolpr/quicktest.nvim',
+    dir = '~/projects/quolpr/quicktest.nvim',
     lazy = true,
     config = function()
-      local qt = require 'quicktest'
+      local qt = require('quicktest')
 
-      qt.setup {
+      qt.setup({
         adapters = {
-          require 'quicktest.adapters.golang' {
+          require('quicktest.adapters.golang')({
             args = function(bufnt, args)
               vim.list_extend(args, { '-count=1' })
               return args
             end,
-          },
-          require 'quicktest.adapters.vitest',
+          }),
+          require('quicktest.adapters.vitest'),
           --   -- bin = function(path)
           --   --   print(path)
           --   --   return 'vitest'
           --   -- end,
           -- },
-          require 'quicktest.adapters.elixir',
-          require 'quicktest.adapters.dart',
+          require('quicktest.adapters.elixir'),
+          require('quicktest.adapters.dart'),
           -- require 'quicktest.adapters.playwright',
         },
         default_win_mode = 'split',
         use_builtin_colorizer = true,
-      }
+      })
     end,
     dependencies = {
       'nvim-lua/plenary.nvim',
@@ -36,7 +36,7 @@ return {
       {
         '<leader>tl',
         function()
-          local qt = require 'quicktest'
+          local qt = require('quicktest')
 
           qt.run_line()
         end,
@@ -45,7 +45,7 @@ return {
       {
         '<leader>tf',
         function()
-          local qt = require 'quicktest'
+          local qt = require('quicktest')
 
           qt.run_file()
         end,
@@ -63,7 +63,7 @@ return {
       {
         '<leader>ta',
         function()
-          local qt = require 'quicktest'
+          local qt = require('quicktest')
 
           qt.run_all()
         end,
@@ -72,7 +72,7 @@ return {
       {
         '<leader>tp',
         function()
-          local qt = require 'quicktest'
+          local qt = require('quicktest')
 
           qt.run_previous()
         end,
@@ -81,16 +81,16 @@ return {
       {
         '<leader>tt',
         function()
-          local qt = require 'quicktest'
+          local qt = require('quicktest')
 
-          qt.toggle_win 'split'
+          qt.toggle_win('split')
         end,
         desc = 'Test Toggle Window',
       },
       {
         '<leader>tc',
         function()
-          local qt = require 'quicktest'
+          local qt = require('quicktest')
 
           qt.cancel_current_run()
         end,

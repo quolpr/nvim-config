@@ -575,31 +575,87 @@ return {
   --     },
   --   },
 
+  -- {
+  --   'yetone/avante.nvim',
+  --   event = 'VeryLazy',
+  --   lazy = false,
+  --   version = false, -- Set this to "*" to always pull the latest release version, or set it to false to update to the latest code changes.
+  --   opts = {
+  --     -- add any opts here
+  --     -- for example
+  --     provider = 'claude',
+  --     claude = {
+  --       endpoint = 'https://api.anthropic.com',
+  --       model = 'claude-3-7-sonnet-20250219',
+  --       temperature = 0,
+  --       max_tokens = 4096,
+  --       proxy = 'socks5://91.108.241.124:34390',
+  --     },
+  --   },
+  --   -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
+  --   build = 'make',
+  --   -- build = "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false" -- for windows
+  --   dependencies = {
+  --     'nvim-treesitter/nvim-treesitter',
+  --     'stevearc/dressing.nvim',
+  --     'nvim-lua/plenary.nvim',
+  --     'MunifTanjim/nui.nvim',
+  --   },
+  -- },
+  -- {
+  --   'github/copilot.vim',
+  --   -- cmd = 'Copilot',
+  --   -- event = 'InsertEnter',
+  --   config = function()
+  --     -- vim.g.copilot_proxy = 'http://91.108.241.124:56382'
+  --     -- require('copilot').setup({})
+  --     -- 'HTTP_PROXY=http://91.108.241.124:56382 nvim'
+  --   end,
+  -- },
+  -- {
+  --   'CopilotC-Nvim/CopilotChat.nvim',
+  --   dependencies = {
+  --     { 'github/copilot.vim' }, -- or zbirenbaum/copilot.lua
+  --     { 'nvim-lua/plenary.nvim', branch = 'master' }, -- for curl, log and async functions
+  --   },
+  --   build = 'make tiktoken', -- Only on MacOS or Linux
+  --   opts = {
+  --     proxy = 'socks5://91.108.241.124:34390',
+  --     -- See Configuration section for options
+  --   },
+  --   -- See Commands section for default commands if you want to lazy load on them
+  -- },
   {
-    'yetone/avante.nvim',
-    event = 'VeryLazy',
-    lazy = false,
-    version = false, -- Set this to "*" to always pull the latest release version, or set it to false to update to the latest code changes.
-    opts = {
-      -- add any opts here
-      -- for example
-      provider = 'claude',
-      claude = {
-        endpoint = 'https://api.anthropic.com',
-        model = 'claude-3-7-sonnet-20250219',
-        temperature = 0,
-        max_tokens = 4096,
-        proxy = 'socks5://91.108.241.124:34390',
-      },
-    },
-    -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
-    build = 'make',
-    -- build = "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false" -- for windows
+    'olimorris/codecompanion.nvim',
     dependencies = {
-      'nvim-treesitter/nvim-treesitter',
-      'stevearc/dressing.nvim',
       'nvim-lua/plenary.nvim',
-      'MunifTanjim/nui.nvim',
+      'nvim-treesitter/nvim-treesitter',
+    },
+    opts = {
+      adapters = {
+        opts = {
+          allow_insecure = true,
+          proxy = 'socks5://91.108.241.124:34390',
+        },
+        anthropic = function()
+          return require('codecompanion.adapters').extend('anthropic', {
+            schema = {
+              model = {
+                default = 'claude-3-7-sonnet-20250219',
+              },
+            },
+            env = {
+              api_key = os.getenv('ANTHROPIC_API_KEY'),
+            },
+          })
+        end,
+      },
+      strategies = {
+        -- Change the default chat adapter
+        chat = {
+          adapter = 'anthropic',
+        },
+      },
     },
   },
 }

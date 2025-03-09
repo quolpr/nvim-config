@@ -121,6 +121,13 @@ return {
       end,
       desc = 'Find Files',
     },
+    {
+      '<leader>u',
+      function()
+        Snacks.picker.undo()
+      end,
+      desc = 'Undo Tree',
+    },
     -- {
     --   '<leader>ff',
     --   function()

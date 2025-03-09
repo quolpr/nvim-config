@@ -50,10 +50,6 @@ vim.cmd([[
 autocmd FileType go setlocal tabstop=2
 ]])
 
--- Save undo history
-vim.opt.undofile = true
-vim.opt.undodir = os.getenv('HOME') .. '/.vim/undodir'
-
 -- Case-insensitive searching UNLESS \C or capital in search
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
@@ -68,6 +64,10 @@ vim.opt.timeoutlen = 300
 -- Configure how new splits should be opened
 vim.opt.splitright = true
 vim.opt.splitbelow = true
+
+--undo(set in fundo)
+-- vim.opt.undofile = true
+-- vim.opt.undodir = os.getenv('HOME') .. '/.vim/undodir'
 
 -- Sets how neovim will display certain whitespace in the editor.
 --  See `:help 'list'`
@@ -299,6 +299,8 @@ require('lazy').setup({
   require('plugins.ui'),
   require('plugins.snacks'),
   require('plugins.grug-far'),
+  require('plugins.harpoon'),
+  require('plugins.fundo'),
 })
 
 vim.g.neovide_position_animation_length = 0

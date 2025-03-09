@@ -221,18 +221,18 @@ return {
   --     }
   --   end,
   -- },
-  {
-    'supermaven-inc/supermaven-nvim',
-    config = function()
-      require('supermaven-nvim').setup({
-
-        ignore_filetypes = { markdown = true },
-        keymaps = {
-          accept_suggestion = '<c-u>',
-        },
-      })
-    end,
-  },
+  -- {
+  --   'supermaven-inc/supermaven-nvim',
+  --   config = function()
+  --     require('supermaven-nvim').setup({
+  --
+  --       ignore_filetypes = { markdown = true },
+  --       keymaps = {
+  --         accept_suggestion = '<c-u>',
+  --       },
+  --     })
+  --   end,
+  -- },
   --   {
   --     dir = '~/projects/quolpr/parrot.nvim',
   --     lazy = false,

@@ -1,7 +1,7 @@
 return {
   {
-    -- 'quolpr/quicktest.nvim',
-    dir = '~/projects/quolpr/quicktest.nvim',
+    'quolpr/quicktest.nvim',
+    -- dir = '~/projects/mike-ap/quicktest.nvim',
     lazy = true,
     config = function()
       local qt = require('quicktest')
@@ -13,6 +13,10 @@ return {
               vim.list_extend(args, { '-count=1' })
               return args
             end,
+            env = function(bufnt, env)
+              env['TEST_USE_LOCAL_DB'] = 'true'
+              return env
+            end,
           }),
           require('quicktest.adapters.vitest'),
           --   -- bin = function(path)
@@ -22,6 +26,7 @@ return {
           -- },
           require('quicktest.adapters.elixir'),
           require('quicktest.adapters.dart'),
+          require('quicktest.adapters.rspec'),
           -- require 'quicktest.adapters.playwright',
         },
         default_win_mode = 'split',

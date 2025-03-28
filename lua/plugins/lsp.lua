@@ -7,8 +7,8 @@ return {
       { 'j-hui/fidget.nvim', opts = {} },
     },
     config = function(_, opts)
-      local configs = require 'lspconfig.configs'
-      configs['cspell'] = require 'cspell-lsp'
+      local configs = require('lspconfig.configs')
+      configs['cspell'] = require('cspell-lsp')
 
       vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('lsp-attach', { clear = true }),
@@ -31,7 +31,7 @@ return {
 
           if client and client.server_capabilities.inlayHintProvider and vim.lsp.inlay_hint then
             map('<leader>th', function()
-              vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled {})
+              vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({}))
             end, 'Toggle Inlay Hints')
           end
         end,
@@ -42,6 +42,7 @@ return {
         gopls = {
           settings = {
             gopls = {
+              buildFlags = { '-tags=wireinject' },
               gofumpt = true,
               codelenses = {
                 gc_details = true,
@@ -114,7 +115,7 @@ return {
         cspell = {},
       }
 
-      local lspconfig = require 'lspconfig'
+      local lspconfig = require('lspconfig')
       for server, config in pairs(servers) do
         config.capabilities = require('blink.cmp').get_lsp_capabilities(config.capabilities)
         lspconfig[server].setup(config)

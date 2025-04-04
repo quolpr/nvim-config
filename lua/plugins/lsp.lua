@@ -1,3 +1,50 @@
+local function get_diagnostic_at_cursor()
+  local cur_buf = vim.api.nvim_get_current_buf()
+  local line, col = unpack(vim.api.nvim_win_get_cursor(0))
+  local entries = vim.diagnostic.get(cur_buf, { lnum = line - 1 })
+  local res = {}
+  for _, v in pairs(entries) do
+    if v.col <= col and v.end_col >= col then
+      table.insert(res, {
+        code = v.code,
+        message = v.message,
+        range = {
+          ['start'] = {
+            character = vim.lsp.util.character_offset(cur_buf, v.lnum, v.col, 'utf-16'),
+            line = v.lnum,
+          },
+          ['end'] = {
+            character = vim.lsp.util.character_offset(cur_buf, v.end_lnum, v.end_col, 'utf-16'),
+            line = v.end_lnum,
+          },
+        },
+        severity = v.severity,
+        source = v.source or nil,
+      })
+    end
+  end
+  return res
+end
+
+-- local map = function(keys, func, desc)
+--   vim.keymap.set('n', keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
+-- end
+
+vim.keymap.set('n', '<leader>ca', function()
+  vim.lsp.buf.code_action({
+    -- context = {
+    --   diagnostics = get_diagnostic_at_cursor(),
+    -- },
+    filter = function(action)
+      if string.find(action.title, 'to user settings') then
+        return false
+      end
+
+      return true
+    end,
+  })
+end)
+
 return {
   { -- LSP Configuration & Plugins
     'neovim/nvim-lspconfig',
@@ -7,8 +54,8 @@ return {
       { 'j-hui/fidget.nvim', opts = {} },
     },
     config = function(_, opts)
-      local configs = require('lspconfig.configs')
-      configs['cspell'] = require('cspell-lsp')
+      -- local configs = require('lspconfig.configs')
+      -- configs['cspell'] = require('cspell-lsp')
 
       vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('lsp-attach', { clear = true }),
@@ -79,7 +126,7 @@ return {
             },
           },
         },
-        golangci_lint_ls = {},
+        -- golangci_lint_ls = {},
         elixirls = {},
         ts_ls = {
           init_options = {
@@ -112,7 +159,7 @@ return {
             },
           },
         },
-        cspell = {},
+        -- cspell = {},
       }
 
       local lspconfig = require('lspconfig')

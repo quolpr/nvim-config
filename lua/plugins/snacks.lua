@@ -344,5 +344,12 @@ return {
       end,
       desc = 'LSP Symbols',
     },
+    {
+      '<leader>fS',
+      function()
+        Snacks.picker.lsp_workspace_symbols()
+      end,
+      desc = 'LSP Symbols',
+    },
   },
 }

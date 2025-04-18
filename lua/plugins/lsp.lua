@@ -54,8 +54,8 @@ return {
       { 'j-hui/fidget.nvim', opts = {} },
     },
     config = function(_, opts)
-      -- local configs = require('lspconfig.configs')
-      -- configs['cspell'] = require('cspell-lsp')
+      local configs = require('lspconfig.configs')
+      configs['cspell'] = require('cspell-lsp')
 
       vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('lsp-attach', { clear = true }),
@@ -159,7 +159,7 @@ return {
             },
           },
         },
-        -- cspell = {},
+        cspell = {},
       }
 
       local lspconfig = require('lspconfig')

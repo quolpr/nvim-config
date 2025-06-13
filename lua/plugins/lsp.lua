@@ -54,8 +54,21 @@ return {
       { 'j-hui/fidget.nvim', opts = {} },
     },
     config = function(_, opts)
+      local lspconfig = require 'lspconfig'
       local configs = require('lspconfig.configs')
       configs['cspell'] = require('cspell-lsp')
+
+      if not configs.golangcilsp then
+        configs.golangcilsp = {
+          default_config = {
+            cmd = { 'golangci-lint-langserver' },
+            root_dir = lspconfig.util.root_pattern('.git', 'go.mod'),
+            init_options = {
+              command = { "golangci-lint", "run", "--output.json.path", "stdout", "--show-stats=false", "--issues-exit-code=1" },
+            },
+          }
+        }
+      end
 
       vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('lsp-attach', { clear = true }),
@@ -160,6 +173,9 @@ return {
           },
         },
         cspell = {},
+        golangci_lint_ls = {
+          filetypes = { 'go', 'gomod' }
+        },
       }
 
       local lspconfig = require('lspconfig')

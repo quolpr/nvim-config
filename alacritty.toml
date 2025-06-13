@@ -19,3 +19,7 @@ decorations = "full"
 option_as_alt = "Both"
 startup_mode = "Fullscreen"
 
+[[keyboard.bindings]]
+key = "T"
+mods = "Command"
+action = "None"

@@ -48,16 +48,16 @@ return {
     opts_extend = { 'sources.default' },
   },
   -- Show tooltip on args while typing
-  {
-    'ray-x/lsp_signature.nvim',
-    event = 'VeryLazy',
-    opts = {
-      always_trigger = true,
-    },
-    config = function(_, opts)
-      require('lsp_signature').setup(opts)
-    end,
-  },
+  -- {
+  --   'ray-x/lsp_signature.nvim',
+  --   event = 'VeryLazy',
+  --   opts = {
+  --     always_trigger = true,
+  --   },
+  --   config = function(_, opts)
+  --     require('lsp_signature').setup(opts)
+  --   end,
+  -- },
   -- { -- Autocompletion
   --   'hrsh7th/nvim-cmp',
   --   event = 'InsertEnter',

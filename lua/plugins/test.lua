@@ -1,7 +1,8 @@
 return {
   {
     'quolpr/quicktest.nvim',
-    -- dir = '~/projects/mike-ap/quicktest.nvim',
+    branch = 'quolpr/improve-output-perf',
+    -- dir = '~/projects/quolpr/quicktest.nvim',
     lazy = true,
     config = function()
       local qt = require('quicktest')
@@ -27,6 +28,7 @@ return {
           require('quicktest.adapters.elixir'),
           require('quicktest.adapters.dart'),
           require('quicktest.adapters.rspec'),
+          -- require('quicktest.adapters.pytest')({}),
           -- require 'quicktest.adapters.playwright',
         },
         default_win_mode = 'split',

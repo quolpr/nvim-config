@@ -302,6 +302,7 @@ require('lazy').setup({
   require('plugins.grug-far'),
   require('plugins.harpoon'),
   require('plugins.fundo'),
+  require('plugins.scrollbar'),
 })
 
 vim.g.neovide_position_animation_length = 0
@@ -316,6 +317,22 @@ vim.g.neovide_scroll_animation_length = 0.00
 
 vim.api.nvim_create_autocmd('FileType', {
   pattern = 'go',
+  callback = function()
+    -- vim.opt_local.tabstop = 1
+    vim.opt_local.shiftwidth = 2
+  end,
+})
+
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'typescript',
+  callback = function()
+    -- vim.opt_local.tabstop = 1
+    vim.opt_local.shiftwidth = 2
+  end,
+})
+
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'typescriptreact',
   callback = function()
     -- vim.opt_local.tabstop = 1
     vim.opt_local.shiftwidth = 2

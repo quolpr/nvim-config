@@ -37,8 +37,8 @@ return {
               border = 'rounded',
               title = '{source} {live}',
               title_pos = 'center',
-              { win = 'input', height = 1, border = 'bottom' },
-              { win = 'list', border = 'none' },
+              { win = 'input', height = 1,     border = 'bottom' },
+              { win = 'list',  border = 'none' },
             },
             { win = 'preview', border = 'rounded', width = 0.5 },
           },
@@ -58,6 +58,11 @@ return {
         return 'markdown'
       end,
       win = { style = 'split' },
+      filekey = {
+        cwd = true,
+        branch = false,
+        count = false
+      }
     },
     -- explorer = {
     --   replace_netrw = true,
@@ -192,6 +197,14 @@ return {
         Snacks.picker.grep_word()
       end,
       desc = 'Visual selection or word',
+      mode = { 'n', 'x' },
+    },
+    {
+      '<leader>f\\',
+      function()
+        Snacks.scratch.select()
+      end,
+      desc = 'Find Scratchpad',
       mode = { 'n', 'x' },
     },
     -- search

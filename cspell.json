@@ -157,6 +157,12 @@
     "gochecknoglobals",
     "scns",
     "stringparser",
-    "Syncable"
+    "Syncable",
+    "logrepl",
+    "sysident",
+    "pglogrepl",
+    "pgproto",
+    "httpmiddlewares",
+    "chimiddleware"
   ]
 }

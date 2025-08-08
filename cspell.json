@@ -1,8 +1,5 @@
 {
-  "dictionaries": [
-    "golang",
-    "software-terms"
-  ],
+  "dictionaries": ["golang", "software-terms"],
   "flagWords": {},
   "import": [
     "@cspell/dict-ru_ru/cspell-ext.json",
@@ -163,7 +160,7 @@
     "pglogrepl",
     "pgproto",
     "httpmiddlewares",
-    "chimiddleware"
+    "chimiddleware",
     "rollbacked",
     "Bptree",
     "Datas",

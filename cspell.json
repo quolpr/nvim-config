@@ -164,6 +164,9 @@
     "rollbacked",
     "Bptree",
     "Datas",
-    "inited"
+    "inited",
+    "Posthog",
+    "transak",
+    "Revolut"
   ]
 }

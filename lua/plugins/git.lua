@@ -1,7 +1,7 @@
 return {
   {
-    -- 'NeogitOrg/neogit',
-    'quolpr/neogit',
+    'NeogitOrg/neogit',
+    -- 'quolpr/neogit',
     dependencies = {
       'nvim-lua/plenary.nvim', -- required
       -- Only one of these is needed, not both.

@@ -173,9 +173,9 @@ return {
           },
         },
         cspell = {},
-        golangci_lint_ls = {
-          filetypes = { 'go', 'gomod' }
-        },
+        -- golangci_lint_ls = {
+        --   filetypes = { 'go', 'gomod' }
+        -- },
       }
 
       local lspconfig = require('lspconfig')

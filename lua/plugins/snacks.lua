@@ -60,7 +60,7 @@ return {
       win = { style = 'split' },
       filekey = {
         cwd = true,
-        branch = false,
+        branch = true,
         count = false
       }
     },

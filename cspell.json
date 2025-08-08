@@ -164,5 +164,9 @@
     "pgproto",
     "httpmiddlewares",
     "chimiddleware"
+    "rollbacked",
+    "Bptree",
+    "Datas",
+    "inited"
   ]
 }

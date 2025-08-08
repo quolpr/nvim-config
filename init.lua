@@ -303,6 +303,7 @@ require('lazy').setup({
   require('plugins.harpoon'),
   require('plugins.fundo'),
   require('plugins.scrollbar'),
+  require('plugins.substitute'),
 })
 
 vim.g.neovide_position_animation_length = 0

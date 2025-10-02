@@ -219,7 +219,7 @@ vim.filetype.add({
 })
 
 vim.opt.langmap =
-  'ФИСВУАПРШОЛДЬТЩЗЙКЫЕГМЦЧНЯ;ABCDEFGHIJKLMNOPQRSTUVWXYZ,фисвуапршолдьтщзйкыегмцчня;abcdefghijklmnopqrstuvwxyz'
+'ФИСВУАПРШОЛДЬТЩЗЙКЫЕГМЦЧНЯ;ABCDEFGHIJKLMNOPQRSTUVWXYZ,фисвуапршолдьтщзйкыегмцчня;abcdefghijklmnopqrstuvwxyz'
 
 -- vim.g.loaded_matchparen = 1
 -- vim.g.loaded_matchit = 1
@@ -281,8 +281,8 @@ require('lazy').setup({
   require('plugins.eslint'),
   require('plugins.ai'),
   require('plugins.complete'),
-  require('plugins.dap'),
-  require('plugins.db'),
+  -- require('plugins.dap'),
+  -- require('plugins.db'),
   require('plugins.diagnostics'),
   require('plugins.edit'),
   require('plugins.format'),
@@ -300,10 +300,12 @@ require('lazy').setup({
   require('plugins.ui'),
   require('plugins.snacks'),
   require('plugins.grug-far'),
-  require('plugins.harpoon'),
+  -- require('plugins.harpoon'),
   require('plugins.fundo'),
-  require('plugins.scrollbar'),
-  require('plugins.substitute'),
+  -- require('plugins.scrollbar'),
+  -- require('plugins.substitute'),
+  -- require('plugins.http'),
+  require('plugins.fff'),
 })
 
 vim.g.neovide_position_animation_length = 0

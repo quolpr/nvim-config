@@ -167,6 +167,9 @@
     "inited",
     "Posthog",
     "transak",
-    "Revolut"
+    "Revolut",
+    "Usecase",
+    "Deleter",
+    "connectiondeleter"
   ]
 }

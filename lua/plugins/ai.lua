@@ -1,184 +1,184 @@
-local M = {}
-
-local api = vim.api
-local fn = vim.fn
-
--- Configuration
-local config = {
-  api_key = '',
-  api_url = 'https://api.anthropic.com/v1/messages',
-  model = 'claude-3-5-sonnet-20240620',
-}
-
-function M.setup(opts)
-  config = vim.tbl_extend('force', config, opts or {})
-end
-
-local function encode_json(data)
-  return fn.json_encode(data)
-end
-
-local function decode_json(str)
-  local success, result = pcall(fn.json_decode, str)
-  if success then
-    return result
-  else
-    api.nvim_err_writeln('Error decoding JSON: ' .. result)
-    return nil
-  end
-end
-
-local function parse_sse(data, callback)
-  for line in vim.gsplit(data, '\n') do
-    if line:match('^data: ') then
-      local json_str = line:gsub('^data: ', '')
-      if json_str ~= '[DONE]' then
-        local decoded = decode_json(json_str)
-        if decoded and decoded.type == 'content_block_delta' then
-          callback(decoded.delta.text or '')
-        end
-      end
-    end
-  end
-end
-
-local function stream_request(prompt, callback)
-  local data = {
-    model = config.model,
-    messages = {
-      {
-        role = 'user',
-        content = prompt,
-      },
-      {
-        role = 'assistant',
-        content = "You are Claude, an AI assistant that helps people write better code. In response return the whole updated file. Don't put markdown marks. Just a file. And don't any comments. Just code. And it should start with code immediately, with new lines at top",
-      },
-    },
-    max_tokens = 8192,
-    stream = true,
-  }
-
-  local json_data = encode_json(data)
-  local temp_file = fn.tempname()
-  local file = io.open(temp_file, 'w')
-  file:write(json_data)
-  file:close()
-
-  local curl_command = string.format(
-    'curl -s -N -X POST %s '
-      .. "-H 'Content-Type: application/json' "
-      .. "-H 'x-api-key: %s' "
-      .. "-H 'anthropic-version: 2023-06-01' "
-      .. '-d @%s',
-    config.api_url,
-    config.api_key,
-    temp_file
-  )
-
-  local job_id = fn.jobstart(curl_command, {
-    on_stdout = function(_, data)
-      parse_sse(table.concat(data, '\n'), callback)
-    end,
-    on_exit = function(_, exit_code)
-      os.remove(temp_file)
-      if exit_code ~= 0 then
-        api.nvim_err_writeln('Error in API request. Exit code: ' .. exit_code)
-      end
-      callback(nil, true)
-    end,
-  })
-
-  return job_id
-end
-
-function M.claude_request()
-  if config.api_key == '' then
-    api.nvim_err_writeln('API key not set. Please set up the plugin with your API key.')
-    return
-  end
-
-  -- Get current buffer content
-  local current_buf = api.nvim_get_current_buf()
-  local lines = api.nvim_buf_get_lines(current_buf, 0, -1, false)
-  local content = table.concat(lines, '\n')
-  local current_buftype = api.nvim_buf_get_option(current_buf, 'buftype')
-  local current_filetype = api.nvim_buf_get_option(current_buf, 'filetype')
-
-  -- Get user prompt
-  local prompt = fn.input('Enter your prompt for Claude (default: Improve the code): ')
-  if prompt == '' then
-    prompt = 'Improve the code'
-  end
-
-  local full_prompt = string.format(
-    "Here's the current buffer content:\n\n%s\n\nUser prompt: %s\n\n"
-      .. 'Please provide only the modified code as your response, without any additional comments, explanations, or markdown formatting. '
-      .. 'The response should be in a format suitable for direct use in a diff view.',
-    content,
-    prompt
-  )
-
-  -- Create a new split buffer for the result
-  api.nvim_command('vnew')
-  local result_buf = api.nvim_get_current_buf()
-  api.nvim_buf_set_option(result_buf, 'buftype', current_buftype)
-  api.nvim_buf_set_option(result_buf, 'filetype', current_filetype)
-  -- api.nvim_buf_set_name(result_buf, 'Claude Result (Streaming)')
-
-  -- Disable undo history for the new buffer
-  api.nvim_buf_set_option(result_buf, 'undolevels', -1)
-
-  local full_response = ''
-
-  -- Start the streaming request
-  local job_id = stream_request(full_prompt, function(response, is_complete)
-    if response then
-      full_response = full_response .. response
-      local lines = vim.split(full_response, '\n')
-
-      -- Update the buffer with all lines
-      api.nvim_buf_set_lines(result_buf, 0, -1, false, lines)
-
-      -- -- Scroll to the bottom of the buffer
-      -- api.nvim_command 'normal! G'
-    end
-
-    if is_complete then
-      print('Claude response completed. Applying diff...')
-
-      local diff_buf = api.nvim_get_current_buf()
-      api.nvim_buf_set_option(diff_buf, 'buftype', 'nofile')
-
-      -- Enable diff mode for all windows
-      api.nvim_command('windo diffthis')
-
-      -- Move cursor to the first window (original content)
-      api.nvim_command('wincmd t')
-
-      -- Set up autocmd to disable diff mode when closing the diff buffer
-      api.nvim_command([[
-        augroup ClaudeDiff
-          autocmd!
-          autocmd BufWinLeave <buffer> windo diffoff
-        augroup END
-      ]])
-    end
-  end)
-
-  -- Allow user to cancel the request
-  vim.api.nvim_buf_set_keymap(
-    result_buf,
-    'n',
-    'q',
-    string.format(':call jobstop(%d)|q<CR>', job_id),
-    { noremap = true, silent = true }
-  )
-end
-
-vim.keymap.set('n', '<leader>C', function()
-  M.claude_request()
-end, { desc = 'Claude Request' })
+-- local M = {}
+--
+-- local api = vim.api
+-- local fn = vim.fn
+--
+-- -- Configuration
+-- local config = {
+--   api_key = '',
+--   api_url = 'https://api.anthropic.com/v1/messages',
+--   model = 'claude-3-5-sonnet-20240620',
+-- }
+--
+-- function M.setup(opts)
+--   config = vim.tbl_extend('force', config, opts or {})
+-- end
+--
+-- local function encode_json(data)
+--   return fn.json_encode(data)
+-- end
+--
+-- local function decode_json(str)
+--   local success, result = pcall(fn.json_decode, str)
+--   if success then
+--     return result
+--   else
+--     api.nvim_err_writeln('Error decoding JSON: ' .. result)
+--     return nil
+--   end
+-- end
+--
+-- local function parse_sse(data, callback)
+--   for line in vim.gsplit(data, '\n') do
+--     if line:match('^data: ') then
+--       local json_str = line:gsub('^data: ', '')
+--       if json_str ~= '[DONE]' then
+--         local decoded = decode_json(json_str)
+--         if decoded and decoded.type == 'content_block_delta' then
+--           callback(decoded.delta.text or '')
+--         end
+--       end
+--     end
+--   end
+-- end
+--
+-- local function stream_request(prompt, callback)
+--   local data = {
+--     model = config.model,
+--     messages = {
+--       {
+--         role = 'user',
+--         content = prompt,
+--       },
+--       {
+--         role = 'assistant',
+--         content = "You are Claude, an AI assistant that helps people write better code. In response return the whole updated file. Don't put markdown marks. Just a file. And don't any comments. Just code. And it should start with code immediately, with new lines at top",
+--       },
+--     },
+--     max_tokens = 8192,
+--     stream = true,
+--   }
+--
+--   local json_data = encode_json(data)
+--   local temp_file = fn.tempname()
+--   local file = io.open(temp_file, 'w')
+--   file:write(json_data)
+--   file:close()
+--
+--   local curl_command = string.format(
+--     'curl -s -N -X POST %s '
+--       .. "-H 'Content-Type: application/json' "
+--       .. "-H 'x-api-key: %s' "
+--       .. "-H 'anthropic-version: 2023-06-01' "
+--       .. '-d @%s',
+--     config.api_url,
+--     config.api_key,
+--     temp_file
+--   )
+--
+--   local job_id = fn.jobstart(curl_command, {
+--     on_stdout = function(_, data)
+--       parse_sse(table.concat(data, '\n'), callback)
+--     end,
+--     on_exit = function(_, exit_code)
+--       os.remove(temp_file)
+--       if exit_code ~= 0 then
+--         api.nvim_err_writeln('Error in API request. Exit code: ' .. exit_code)
+--       end
+--       callback(nil, true)
+--     end,
+--   })
+--
+--   return job_id
+-- end
+--
+-- function M.claude_request()
+--   if config.api_key == '' then
+--     api.nvim_err_writeln('API key not set. Please set up the plugin with your API key.')
+--     return
+--   end
+--
+--   -- Get current buffer content
+--   local current_buf = api.nvim_get_current_buf()
+--   local lines = api.nvim_buf_get_lines(current_buf, 0, -1, false)
+--   local content = table.concat(lines, '\n')
+--   local current_buftype = api.nvim_buf_get_option(current_buf, 'buftype')
+--   local current_filetype = api.nvim_buf_get_option(current_buf, 'filetype')
+--
+--   -- Get user prompt
+--   local prompt = fn.input('Enter your prompt for Claude (default: Improve the code): ')
+--   if prompt == '' then
+--     prompt = 'Improve the code'
+--   end
+--
+--   local full_prompt = string.format(
+--     "Here's the current buffer content:\n\n%s\n\nUser prompt: %s\n\n"
+--       .. 'Please provide only the modified code as your response, without any additional comments, explanations, or markdown formatting. '
+--       .. 'The response should be in a format suitable for direct use in a diff view.',
+--     content,
+--     prompt
+--   )
+--
+--   -- Create a new split buffer for the result
+--   api.nvim_command('vnew')
+--   local result_buf = api.nvim_get_current_buf()
+--   api.nvim_buf_set_option(result_buf, 'buftype', current_buftype)
+--   api.nvim_buf_set_option(result_buf, 'filetype', current_filetype)
+--   -- api.nvim_buf_set_name(result_buf, 'Claude Result (Streaming)')
+--
+--   -- Disable undo history for the new buffer
+--   api.nvim_buf_set_option(result_buf, 'undolevels', -1)
+--
+--   local full_response = ''
+--
+--   -- Start the streaming request
+--   local job_id = stream_request(full_prompt, function(response, is_complete)
+--     if response then
+--       full_response = full_response .. response
+--       local lines = vim.split(full_response, '\n')
+--
+--       -- Update the buffer with all lines
+--       api.nvim_buf_set_lines(result_buf, 0, -1, false, lines)
+--
+--       -- -- Scroll to the bottom of the buffer
+--       -- api.nvim_command 'normal! G'
+--     end
+--
+--     if is_complete then
+--       print('Claude response completed. Applying diff...')
+--
+--       local diff_buf = api.nvim_get_current_buf()
+--       api.nvim_buf_set_option(diff_buf, 'buftype', 'nofile')
+--
+--       -- Enable diff mode for all windows
+--       api.nvim_command('windo diffthis')
+--
+--       -- Move cursor to the first window (original content)
+--       api.nvim_command('wincmd t')
+--
+--       -- Set up autocmd to disable diff mode when closing the diff buffer
+--       api.nvim_command([[
+--         augroup ClaudeDiff
+--           autocmd!
+--           autocmd BufWinLeave <buffer> windo diffoff
+--         augroup END
+--       ]])
+--     end
+--   end)
+--
+--   -- Allow user to cancel the request
+--   vim.api.nvim_buf_set_keymap(
+--     result_buf,
+--     'n',
+--     'q',
+--     string.format(':call jobstop(%d)|q<CR>', job_id),
+--     { noremap = true, silent = true }
+--   )
+-- end
+--
+-- vim.keymap.set('n', '<leader>C', function()
+--   M.claude_request()
+-- end, { desc = 'Claude Request' })
 
 return {
   -- {
@@ -233,6 +233,75 @@ return {
       })
     end,
   },
+
+  -- {
+  --   "zbirenbaum/copilot.lua",
+  --   dependencies = {
+  --     "copilotlsp-nvim/copilot-lsp",
+  --   },
+  --   config = function()
+  --     require("copilot").setup({
+  --       -- panel = {
+  --       --   enabled = true,
+  --       --   auto_refresh = true,
+  --       -- },
+  --       suggestion = {
+  --         enabled = true,
+  --         auto_trigger = true,
+  --         keymap = {
+  --           accept = '<c-u>',
+  --         }
+  --       },
+  --       nes = {
+  --         enabled = true,
+  --         auto_trigger = true,
+  --         keymap = {
+  --           accept_and_goto = '<c-]>',
+  --         }
+  --       },
+  --     })
+  --   end,
+  -- },
+
+  {
+    "folke/sidekick.nvim",
+    opts = {
+      -- add any options here
+      cli = {
+        mux = {
+          backend = "tmux",
+          enabled = true,
+        },
+      },
+    },
+    keys = {
+      {
+        "<c-.>",
+        function()
+          require("sidekick.cli").focus()
+        end,
+        mode = { "n", "x", "i", "t" },
+        desc = "Sidekick Switch Focus",
+      },
+      {
+        "<leader>aa",
+        function()
+          require("sidekick.cli").toggle({ focus = true })
+        end,
+        desc = "Sidekick Toggle CLI",
+        mode = { "n", "v" },
+      },
+      {
+        "<leader>ap",
+        function()
+          require("sidekick.cli").prompt()
+        end,
+        desc = "Sidekick Ask Prompt",
+        mode = { "n", "v" },
+      },
+    },
+  }
+
   --   {
   --     dir = '~/projects/quolpr/parrot.nvim',
   --     lazy = false,
@@ -625,37 +694,37 @@ return {
   --   },
   --   -- See Commands section for default commands if you want to lazy load on them
   -- },
-  {
-    'olimorris/codecompanion.nvim',
-    dependencies = {
-      'nvim-lua/plenary.nvim',
-      'nvim-treesitter/nvim-treesitter',
-    },
-    opts = {
-      adapters = {
-        opts = {
-          allow_insecure = true,
-          proxy = 'socks5://91.108.241.124:34390',
-        },
-        anthropic = function()
-          return require('codecompanion.adapters').extend('anthropic', {
-            schema = {
-              model = {
-                default = 'claude-3-7-sonnet-20250219',
-              },
-            },
-            env = {
-              api_key = os.getenv('ANTHROPIC_API_KEY'),
-            },
-          })
-        end,
-      },
-      strategies = {
-        -- Change the default chat adapter
-        chat = {
-          adapter = 'anthropic',
-        },
-      },
-    },
-  },
+  -- {
+  --   'olimorris/codecompanion.nvim',
+  --   dependencies = {
+  --     'nvim-lua/plenary.nvim',
+  --     'nvim-treesitter/nvim-treesitter',
+  --   },
+  --   opts = {
+  --     adapters = {
+  --       opts = {
+  --         allow_insecure = true,
+  --         proxy = 'socks5://91.108.241.124:34390',
+  --       },
+  --       anthropic = function()
+  --         return require('codecompanion.adapters').extend('anthropic', {
+  --           schema = {
+  --             model = {
+  --               default = 'claude-3-7-sonnet-20250219',
+  --             },
+  --           },
+  --           env = {
+  --             api_key = os.getenv('ANTHROPIC_API_KEY'),
+  --           },
+  --         })
+  --       end,
+  --     },
+  --     strategies = {
+  --       -- Change the default chat adapter
+  --       chat = {
+  --         adapter = 'anthropic',
+  --       },
+  --     },
+  --   },
+  -- },
 }

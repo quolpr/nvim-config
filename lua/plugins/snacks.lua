@@ -232,6 +232,14 @@ return {
     -- },
   },
   keys = {
+    {
+      '<leader>go',
+      function()
+        Snacks.lazygit()
+      end,
+      desc = 'Open git',
+      mode = { 'n', 'x' },
+    },
     -- {
     --   '-',
     --   function()

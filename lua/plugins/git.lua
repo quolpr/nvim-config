@@ -23,6 +23,54 @@ return {
       },
     },
   },
+  -- {
+  --   "kdheepak/lazygit.nvim",
+  --   lazy = false,
+  --   cmd = {
+  --     "LazyGit",
+  --     "LazyGitConfig",
+  --     "LazyGitCurrentFile",
+  --     "LazyGitFilter",
+  --     "LazyGitFilterCurrentFile",
+  --   },
+  --   dependencies = {
+  --     "nvim-lua/plenary.nvim",
+  --   },
+  --   keys = {
+  --     {
+  --       '<leader>go',
+  --       function()
+  --         vim.cmd 'LazyGit'
+  --       end,
+  --       desc = 'Git Open',
+  --     },
+  --   }
+  -- },
+
+  -- {
+  --   'NeogitOrg/neogit',
+  --   -- 'quolpr/neogit',
+  --   dependencies = {
+  --     'nvim-lua/plenary.nvim', -- required
+  --     -- Only one of these is needed, not both.
+  --     -- 'nvim-telescope/telescope.nvim', -- optional
+  --     'ibhagwan/fzf-lua', -- optional
+  --   },
+  --   config = function()
+  --     local neogit = require 'neogit'
+  --     neogit.setup {}
+  --   end,
+  --   keys = {
+  --     {
+  --       '<leader>go',
+  --       function()
+  --         local neogit = require 'neogit'
+  --         neogit.open { kind = 'split_above_all' }
+  --       end,
+  --       desc = 'Git Open',
+  --     },
+  --   },
+  -- },
   {
     'sindrets/diffview.nvim',
     dependencies = {

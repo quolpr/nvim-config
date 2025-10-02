@@ -17,7 +17,5 @@ return {
   config = function(_, opts)
     require('fff').setup(opts)
   end,
-  -- No need to lazy-load with lazy.nvim.
-  -- This plugin initializes itself lazily.
-  lazy = false,
+  lazy = true,
 }

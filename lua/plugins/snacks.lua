@@ -285,11 +285,7 @@ return {
     {
       '<leader><space>',
       function()
-        if Snacks and pcall(require, 'snacks.picker') then
-          Snacks.picker(start().source)
-        else
-          vim.notify('Snacks is not loaded', vim.log.levels.ERROR)
-        end
+        Snacks.picker(start().source)
       end,
       desc = 'Find Files',
     },

@@ -1,7 +1,7 @@
 return {
   {
     'quolpr/quicktest.nvim',
-    branch = 'quolpr/improve-output-perf',
+    branch = 'main',
     config = function()
       local qt = require('quicktest')
 

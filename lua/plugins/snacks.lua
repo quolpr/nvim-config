@@ -232,14 +232,14 @@ return {
     -- },
   },
   keys = {
-    {
-      '<leader>go',
-      function()
-        Snacks.lazygit()
-      end,
-      desc = 'Open git',
-      mode = { 'n', 'x' },
-    },
+    -- {
+    --   '<leader>go',
+    --   function()
+    --     Snacks.lazygit()
+    --   end,
+    --   desc = 'Open git',
+    --   mode = { 'n', 'x' },
+    -- },
     -- {
     --   '-',
     --   function()
@@ -285,7 +285,7 @@ return {
     {
       '<leader><space>',
       function()
-        Snacks.picker(start().source)
+        Snacks.picker.files()
       end,
       desc = 'Find Files',
     },

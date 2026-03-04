@@ -335,6 +335,7 @@ return {
         { '<leader>q_', hidden = true },
         { '<leader>t', group = 'Test' },
         { '<leader>t_', hidden = true },
+        { 'gr', group = 'LSP Actions' },
       })
     end,
   },

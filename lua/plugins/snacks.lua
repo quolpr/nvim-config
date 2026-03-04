@@ -46,7 +46,9 @@ function start()
     end
 
     local icon = picker.opts.icons.git[status.status]
-    if status.staged then icon = picker.opts.icons.git.staged end
+    if status.staged then
+      icon = picker.opts.icons.git.staged
+    end
 
     local text_icon = status.status:sub(1, 1):upper()
     text_icon = status.status == 'untracked' and '?' or status.status == 'ignored' and '!' or text_icon
@@ -141,7 +143,9 @@ function start()
       end
       return ret
     end,
-    on_close = function() M.state.current_file_cache = nil end,
+    on_close = function()
+      M.state.current_file_cache = nil
+    end,
     formatters = {
       file = {
         filename_first = true,
@@ -192,8 +196,8 @@ return {
               border = 'rounded',
               title = '{source} {live}',
               title_pos = 'center',
-              { win = 'input', height = 1,     border = 'bottom' },
-              { win = 'list',  border = 'none' },
+              { win = 'input', height = 1, border = 'bottom' },
+              { win = 'list', border = 'none' },
             },
             { win = 'preview', border = 'rounded', width = 0.5 },
           },
@@ -216,8 +220,8 @@ return {
       filekey = {
         cwd = true,
         branch = true,
-        count = false
-      }
+        count = false,
+      },
     },
     -- explorer = {
     --   replace_netrw = true,

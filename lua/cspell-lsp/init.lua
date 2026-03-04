@@ -1,5 +1,3 @@
-local util = require 'lspconfig.util'
-
 -- Function to decode a URI to a file path
 local function decode_uri(uri)
   return string.gsub(uri, 'file://', '')
@@ -215,8 +213,7 @@ return {
       'cd ~ && NODE_PATH=$(npm root -g) node ' .. current_script_path .. 'main.cjs --stdio',
     },
     filetypes = { '*' },
-    root_dir = util.root_pattern '.git',
-    single_file_support = true,
+    root_markers = { '.git' },
     settings = {
       cSpell = {
         enabled = true,

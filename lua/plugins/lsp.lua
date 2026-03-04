@@ -54,21 +54,7 @@ return {
       { 'j-hui/fidget.nvim', opts = {} },
     },
     config = function(_, opts)
-      local lspconfig = require 'lspconfig'
-      local configs = require('lspconfig.configs')
-      configs['cspell'] = require('cspell-lsp')
-
-      if not configs.golangcilsp then
-        configs.golangcilsp = {
-          default_config = {
-            cmd = { 'golangci-lint-langserver' },
-            root_dir = lspconfig.util.root_pattern('.git', 'go.mod'),
-            init_options = {
-              command = { "golangci-lint", "run", "--output.json.path", "stdout", "--show-stats=false", "--issues-exit-code=1" },
-            },
-          }
-        }
-      end
+      vim.lsp.config('cspell', require('cspell-lsp').default_config)
 
       vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('lsp-attach', { clear = true }),
@@ -89,11 +75,12 @@ return {
           --  See `:help K` for why this keymap
           map('K', vim.lsp.buf.hover, 'Hover Documentation')
 
-          if client and client.server_capabilities.inlayHintProvider and vim.lsp.inlay_hint then
+          if client and client:supports_method('textDocument/inlayHint', event.buf) then
             map('<leader>ch', function()
               vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({}))
             end, 'Toggle Inlay Hints')
           end
+
         end,
       })
 
@@ -141,16 +128,17 @@ return {
         },
         golangci_lint_ls = {},
         elixirls = {},
-        ts_ls = {
-          init_options = {
-            -- This is the default which would be overwritten otherwise
-            hostInfo = 'neovim',
-            -- 16 gb
-            maxTsServerMemory = 16384,
-            -- Never use LSP for syntax anyway
-            tsserver = { useSyntaxServer = 'never' },
-          },
-        },
+        -- ts_ls = {
+        --   init_options = {
+        --     -- This is the default which would be overwritten otherwise
+        --     hostInfo = 'neovim',
+        --     -- 16 gb
+        --     maxTsServerMemory = 16384,
+        --     -- Never use LSP for syntax anyway
+        --     tsserver = { useSyntaxServer = 'never' },
+        --   },
+        -- },
+        tsgo = {},
         sqlls = {},
         -- eslint = {},
         biome = {},
@@ -178,11 +166,17 @@ return {
         -- },
       }
 
-      local lspconfig = require('lspconfig')
+      vim.lsp.config('*', {
+        capabilities = require('blink.cmp').get_lsp_capabilities(),
+      })
+
       for server, config in pairs(servers) do
-        config.capabilities = require('blink.cmp').get_lsp_capabilities(config.capabilities)
-        lspconfig[server].setup(config)
+        if next(config) ~= nil then
+          vim.lsp.config(server, config)
+        end
       end
+
+      vim.lsp.enable(vim.tbl_keys(servers))
     end,
   },
 }

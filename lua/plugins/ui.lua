@@ -1,12 +1,13 @@
-local function lspSymbol(name, icon)
-  local hl = 'DiagnosticSign' .. name
-  vim.fn.sign_define(hl, { text = icon, numhl = hl, texthl = hl })
-end
-
-lspSymbol('Error', '󰅙')
-lspSymbol('Info', '󰋼')
-lspSymbol('Hint', '󰌵')
-lspSymbol('Warn', '')
+vim.diagnostic.config {
+  signs = {
+    text = {
+      [vim.diagnostic.severity.ERROR] = '󰅙',
+      [vim.diagnostic.severity.INFO] = '󰋼',
+      [vim.diagnostic.severity.HINT] = '󰌵',
+      [vim.diagnostic.severity.WARN] = '',
+    },
+  },
+}
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`

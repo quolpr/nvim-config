@@ -1,26 +1,79 @@
 #!/usr/bin/env bash
 
-if [[ $# -eq 1 ]]; then
-    selected=$1
+set -euo pipefail
+
+PROJECTS_ROOT="${HOME}/projects"
+
+# 1. Define projects that should show worktrees
+declare -A is_worktree_project
+is_worktree_project["quolpr/will-be-done-tree"]=1
+# is_worktree_project["other/repo"]=1
+
+build_candidates() {
+  # Find all projects exactly 2 levels deep
+  local project_path
+  while IFS= read -r project_path; do
+    [[ -z "$project_path" ]] && continue
+
+    # Fast internal string manipulation (replaces basename/sed)
+    local project_rel="${project_path#"$PROJECTS_ROOT"/}"
+    local repo_name="${project_rel##*/}"
+
+    # 2. Check if this is a worktree-enabled project
+    if [[ -n "${is_worktree_project["$project_rel"]:-}" ]]; then
+      
+      # Call git only for this specific project
+      while IFS= read -r wt_path; do
+        [[ -z "$wt_path" ]] && continue
+
+        local wt_folder="${wt_path##*/}"
+        local wt_display_name
+        local session_name
+
+        if [[ "$wt_path" == "$project_path" ]]; then
+          wt_display_name="main"
+          session_name="$repo_name"
+        else
+          wt_display_name="$wt_folder"
+          session_name="${repo_name}--${wt_folder}"
+        fi
+
+        # format: Display Name [Tab] Session Name [Tab] Full Path
+        printf "%s [%s]\t%s\t%s\n" "$project_rel" "$wt_display_name" "$session_name" "$wt_path"
+      done < <(git -C "$project_path" worktree list --porcelain 2>/dev/null | awk '/^worktree / {print substr($0, 10)}')
+    
+    else
+      # 3. Regular project: Display Name [Tab] Session Name [Tab] Full Path
+      printf "%s\t%s\t%s\n" "$project_rel" "$repo_name" "$project_path"
+    fi
+  done < <(find "$PROJECTS_ROOT" -mindepth 2 -maxdepth 2 -type d)
+}
+
+# Logic to pick the target
+select_target() {
+  if [[ $# -eq 1 && -n "${1:-}" ]]; then
+    # If path passed as argument, find matching row
+    build_candidates | awk -F '\t' -v p="$1" '$3 == p { print; exit }'
+  else
+    # Interactive selection
+    build_candidates | fzf --delimiter=$'\t' --with-nth=1
+  fi
+}
+
+selected_line="$(select_target "${1:-}")"
+[[ -n "${selected_line:-}" ]] || exit 0
+
+# Parse the tab-separated fields
+IFS=$'\t' read -r _selected_display selected_session selected_path <<<"$selected_line"
+
+# Create session if it doesn't exist
+if ! tmux has-session -t="$selected_session" 2>/dev/null; then
+  tmux new-session -ds "$selected_session" -c "$selected_path"
+fi
+
+# Switch or Attach
+if [[ -n "${TMUX:-}" ]]; then
+  exec tmux switch-client -t "$selected_session"
 else
-    selected=$(find ~/projects -mindepth 1 -maxdepth 2 -type d | fzf)
+  exec tmux attach-session -t "$selected_session"
 fi
-
-if [[ -z $selected ]]; then
-    exit 0
-fi
-
-selected_name=$(basename "$selected" | tr . _)
-tmux_running=$(pgrep tmux)
-
-if [[ -z $TMUX ]] && [[ -z $tmux_running ]]; then
-    tmux new-session -s $selected_name -c $selected
-    exit 0
-fi
-
-if ! tmux has-session -t=$selected_name 2> /dev/null; then
-    tmux new-session -ds $selected_name -c $selected
-fi
-
-tmux switch-client -t $selected_name
-

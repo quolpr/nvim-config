@@ -1,12 +1,9 @@
-return function()
+local M = {}
+
+M.config = function()
   vim.g['fern#renderer'] = 'nerdfont'
 
-  -- TODO: port it to lua
   vim.cmd([[
-    nmap <silent> - :Fern . -reveal=% -wait <CR>
-    nmap <silent> _ :Fern %:p:h -wait -reveal=% <CR>
-
-
     function! s:init_fern() abort
       nmap <buffer> <C-J> <C-W><C-J>
       nmap <buffer> <C-K> <C-W><C-K>
@@ -21,3 +18,20 @@ return function()
     augroup END
   ]])
 end
+
+M.keys = {
+  {
+    '-',
+    function()
+      vim.cmd([[Fern . -reveal=% -wait <CR>]])
+    end,
+  },
+  {
+    '_',
+    function()
+      vim.cmd([[Fern %:h -wait <CR>]])
+    end,
+  },
+}
+
+return M

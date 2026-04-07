@@ -23,13 +23,13 @@ M.keys = {
   {
     '-',
     function()
-      vim.cmd([[Fern . -reveal=% -wait <CR>]])
+      vim.cmd([[Fern . -reveal=% -wait]])
     end,
   },
   {
     '_',
     function()
-      vim.cmd([[Fern %:h -wait <CR>]])
+      vim.cmd([[Fern %:h -wait]])
     end,
   },
 }

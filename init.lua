@@ -1,4 +1,4 @@
-require('./preinit')
+dofile(vim.fn.stdpath('config') .. '/preinit.lua')
 
 -- [[ Install `lazy.nvim` plugin manager ]]
 local lazypath = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'
@@ -45,11 +45,11 @@ require('lazy').setup({
   -- AI inline code completion
   { 'supermaven-inc/supermaven-nvim',              config = require('config.supermaven') },
   -- Claude AI chat sidebar integrated with tmux
-  {
-    'folke/sidekick.nvim',
-    opts = require('config.sidekick').opts,
-    keys = require('config.sidekick').keys,
-  },
+  -- {
+  --   'folke/sidekick.nvim',
+  --   opts = require('config.sidekick').opts,
+  --   keys = require('config.sidekick').keys,
+  -- },
 
   ---------------------
   --- COMPLETION

@@ -7,6 +7,7 @@ PROJECTS_ROOT="${HOME}/projects"
 # 1. Define projects that should show worktrees
 declare -A is_worktree_project
 is_worktree_project["quolpr/will-be-done-tree"]=1
+is_worktree_project["postgrespro/progate_backend_tree"]=1
 # is_worktree_project["other/repo"]=1
 
 build_candidates() {

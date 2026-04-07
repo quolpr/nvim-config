@@ -2,6 +2,14 @@ vim.opt.termguicolors = true
 vim.opt.termsync = false
 vim.opt.colorcolumn = '80'
 vim.opt.swapfile = false
+vim.opt.ttimeoutlen = 0
+vim.opt.smoothscroll = true
+vim.opt.virtualedit = 'block'
+vim.opt.jumpoptions = 'stack'
+vim.opt.confirm = true
+vim.opt.undofile = true
+vim.opt.grepprg = 'rg --vimgrep'
+vim.opt.grepformat = '%f:%l:%c:%m'
 
 -- Set <space> as the leader key
 -- See `:help mapleader`
